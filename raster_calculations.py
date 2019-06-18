@@ -63,7 +63,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NC_nutrient_10s_ssp5.tif",
-        },
+        },   
     ]
 
     for raster_calculation in raster_calculation_list:
@@ -71,7 +71,39 @@ def main():
         break
 
     TASK_GRAPH.join()
-    TASK_GRAPH.close()
+
+    raster_calculation_from_local_files_list = [
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_nutrient_10s_ssp1.tif',
+                'current': 'outputs/NC_nutrient_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_nutrient_10s_ssp1.tif",
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_nutrient_10s_ssp3.tif',
+                'current': 'outputs/NC_nutrient_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_nutrient_10s_ssp3.tif",
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_nutrient_10s_ssp5.tif',
+                'current': 'outputs/NC_nutrient_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_nutrient_10s_ssp5.tif",
+        },
+    ]
+
+    for raster_calculation in raster_calculation_from_local_files_list:
+        evaluate_calculation(raster_calculation)
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
