@@ -125,6 +125,9 @@ def evaluate_calculation(args):
         'symbol_to_path_band_map': symbol_to_path_band_map,
         })
     del args_copy['symbol_to_path_map']
+    build_overview = (
+        'build_overview' in args_copy and args_copy['build_overview'])
+    del args_copy['build_overview']
     eval_raster_task = TASK_GRAPH.add_task(
         func=pygeoprocessing.evaluate_raster_calculator_expression,
         kwargs=args_copy,
@@ -133,14 +136,15 @@ def evaluate_calculation(args):
         task_name='%s -> %s' % (
             args_copy['expression'],
             os.path.basename(args_copy['target_raster_path'])))
-    overview_path = '%s.ovr' % os.path.splitext(
-        args_copy['target_raster_path'])[0]
-    TASK_GRAPH.add_task(
-        func=build_overviews,
-        args=(args_copy['target_raster_path']),
-        dependent_task_list=[eval_raster_task],
-        target_path_list=[overview_path],
-        task_name='overview for %s' % args_copy['target_raster_path'])
+    if build_overview:
+        overview_path = '%s.ovr' % os.path.splitext(
+            args_copy['target_raster_path'])[0]
+        TASK_GRAPH.add_task(
+            func=build_overviews,
+            args=(args_copy['target_raster_path'],),
+            dependent_task_list=[eval_raster_task],
+            target_path_list=[overview_path],
+            task_name='overview for %s' % args_copy['target_raster_path'])
 
 
 def build_overviews(raster_path):
