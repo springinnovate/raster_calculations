@@ -1,4 +1,5 @@
 """Process a raster calculator plain text expression."""
+import time
 import sys
 import os
 import logging
@@ -6,6 +7,7 @@ import urllib.request
 
 from retrying import retry
 from osgeo import osr
+from osgeo import gdal
 import pygeoprocessing
 import taskgraph
 
@@ -35,6 +37,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NC_nutrient_10s_cur.tif",
+            'build_overview': True,
         },
         {
             'expression': '(load-export)/load',
@@ -73,7 +76,7 @@ def main():
 
 
 def evaluate_calculation(args):
-    """Evaluates raster calculator expression object.
+    """Evaluate raster calculator expression object.
 
     Parameters:
         args['expression'] (str): a symbolic arithmetic expression
@@ -122,7 +125,7 @@ def evaluate_calculation(args):
         'symbol_to_path_band_map': symbol_to_path_band_map,
         })
     del args_copy['symbol_to_path_map']
-    TASK_GRAPH.add_task(
+    eval_raster_task = TASK_GRAPH.add_task(
         func=pygeoprocessing.evaluate_raster_calculator_expression,
         kwargs=args_copy,
         dependent_task_list=download_task_list,
@@ -130,6 +133,73 @@ def evaluate_calculation(args):
         task_name='%s -> %s' % (
             args_copy['expression'],
             os.path.basename(args_copy['target_raster_path'])))
+    overview_path = '%s.ovr' % os.path.splitext(
+        args_copy['target_raster_path'])[0]
+    TASK_GRAPH.add_task(
+        func=build_overviews,
+        args=(args_copy['target_raster_path']),
+        dependent_task_list=[eval_raster_task],
+        target_path_list=[overview_path],
+        task_name='overview for %s' % args_copy['target_raster_path'])
+
+
+def build_overviews(raster_path):
+    """Build external overviews for raster."""
+    raster = gdal.Open(raster_path, gdal.OF_RASTER)
+    min_dimension = min(raster.RasterXSize, raster.RasterYSize)
+    overview_levels = []
+    current_level = 2
+    while True:
+        if min_dimension // current_level == 0:
+            break
+        overview_levels.append(current_level)
+        current_level *= 2
+
+    gdal.SetConfigOption('COMPRESS_OVERVIEW', 'LZW')
+    raster.BuildOverviews(
+        'average', overview_levels, callback=_make_logger_callback(
+            'build overview for ' + os.path.basename(raster_path) +
+            '%.2f%% complete'))
+
+
+def _make_logger_callback(message):
+    """Build a timed logger callback that prints ``message`` replaced.
+
+    Parameters:
+        message (string): a string that expects 2 placement %% variables,
+            first for % complete from ``df_complete``, second from
+            ``p_progress_arg[0]``.
+
+    Returns:
+        Function with signature:
+            logger_callback(df_complete, psz_message, p_progress_arg)
+
+    """
+    def logger_callback(df_complete, _, p_progress_arg):
+        """Argument names come from the GDAL API for callbacks."""
+        try:
+            current_time = time.time()
+            if ((current_time - logger_callback.last_time) > 5.0 or
+                    (df_complete == 1.0 and
+                     logger_callback.total_time >= 5.0)):
+                # In some multiprocess applications I was encountering a
+                # ``p_progress_arg`` of None. This is unexpected and I suspect
+                # was an issue for some kind of GDAL race condition. So I'm
+                # guarding against it here and reporting an appropriate log
+                # if it occurs.
+                if p_progress_arg:
+                    LOGGER.info(message, df_complete * 100, p_progress_arg[0])
+                else:
+                    LOGGER.info(
+                        'p_progress_arg is None df_complete: %s, message: %s',
+                        df_complete, message)
+                logger_callback.last_time = current_time
+                logger_callback.total_time += current_time
+        except AttributeError:
+            logger_callback.last_time = time.time()
+            logger_callback.total_time = 0.0
+
+    return logger_callback
 
 
 def _preprocess_rasters(
@@ -246,6 +316,7 @@ def download_url(url, target_path, skip_if_target_exists=False):
     except:
         LOGGER.exception("Exception encountered, trying again.")
         raise
+
 
 if __name__ == '__main__':
     TASK_GRAPH = taskgraph.TaskGraph(WORKSPACE_DIR, -1, 5.0)
