@@ -10,6 +10,7 @@ import pygeoprocessing
 import taskgraph
 
 WORKSPACE_DIR = 'raster_expression_workspace'
+NCPUS = 4
 try:
     os.makedirs(WORKSPACE_DIR)
 except OSError:
@@ -68,6 +69,9 @@ def main():
     for raster_calculation in raster_calculation_list:
         evaluate_calculation(raster_calculation)
         break
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
@@ -249,5 +253,5 @@ def download_url(url, target_path, skip_if_target_exists=False):
         raise
 
 if __name__ == '__main__':
-    TASK_GRAPH = taskgraph.TaskGraph(WORKSPACE_DIR, -1, 5.0)
+    TASK_GRAPH = taskgraph.TaskGraph(WORKSPACE_DIR, NCPUS, 5.0)
     main()
