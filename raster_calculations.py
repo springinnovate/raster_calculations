@@ -53,10 +53,13 @@ def evaluate_calculation(args):
             the latter, the file will be downloaded to a `WORKSPACE_DIR`
         args['target_nodata'] (numeric):
         args['target_raster_path'] (str):
-    """
 
+    Returns:
+        None.
+    """
+    args_copy = args.copy()
     expression_id = os.path.splitext(
-        os.path.basename(expression['target_raster_path']))[0]
+        os.path.basename(args_copy['target_raster_path']))[0]
     expression_workspace_path = os.path.join(WORKSPACE_DIR, expression_id)
     expression_ecoshard_path = os.path.join(
         expression_workspace_path, 'ecoshard')
@@ -67,7 +70,7 @@ def evaluate_calculation(args):
     # process ecoshards if necessary
     symbol_to_path_band_map = {}
     download_task_list = []
-    for symbol, path in expression['symbol_to_path_map'].items():
+    for symbol, path in args_copy['symbol_to_path_map'].items():
         if path.startswith('http://') or path.startswith('https://'):
             # download to local file
             local_path = os.path.join(
@@ -84,22 +87,21 @@ def evaluate_calculation(args):
             symbol_to_path_band_map[symbol] = (path, 1)
 
     # this sets a common target sr, pixel size, and resample method .
-    expression.update({
+    args_copy.update({
         'churn_dir': WORKSPACE_DIR,
         'target_sr_wkt': None,
         'target_pixel_size': None,
         'resample_method': 'near',
         'symbol_to_path_band_map': symbol_to_path_band_map,
         })
-    del expression['symbol_to_path_map']
-    LOGGER.debug(expression)
+    del args_copy['symbol_to_path_map']
     TASK_GRAPH.add_task(
         func=pygeoprocessing.evaluate_raster_calculator_expression,
-        kwargs=expression,
+        kwargs=args_copy,
         dependent_task_list=download_task_list,
         task_name='%s -> %s' % (
-            expression['expression'],
-            os.path.basename(expression['target_raster_path'])))
+            args_copy['expression'],
+            os.path.basename(args_copy['target_raster_path'])))
 
 
 def _preprocess_rasters(
