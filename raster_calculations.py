@@ -12,6 +12,7 @@ import pygeoprocessing
 import taskgraph
 
 WORKSPACE_DIR = 'raster_expression_workspace'
+NCPUS = 4
 try:
     os.makedirs(WORKSPACE_DIR)
 except OSError:
@@ -65,10 +66,45 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NC_nutrient_10s_ssp5.tif",
-        },
+        },   
     ]
 
     for raster_calculation in raster_calculation_list:
+        evaluate_calculation(raster_calculation)
+
+    TASK_GRAPH.join()
+
+    raster_calculation_from_local_files_list = [
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_nutrient_10s_ssp1.tif',
+                'current': 'outputs/NC_nutrient_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_nutrient_10s_ssp1.tif",
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_nutrient_10s_ssp3.tif',
+                'current': 'outputs/NC_nutrient_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_nutrient_10s_ssp3.tif",
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_nutrient_10s_ssp5.tif',
+                'current': 'outputs/NC_nutrient_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_nutrient_10s_ssp5.tif",
+        },
+    ]
+
+    for raster_calculation in raster_calculation_from_local_files_list:
         evaluate_calculation(raster_calculation)
 
     TASK_GRAPH.join()
@@ -323,5 +359,5 @@ def download_url(url, target_path, skip_if_target_exists=False):
 
 
 if __name__ == '__main__':
-    TASK_GRAPH = taskgraph.TaskGraph(WORKSPACE_DIR, -1, 5.0)
+    TASK_GRAPH = taskgraph.TaskGraph(WORKSPACE_DIR, NCPUS, 5.0)
     main()
