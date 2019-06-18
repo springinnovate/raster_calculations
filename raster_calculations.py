@@ -67,6 +67,10 @@ def main():
 
     for raster_calculation in raster_calculation_list:
         evaluate_calculation(raster_calculation)
+        break
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
 
 
 def evaluate_calculation(args):
@@ -123,6 +127,7 @@ def evaluate_calculation(args):
         func=pygeoprocessing.evaluate_raster_calculator_expression,
         kwargs=args_copy,
         dependent_task_list=download_task_list,
+        target_path_list=[args_copy['target_raster_path']],
         task_name='%s -> %s' % (
             args_copy['expression'],
             os.path.basename(args_copy['target_raster_path'])))
