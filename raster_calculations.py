@@ -67,7 +67,6 @@ def main():
 
     for raster_calculation in raster_calculation_list:
         evaluate_calculation(raster_calculation)
-        break
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
