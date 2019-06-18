@@ -48,6 +48,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NC_nutrient_10s_ssp1.tif",
+            'build_overview': True,
         },
         {
             'expression': '(load-export)/load',
@@ -57,6 +58,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NC_nutrient_10s_ssp3.tif",
+            'build_overview': True,
         },
         {
             'expression': '(load-export)/load',
@@ -66,6 +68,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NC_nutrient_10s_ssp5.tif",
+            'build_overview': True,
         },   
     ]
 
@@ -83,6 +86,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NCchange_nutrient_10s_ssp1.tif",
+            'build_overview': True,
         },
         {
             'expression': '(future-current)/current',
@@ -92,6 +96,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NCchange_nutrient_10s_ssp3.tif",
+            'build_overview': True,
         },
         {
             'expression': '(future-current)/current',
@@ -101,6 +106,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NCchange_nutrient_10s_ssp5.tif",
+            'build_overview': True,
         },
     ]
 
