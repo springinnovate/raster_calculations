@@ -30,12 +30,39 @@ def main():
         {
             'expression': '(load-export)/load',
             'symbol_to_path_map': {
-                'load': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/water_2015_n_load_degree_md5_c9cd446d3263fc1f8125a9cc2c388bec.tif',
-                'export': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/water_2015_n_export_degree_md5_74d9ed09f379ea7370c5db88c4826d44.tif',
+                'load': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_modified_load_compressed_md5_e3072705a87b0db90e7620abbc0d75f1.tif',
+                'export': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_n_export_compressed_md5_fa15687cc4d4fdc5e7a6351200873578.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "NC_nutrient_ssp5.tif",
-        }
+            'target_raster_path': "outputs/NC_nutrient_10s_cur.tif",
+        },
+        {
+            'expression': '(load-export)/load',
+            'symbol_to_path_map': {
+                'load': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp1_modified_load_compressed_md5_a5f1db75882a207636546af94cde6549.tif',
+                'export': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp1_n_export_compressed_md5_4b2b0a4ac6575fde5aca00de4f788494.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NC_nutrient_10s_ssp1.tif",
+        },
+        {
+            'expression': '(load-export)/load',
+            'symbol_to_path_map': {
+                'load': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp3_modified_load_compressed_md5_e49e578ed025c0bc796e55b7f27f82f1.tif',
+                'export': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp3_n_export_compressed_md5_b5259ac0326b0dcef8a34f2086e8339b.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NC_nutrient_10s_ssp3.tif",
+        },
+        {
+            'expression': '(load-export)/load',
+            'symbol_to_path_map': {
+                'load': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp5_modified_load_compressed_md5_7337576433238f70140be9ec5b588fd1.tif',
+                'export': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp5_n_export_compressed_md5_12b9caecc29058d39748e13bf5b5f150.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NC_nutrient_10s_ssp5.tif",
+        },
     ]
 
     for raster_calculation in raster_calculation_list:
@@ -89,9 +116,6 @@ def evaluate_calculation(args):
     # this sets a common target sr, pixel size, and resample method .
     args_copy.update({
         'churn_dir': WORKSPACE_DIR,
-        'target_sr_wkt': None,
-        'target_pixel_size': None,
-        'resample_method': 'near',
         'symbol_to_path_band_map': symbol_to_path_band_map,
         })
     del args_copy['symbol_to_path_map']
