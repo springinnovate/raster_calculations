@@ -179,8 +179,8 @@ def evaluate_calculation(args):
             args_copy['expression'],
             os.path.basename(args_copy['target_raster_path'])))
     if build_overview:
-        overview_path = '%s.ovr' % os.path.splitext(
-            args_copy['target_raster_path'])[0]
+        overview_path = '%s.ovr' % (
+            args_copy['target_raster_path'])
         TASK_GRAPH.add_task(
             func=build_overviews,
             args=(args_copy['target_raster_path'],),
