@@ -35,13 +35,13 @@ def main():
 
     masker_list = [
         {
-            # the %s is a placeholder for the string we're passing it using this function that lists every number in the range, adds 6, takes away the [] of the list and turns it into a string
-            'expression': 'mask(raster, %s, invert=False)'%(str([12]+[x for x in range(50,181)])[1:-1]), 
+            # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
+            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]), 
             'symbol_to_path_map': {
                 'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': 'masked_nathab_without_herbaceous_esa.tif',
+            'target_raster_path': 'masked_nathab_esa.tif',
         },
     ]
     for masker in masker_list:
