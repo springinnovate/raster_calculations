@@ -10,7 +10,10 @@ import raster_calculations_core
 WORKSPACE_DIR = 'workspace_potential_pollination'
 CHURN_DIR = os.path.join(WORKSPACE_DIR, 'churn')
 
-HAB_MASK_URL = ''
+HAB_MASK_URL_MAP = {
+    'nathab': 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/masked_nathab_esa_md5_2991f8474e5c228344ce4614cac494e7.tif',
+    'nathab_without_herbaceous': 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/masked_nathab_without_herbaceous_esa_md5_2717403dc2918c88b420490d00527b8d.tif',
+    }
 THRESHOLD_VAL = 0.3
 TARGET_NODATA = -1.0
 
@@ -22,60 +25,62 @@ def main():
         os.makedirs(CHURN_DIR)
     except OSError:
         pass
-    hab_mask_path = os.path.join(CHURN_DIR, os.path.basename(HAB_MASK_URL))
-    fetch_hab_mask_task = task_graph.add_task(
-        func=raster_calculations_core.download_url,
-        args=(HAB_MASK_URL, hab_mask_path),
-        target_path_list=[hab_mask_path],
-        task_name='fetch hab mask')
-
     kernel_raster_path = os.path.join(CHURN_DIR, 'radial_kernel.tif')
     kernel_task = task_graph.add_task(
         func=create_radial_convolution_mask,
         args=(0.00277778, 2000., kernel_raster_path),
         target_path_list=[kernel_raster_path],
         task_name='make convolution kernel')
+    for prefix_name, hab_mask_url in HAB_MASK_URL_MAP.items():
+        hab_mask_path = os.path.join(
+            CHURN_DIR, os.path.basename(hab_mask_url))
+        fetch_hab_mask_task = task_graph.add_task(
+            func=raster_calculations_core.download_url,
+            args=(hab_mask_url, hab_mask_path),
+            target_path_list=[hab_mask_path],
+            task_name='fetch hab mask')
 
-    natural_hab_proportion_raster_path = os.path.join(
-        WORKSPACE_DIR, 'nathab_proportion.tif')
+        natural_hab_proportion_raster_path = os.path.join(
+            WORKSPACE_DIR, '%s_proportion.tif' % prefix_name)
 
-    nathab_proportion_task = task_graph.add_task(
-        func=pygeoprocessing.convolve_2d,
-        args=[
-            (hab_mask_path, 1), (kernel_raster_path, 1),
-            natural_hab_proportion_raster_path],
-        kwargs={
-            'working_dir': CHURN_DIR,
-            'ignore_nodata': True,
-            'gtiff_creation_options': (
-                'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=DEFLATE',
-                'PREDICTOR=3', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
-                'NUM_THREADS=2'),
-            'n_threads': 4},
-        dependent_task_list=[fetch_hab_mask_task, kernel_task],
-        target_path_list=[natural_hab_proportion_raster_path],
-        task_name=(
-            'calculate natural hab proportion'
-            f' {os.path.basename(natural_hab_proportion_raster_path)}'))
+        nathab_proportion_task = task_graph.add_task(
+            func=pygeoprocessing.convolve_2d,
+            args=[
+                (hab_mask_path, 1), (kernel_raster_path, 1),
+                natural_hab_proportion_raster_path],
+            kwargs={
+                'working_dir': CHURN_DIR,
+                'ignore_nodata': True,
+                'gtiff_creation_options': (
+                    'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=DEFLATE',
+                    'PREDICTOR=3', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
+                    'NUM_THREADS=2'),
+                'n_threads': 4},
+            dependent_task_list=[fetch_hab_mask_task, kernel_task],
+            target_path_list=[natural_hab_proportion_raster_path],
+            task_name=(
+                'calculate natural hab proportion'
+                f' {os.path.basename(natural_hab_proportion_raster_path)}'))
 
-    nathab_proportion_task.join()
-    nathab_proportion_nodata = pygeoprocessing.get_raster_info(
-        natural_hab_proportion_raster_path)['nodata'][0]
+        nathab_proportion_task.join()
+        nathab_proportion_nodata = pygeoprocessing.get_raster_info(
+            natural_hab_proportion_raster_path)['nodata'][0]
 
-    potential_pollination_value_raster_path = (
-        os.path.join(WORKSPACE_DIR, 'potential_pollination_value.tif'))
-    threshold_proportion_task = task_graph.add_task(
-        func=pygeoprocessing.raster_calculator,
-        args=(
-            [(natural_hab_proportion_raster_path, 1),
-             (nathab_proportion_nodata, 'raw'),
-             (THRESHOLD_VAL, 'raw'), (TARGET_NODATA, 'raw')],
-            interpolate_from_threshold,
-            potential_pollination_value_raster_path, gdal.GDT_Float32,
-            TARGET_NODATA),
-        target_raster_path_list=[potential_pollination_value_raster_path],
-        dependent_task_list=[nathab_proportion_task],
-        task_name='calculate potential pollination value')
+        potential_pollination_value_raster_path = os.path.join(
+            WORKSPACE_DIR,
+            '%s_potential_pollination_value.tif' % prefix_name)
+        threshold_proportion_task = task_graph.add_task(
+            func=pygeoprocessing.raster_calculator,
+            args=(
+                [(natural_hab_proportion_raster_path, 1),
+                 (nathab_proportion_nodata, 'raw'),
+                 (THRESHOLD_VAL, 'raw'), (TARGET_NODATA, 'raw')],
+                interpolate_from_threshold,
+                potential_pollination_value_raster_path, gdal.GDT_Float32,
+                TARGET_NODATA),
+            target_raster_path_list=[potential_pollination_value_raster_path],
+            dependent_task_list=[nathab_proportion_task],
+            task_name='calculate potential pollination value')
 
     task_graph.join()
     task_graph.close()
