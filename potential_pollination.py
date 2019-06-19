@@ -1,6 +1,7 @@
 """Calculate potential pollination."""
 import os
 
+import scipy
 import numpy
 from osgeo import gdal
 import pygeoprocessing
@@ -66,9 +67,9 @@ def main():
         nathab_proportion_nodata = pygeoprocessing.get_raster_info(
             natural_hab_proportion_raster_path)['nodata'][0]
 
-        potential_pollination_value_raster_path = os.path.join(
+        potential_pollination_raster_path = os.path.join(
             WORKSPACE_DIR,
-            '%s_potential_pollination_value.tif' % prefix_name)
+            '%s_potential_pollination.tif' % prefix_name)
         threshold_proportion_task = task_graph.add_task(
             func=pygeoprocessing.raster_calculator,
             args=(
@@ -76,9 +77,9 @@ def main():
                  (nathab_proportion_nodata, 'raw'),
                  (THRESHOLD_VAL, 'raw'), (TARGET_NODATA, 'raw')],
                 interpolate_from_threshold,
-                potential_pollination_value_raster_path, gdal.GDT_Float32,
+                potential_pollination_raster_path, gdal.GDT_Float32,
                 TARGET_NODATA),
-            target_raster_path_list=[potential_pollination_value_raster_path],
+            target_raster_path_list=[potential_pollination_raster_path],
             dependent_task_list=[nathab_proportion_task],
             task_name='calculate potential pollination value')
 
