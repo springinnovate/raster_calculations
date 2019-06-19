@@ -27,6 +27,7 @@ logging.basicConfig(
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
 
+gdal.SetCacheMax(2**30)
 
 def main():
     """Write your expression here."""
