@@ -3,6 +3,7 @@ import os
 
 import scipy
 import numpy
+from osgeo import osr
 from osgeo import gdal
 import pygeoprocessing
 import taskgraph
@@ -147,7 +148,7 @@ def create_radial_convolution_mask(
     srs.ImportFromEPSG(4326)
     kernel_raster.SetProjection(srs.ExportToWkt())
     kernel_band = kernel_raster.GetRasterBand(1)
-    kernel_band.SetNoDataValue(NODATA)
+    kernel_band.SetNoDataValue(TARGET_NODATA)
     kernel_band.WriteArray(normalized_kernel_array)
 
 
