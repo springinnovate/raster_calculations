@@ -4,7 +4,7 @@ import os
 import logging
 import multiprocessing
 
-import raster_calculations
+import raster_calculations_core
 from osgeo import gdal
 import taskgraph
 
@@ -39,7 +39,7 @@ def main():
         'target_nodata': -1,
         'target_raster_path': 'masked.tif',
     }
-    raster_calculations.evaluate_calculation(
+    raster_calculations_core.evaluate_calculation(
         mask_test, TASK_GRAPH, WORKSPACE_DIR)
     TASK_GRAPH.join()
     TASK_GRAPH.close()
@@ -177,7 +177,7 @@ def main():
     ]
 
     for calculation in raster_calculation_list:
-        raster_calculations.evaluate_calculation(
+        raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
@@ -440,7 +440,7 @@ def main():
     ]
 
     for calculation in derived_raster_calculation_list+raster_change_calculation_list:
-        raster_calculations.evaluate_calculation(
+        raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
