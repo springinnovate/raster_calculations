@@ -242,6 +242,186 @@ def main():
             'target_raster_path': "outputs/NCchange_nutrient_10s_ssp5.tif",
             'build_overview': True,
         },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp1_modified_load_compressed_md5_a5f1db75882a207636546af94cde6549.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_modified_load_compressed_md5_e3072705a87b0db90e7620abbc0d75f1.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/potential_change_nutrient_10s_ssp1.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp3_modified_load_compressed_md5_e49e578ed025c0bc796e55b7f27f82f1.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_modified_load_compressed_md5_e3072705a87b0db90e7620abbc0d75f1.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/potential_change_nutrient_10s_ssp3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp5_modified_load_compressed_md5_7337576433238f70140be9ec5b588fd1.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_modified_load_compressed_md5_e3072705a87b0db90e7620abbc0d75f1.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/potential_change_nutrient_10s_ssp5.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp1_n_export_compressed_md5_4b2b0a4ac6575fde5aca00de4f788494.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_n_export_compressed_md5_fa15687cc4d4fdc5e7a6351200873578.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/deficit_change_nutrient_10s_ssp1.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp3_n_export_compressed_md5_b5259ac0326b0dcef8a34f2086e8339b.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_n_export_compressed_md5_fa15687cc4d4fdc5e7a6351200873578.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/deficit_change_nutrient_10s_ssp3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2050_ssp5_n_export_compressed_md5_12b9caecc29058d39748e13bf5b5f150.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_n_export_compressed_md5_fa15687cc4d4fdc5e7a6351200873578.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/deficit_change_nutrient_10s_ssp5.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/water_ruralpop_30s_ssp1_md5_203296fc1aeb46fea41f2e46cf49a66f.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/water_ruralpop_30s_2015_md5_2fbcc65a4b24bc4fe3c2d6cfc263fe63.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/pop_change_nutrient_30s_ssp1.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/water_ruralpop_30s_ssp3_md5_9d4abd78e5d96d7e28282eee926af3f0.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/water_ruralpop_30s_2015_md5_2fbcc65a4b24bc4fe3c2d6cfc263fe63.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/pop_change_nutrient_30s_ssp3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/water_ruralpop_30s_ssp5_md5_72e336f1fa276118999807e4011cae50.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/water_ruralpop_30s_2015_md5_2fbcc65a4b24bc4fe3c2d6cfc263fe63.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/pop_change_nutrient_30s_ssp5.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_pollination_10s_ssp1.tif',
+                'current': 'outputs/NC_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_pollination_10s_ssp1.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_pollination_10s_ssp3.tif',
+                'current': 'outputs/NC_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_pollination_10s_ssp3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/NC_pollination_10s_ssp5.tif',
+                'current': 'outputs/NC_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/NCchange_pollination_10s_ssp5.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/potential_pollination_10s_ssp1.tif',
+                'current': 'outputs/potential_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/potential_change_pollination_10s_ssp1.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/potential_pollination_10s_ssp3.tif',
+                'current': 'outputs/potential_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/potential_change_pollination_10s_ssp3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/potential_pollination_10s_ssp5.tif',
+                'current': 'outputs/potential_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/potential_change_pollination_10s_ssp5.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/deficit_pollination_10s_ssp1.tif',
+                'current': 'outputs/deficit_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/deficit_change_pollination_10s_ssp1.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/deficit_pollination_10s_ssp3.tif',
+                'current': 'outputs/deficit_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/deficit_change_pollination_10s_ssp3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'outputs/deficit_pollination_10s_ssp5.tif',
+                'current': 'outputs/deficit_pollination_10s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "outputs/deficit_change_pollination_10s_ssp5.tif",
+            'build_overview': True,
+        },
     ]
 
     for raster_calculation in derived_raster_calculation_list+raster_change_calculation_list:
