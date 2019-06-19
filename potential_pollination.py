@@ -18,7 +18,10 @@ TARGET_NODATA = -1.0
 def main():
     """Entry point."""
     task_graph = taskgraph.TaskGraph(CHURN_DIR, -1, 5.0)
-
+    try:
+        os.makedirs(CHURN_DIR)
+    except OSError:
+        pass
     hab_mask_path = os.path.join(CHURN_DIR, os.path.basename(HAB_MASK_URL))
     fetch_hab_mask_task = task_graph.add_task(
         func=raster_calculations_core.download_url,
