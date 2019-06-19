@@ -31,19 +31,25 @@ def main():
     """Write your expression here."""
 
     # Becky, here's an example of how to use mask:
-    mask_test = {
-        'expression': 'mask(raster, 1, 2, 3, 5, invert=False)',
-        'symbol_to_path_map': {
-            'raster': r"C:\Users\rpsharp\Documents\bitbucket_repos\invest\data\invest-sample-data\Base_Data\Freshwater\landuse_90",
+   
+
+    masker_list = [
+        {
+            # the %s is a placeholder for the string we're passing it using this function that lists every number in the range, adds 6, takes away the [] of the list and turns it into a string
+            'expression': 'mask(raster, %s, invert=False)'%(str([11,12]+[x for x in range(50,181)])[1:-1]), 
+            'symbol_to_path_map': {
+                'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': 'masked_nathab_esa.tif',
         },
-        'target_nodata': -1,
-        'target_raster_path': 'masked.tif',
-    }
-    raster_calculations_core.evaluate_calculation(
-        mask_test, TASK_GRAPH, WORKSPACE_DIR)
+    ]
+    for masker in masker_list:
+       raster_calculations_core.evaluate_calculation(
+            masker, TASK_GRAPH, WORKSPACE_DIR)
     TASK_GRAPH.join()
     TASK_GRAPH.close()
-    return
+    return #terminates at this point
 
     raster_calculation_list = [
         {
