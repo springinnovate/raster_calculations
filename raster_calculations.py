@@ -11,6 +11,7 @@ from osgeo import osr
 from osgeo import gdal
 import pygeoprocessing
 import taskgraph
+import numpy
 
 WORKSPACE_DIR = 'raster_expression_workspace'
 NCPUS = multiprocessing.cpu_count()
@@ -29,8 +30,27 @@ LOGGER = logging.getLogger(__name__)
 
 gdal.SetCacheMax(2**30)
 
+def _mask_op(array, *keys):
+    return numpy.in1d(array, numpy.array(keys))
+
+
 def main():
     """Write your expression here."""
+
+    # Becky, here's an example of how to use mask:
+    mask_test = {
+        'expression': 'mask(raster, 1, 2, 3, 5, invert=False)',
+        'symbol_to_path_map': {
+            'raster': r"C:\Users\rpsharp\Documents\bitbucket_repos\invest\data\invest-sample-data\Base_Data\Freshwater\landuse_90",
+        },
+        'target_nodata': -1,
+        'target_raster_path': 'masked.tif',
+    }
+    evaluate_calculation(mask_test)
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+    return
+
     raster_calculation_list = [
         {
             'expression': '(load-export)/load',
@@ -71,7 +91,7 @@ def main():
             'target_nodata': -1,
             'target_raster_path': "outputs/NC_nutrient_10s_ssp5.tif",
             'build_overview': True,
-        }, 
+        },
         {
             'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
             'symbol_to_path_map': {
@@ -159,7 +179,7 @@ def main():
             'target_nodata': -1,
             'target_raster_path': "outputs/deficit_pollination_10s_ssp5.tif",
             'build_overview': True,
-        },   
+        },
     ]
 
     for raster_calculation in raster_calculation_list:
@@ -258,10 +278,11 @@ def evaluate_calculation(args):
         args['expression'] (str): a symbolic arithmetic expression
             representing the desired calculation.
         args['symbol_to_path_map'] (dict): dictionary mapping symbols in
-            `expression` to either raster paths or URLs. In the case of
-            the latter, the file will be downloaded to a `WORKSPACE_DIR`
-        args['target_nodata'] (numeric):
-        args['target_raster_path'] (str):
+            `expression` to either arbitrary functions, raster paths, or URLs.
+            In the case of the latter, the file will be downloaded to a
+            `WORKSPACE_DIR`
+        args['target_nodata'] (numeric): desired output nodata value.
+        args['target_raster_path'] (str): path to output raster.
 
     Returns:
         None.
@@ -280,7 +301,8 @@ def evaluate_calculation(args):
     symbol_to_path_band_map = {}
     download_task_list = []
     for symbol, path in args_copy['symbol_to_path_map'].items():
-        if path.startswith('http://') or path.startswith('https://'):
+        if isinstance(path, str) and (
+                path.startswith('http://') or path.startswith('https://')):
             # download to local file
             local_path = os.path.join(
                 expression_ecoshard_path,
@@ -305,14 +327,38 @@ def evaluate_calculation(args):
         'build_overview' in args_copy and args_copy['build_overview'])
     if 'build_overview' in args_copy:
         del args_copy['build_overview']
-    eval_raster_task = TASK_GRAPH.add_task(
-        func=pygeoprocessing.evaluate_raster_calculator_expression,
-        kwargs=args_copy,
-        dependent_task_list=download_task_list,
-        target_path_list=[args_copy['target_raster_path']],
-        task_name='%s -> %s' % (
-            args_copy['expression'],
-            os.path.basename(args_copy['target_raster_path'])))
+
+    if not args['expression'].startswith('mask(raster'):
+        eval_raster_task = TASK_GRAPH.add_task(
+            func=pygeoprocessing.evaluate_raster_calculator_expression,
+            kwargs=args_copy,
+            dependent_task_list=download_task_list,
+            target_path_list=[args_copy['target_raster_path']],
+            task_name='%s -> %s' % (
+                args_copy['expression'],
+                os.path.basename(args_copy['target_raster_path'])))
+    else:
+        # parse out array
+        arg_list = args['expression'].split(',')
+        # the first 1 to n-1 args must be integers
+        mask_val_list = [int(val) for val in arg_list[1:-1]]
+        # the last argument could be 'invert=?'
+        if 'invert' in arg_list[-1]:
+            invert = 'True' in arg_list[-1]
+        else:
+            # if it's not, it'll be another integer
+            mask_val_list.append(int(arg_list[-1][:-1]))
+            invert = False
+        TASK_GRAPH.add_task(
+            func=mask_raster_by_array,
+            args=(
+                symbol_to_path_band_map['raster'],
+                numpy.array(mask_val_list),
+                args_copy['target_raster_path'], invert),
+            target_path_list=[args_copy['target_raster_path']],
+            task_name='mask raster %s by %s -> %s' % (
+                symbol_to_path_band_map['raster'],
+                str(mask_val_list), args_copy['target_raster_path']))
     if build_overview:
         overview_path = '%s.ovr' % (
             args_copy['target_raster_path'])
@@ -322,6 +368,43 @@ def evaluate_calculation(args):
             dependent_task_list=[eval_raster_task],
             target_path_list=[overview_path],
             task_name='overview for %s' % args_copy['target_raster_path'])
+
+
+def mask_raster_by_array(
+        raster_path_band, mask_array, target_raster_path, invert=False):
+    """Mask the given raster path/band by a set of integers.
+
+    Parameters:
+        raster_path_band (tuple): a raster path/band indicating the band to
+            apply the mask operation.
+        mask_array (list/numpy.ndarray): a sequence of integers that will be
+            used to set a mask.
+        target_raster_path (str): path to output raster which will have 1s
+            where the original raster band had a value found in `mask_array`,
+            0 if not found, and nodata if originally nodata.
+        invert (bool): if true makes a mask of all values in raster band that
+            are *not* in `mask_array`.
+
+    Returns:
+        None.
+
+    """
+    raster_info = pygeoprocessing.get_raster_info(raster_path_band[0])
+    pygeoprocessing.raster_calculator(
+        [raster_path_band,
+         (raster_info['nodata'][raster_path_band[1]-1], 'raw'),
+         (numpy.array(mask_array), 'raw'), (2, 'raw'), (invert, 'raw')],
+        _mask_raster_op, target_raster_path, gdal.GDT_Byte, 2)
+
+
+def _mask_raster_op(array, array_nodata, mask_values, target_nodata, invert):
+    """Mask array by *mask_values list."""
+    result = numpy.empty(array.shape, dtype=numpy.int8)
+    result[:] = target_nodata
+    valid_mask = array != array_nodata
+    result[valid_mask] = numpy.in1d(
+        array[valid_mask], mask_values, invert=invert)
+    return result
 
 
 def build_overviews(raster_path):
@@ -341,6 +424,8 @@ def build_overviews(raster_path):
         'average', overview_levels, callback=_make_logger_callback(
             'build overview for ' + os.path.basename(raster_path) +
             '%.2f%% complete'))
+
+
 
 
 def _make_logger_callback(message):
