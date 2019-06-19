@@ -30,21 +30,6 @@ gdal.SetCacheMax(2**30)
 def main():
     """Write your expression here."""
 
-    # Becky, here's an example of how to use mask:
-    mask_test = {
-        'expression': 'mask(raster, 1, 2, 3, 5, invert=False)',
-        'symbol_to_path_map': {
-            'raster': r"C:\Users\rpsharp\Documents\bitbucket_repos\invest\data\invest-sample-data\Base_Data\Freshwater\landuse_90",
-        },
-        'target_nodata': -1,
-        'target_raster_path': 'masked.tif',
-    }
-    raster_calculations_core.evaluate_calculation(
-        mask_test, TASK_GRAPH, WORKSPACE_DIR)
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-    return
-
     raster_calculation_list = [
         {
             'expression': '(load-export)/load',
