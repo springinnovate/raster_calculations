@@ -4,6 +4,7 @@ import sys
 import os
 import logging
 import urllib.request
+import multiprocessing
 
 from retrying import retry
 from osgeo import osr
@@ -12,7 +13,7 @@ import pygeoprocessing
 import taskgraph
 
 WORKSPACE_DIR = 'raster_expression_workspace'
-NCPUS = 4
+NCPUS = multiprocessing.cpu_count()
 try:
     os.makedirs(WORKSPACE_DIR)
 except OSError:
