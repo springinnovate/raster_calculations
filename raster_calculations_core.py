@@ -94,13 +94,14 @@ def evaluate_calculation(args, task_graph, workspace_dir):
             # if it's not, it'll be another integer
             mask_val_list.append(int(arg_list[-1][:-1]))
             invert = False
-        task_graph.add_task(
+        eval_raster_task = task_graph.add_task(
             func=mask_raster_by_array,
             args=(
                 symbol_to_path_band_map['raster'],
                 numpy.array(mask_val_list),
                 args_copy['target_raster_path'], invert),
             target_path_list=[args_copy['target_raster_path']],
+            dependent_task_list=download_task_list,
             task_name='mask raster %s by %s -> %s' % (
                 symbol_to_path_band_map['raster'],
                 str(mask_val_list), args_copy['target_raster_path']))
