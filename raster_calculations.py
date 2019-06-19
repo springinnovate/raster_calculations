@@ -31,6 +31,14 @@ def main():
     """Write your expression here."""
     raster_calculation_list = [
         {
+            'expression': 'mask(raster, 1, 2, 3, 4)',
+            'symbol_to_path_map': {
+                'raster': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/Globio4_landuse_10sec_2015_cropint_md5_7eefef29fbd0778857cb772c22b52ed9.tif'
+            },
+            'target_nodata': -1,
+            'target_raster_path': 'outputs/landcover_mask.tif'
+        },
+        {
             'expression': '(load-export)/load',
             'symbol_to_path_map': {
                 'load': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_modified_load_compressed_md5_e3072705a87b0db90e7620abbc0d75f1.tif',
@@ -66,13 +74,15 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "outputs/NC_nutrient_10s_ssp5.tif",
-        },   
+        },
     ]
 
     for raster_calculation in raster_calculation_list:
         evaluate_calculation(raster_calculation)
+        break
 
     TASK_GRAPH.join()
+    return
 
     raster_calculation_from_local_files_list = [
         {
@@ -163,7 +173,8 @@ def evaluate_calculation(args):
     del args_copy['symbol_to_path_map']
     build_overview = (
         'build_overview' in args_copy and args_copy['build_overview'])
-    del args_copy['build_overview']
+    if 'build_overview' in args_copy:
+        del args_copy['build_overview']
     eval_raster_task = TASK_GRAPH.add_task(
         func=pygeoprocessing.evaluate_raster_calculator_expression,
         kwargs=args_copy,
