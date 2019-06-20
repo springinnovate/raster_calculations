@@ -82,10 +82,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
     LOGGER.debug(processed_raster_list_file_path)
     with open(processed_raster_list_file_path, 'rb') as (
             processed_raster_list_file):
-        LOGGER.debug(processed_raster_list_file)
-        raw_value = processed_raster_list_file.read()
-        LOGGER.debug(raw_value)
-        processed_raster_path_list = pickle.loads(raw_value)
+        processed_raster_path_list = pickle.load(processed_raster_list_file)
 
     for symbol, raster_path in zip(
             args_copy['symbol_to_path_band_map'],
