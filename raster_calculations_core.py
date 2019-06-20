@@ -79,7 +79,8 @@ def evaluate_calculation(args, task_graph, workspace_dir):
         [path[0] for path in symbol_to_path_band_map.values()],
         process_raster_churn_dir, processed_raster_list_file_path)
 
-    with open(processed_raster_list_file_path) as processed_raster_list_file:
+    with open(processed_raster_list_file_path, 'r') as (
+            processed_raster_list_file):
         processed_raster_path_list = pickle.load(processed_raster_list_file)
 
     for symbol, raster_path in zip(
