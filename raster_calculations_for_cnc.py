@@ -35,8 +35,8 @@ def main():
 
     masker_list = [
         {
-            # the %s is a placeholder for the string we're passing it using this function that lists every number in the range, adds 6, takes away the [] of the list and turns it into a string
-            'expression': 'mask(raster, %s, invert=False)'%(str([11,12]+[x for x in range(50,181)])[1:-1]), 
+            # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
+            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]), 
             'symbol_to_path_map': {
                 'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
             },
@@ -48,7 +48,38 @@ def main():
        raster_calculations_core.evaluate_calculation(
             masker, TASK_GRAPH, WORKSPACE_DIR)
     TASK_GRAPH.join()
+    
+    potential_service_list = [
+        {
+            'expression': 'mask*service',
+            'symbol_to_path_map': {
+                'mask': 'masked_nathab_esa.tif',
+                'service': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ESACCI_LC_L4_LCCS_borrelli_sediment_deposition_md5_3e0ccb34352269d7eb688dd488de002f.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "potential_sedimentdeposition.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': 'mask*service',
+            'symbol_to_path_map': {
+                'mask': 'masked_nathab_esa.tif',
+                'service': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_esa_2015_n_retention_md5_d10a396b8f0fee70dd3bbd3524a6a97c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "potential_nitrogenretention.tif",
+            'build_overview': True,
+        },
+    ]
+
+    for calculation in potential_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+
     TASK_GRAPH.close()
+
     return #terminates at this point
 
     raster_calculation_list = [
