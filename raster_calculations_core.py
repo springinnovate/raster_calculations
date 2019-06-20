@@ -75,9 +75,21 @@ def evaluate_calculation(args, task_graph, workspace_dir):
         process_raster_churn_dir, 'processed_raster_list.pickle')
     download_task.join()
     LOGGER.debug(symbol_to_path_band_map)
+
+    target_sr_wkt = None
+    if 'target_sr_wkt' in args:
+        target_sr_wkt = args['target_sr_wkt']
+    target_pixel_size = None
+    if 'target_pixel_size' in args:
+        target_pixel_size = args['target_pixel_size']
+    resample_method = 'near'
+    if 'resample_method' in args:
+        resample_method = args['resample_method']
     _preprocess_rasters(
         [path[0] for path in symbol_to_path_band_map.values()],
-        process_raster_churn_dir, processed_raster_list_file_path)
+        process_raster_churn_dir, processed_raster_list_file_path,
+        target_sr_wkt=target_sr_wkt, target_pixel_size=target_pixel_size,
+        resample_method=resample_method)
 
     LOGGER.debug(processed_raster_list_file_path)
     with open(processed_raster_list_file_path, 'rb') as (

@@ -31,12 +31,12 @@ def main():
     """Write your expression here."""
 
     # Becky, here's an example of how to use mask:
-   
+
 
     masker_list = [
         {
             # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
-            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]), 
+            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]),
             'symbol_to_path_map': {
                 'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
             },
@@ -48,7 +48,7 @@ def main():
        raster_calculations_core.evaluate_calculation(
             masker, TASK_GRAPH, WORKSPACE_DIR)
     TASK_GRAPH.join()
-    
+
     potential_service_list = [
         {
             'expression': 'mask*service',
@@ -59,6 +59,7 @@ def main():
             'target_nodata': -1,
             'target_raster_path': "potential_sedimentdeposition.tif",
             'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
         {
             'expression': 'mask*service',
