@@ -85,10 +85,10 @@ def evaluate_calculation(args, task_graph, workspace_dir):
         processed_raster_path_list = pickle.load(processed_raster_list_file)
 
     for symbol, raster_path in zip(
-            args_copy['symbol_to_path_band_map'],
+            symbol_to_path_band_map,
             processed_raster_path_list):
-        path_band_id = args_copy['symbol_to_path_band_map'][symbol][1]
-        args_copy['symbol_to_path_band_map'][symbol] = (
+        path_band_id = symbol_to_path_band_map[symbol][1]
+        symbol_to_path_band_map[symbol] = (
             raster_path, path_band_id)
 
     # this sets a common target sr, pixel size, and resample method .
