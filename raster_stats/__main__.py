@@ -1,4 +1,5 @@
 """Entry point for raster stats."""
+import glob
 import time
 import itertools
 import os
@@ -28,11 +29,13 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 
-def calculate_raster_stats(raster_path, output_csv_path, percentiles=None, ):
+def calculate_raster_stats(
+        glob_pattern_list, output_csv_path, percentiles=None):
     """Calculate raster stats.
 
     Parameters:
-        raster_path (str): path to raster.
+        glob_pattern_list (list): path to list of raster paths or glob
+            patterns.
         percentile (list): list of desired percentiles.
 
     Returns:
@@ -46,44 +49,49 @@ def calculate_raster_stats(raster_path, output_csv_path, percentiles=None, ):
         "Warp %.1f%% complete %s")
     output_csv_file = open(output_csv_path, 'w')
     output_csv_file.write('raster path,min,max,mean,stdev,%s\n' % ','.join([
-        str(x) for x in sorted(percentiles)]))
-    raster = gdal.OpenEx(raster_path, gdal.OF_RASTER)
-    band = raster.GetRasterBand(1)
-    band.ComputeStatistics(0, info_callback, None)
-    min_val, max_val, mean, stdev = band.GetStatistics(0, 0)
-    info_string = '\nRaster stats:\n*************\n'
-    info_string += '  min: %s\n' % min_val
-    info_string += '  max: %s\n' % max_val
-    info_string += ' mean: %s\n' % mean
-    info_string += 'stdev: %s\n' % stdev
-    output_csv_file.write('%s,%s,%s,%s,%s' % (
-        raster_path, min_val, max_val, mean, stdev))
-    LOGGER.info("intermediate result for %s:\n%s", raster_path, info_string)
-    if percentiles:
-        total_valid = 0
-        nodata = band.GetNoDataValue()
-        band = None
-        raster = None
-        LOGGER.debug("calculating number of non-nodata pixels")
-        for _, data_block in pygeoprocessing.iterblocks((raster_path, 1)):
-            total_valid += numpy.count_nonzero(
-                ~numpy.isclose(data_block, nodata))
-        sorted_raster_iterator = _sort_to_disk(raster_path)
-        current_offset = 0
-        LOGGER.info("calculating percentiles")
-        for percentile in sorted(percentiles):
-            LOGGER.info("calculating percentile %d", percentile)
-            skip_size = int(
-                (int(percentile)/100.0*total_valid) - current_offset)
-            current_offset += skip_size+1
-            if current_offset >= total_valid:
-                skip_size -= current_offset-total_valid+2
-            percentile_value = next(itertools.islice(
-                sorted_raster_iterator, skip_size, skip_size+1))
-            info_string += '%3dth percentile: %s\n' % (
-                percentile, percentile_value)
-            output_csv_file.write(',%s' % percentile_value)
-            output_csv_file.flush()
+        str(x)+'th percentile' for x in sorted(percentiles)]))
+    for raster_path in [
+            path for glob_pattern in glob_pattern_list
+            for path in glob.glob(glob_pattern)]:
+        LOGGER.info('processing %s', raster_path)
+        raster = gdal.OpenEx(raster_path, gdal.OF_RASTER)
+        band = raster.GetRasterBand(1)
+        band.ComputeStatistics(0, info_callback, None)
+        min_val, max_val, mean, stdev = band.GetStatistics(0, 0)
+        info_string = '\nRaster stats:\n*************\n'
+        info_string += '  min: %s\n' % min_val
+        info_string += '  max: %s\n' % max_val
+        info_string += ' mean: %s\n' % mean
+        info_string += 'stdev: %s\n' % stdev
+        output_csv_file.write('%s,%s,%s,%s,%s' % (
+            raster_path, min_val, max_val, mean, stdev))
+        LOGGER.info("intermediate result for %s:\n%s", raster_path, info_string)
+        if percentiles:
+            total_valid = 0
+            nodata = band.GetNoDataValue()
+            band = None
+            raster = None
+            LOGGER.debug("calculating number of non-nodata pixels")
+            for _, data_block in pygeoprocessing.iterblocks((raster_path, 1)):
+                total_valid += numpy.count_nonzero(
+                    ~numpy.isclose(data_block, nodata))
+            sorted_raster_iterator = _sort_to_disk(raster_path)
+            current_offset = 0
+            LOGGER.info("calculating percentiles")
+            for percentile in sorted(percentiles):
+                LOGGER.info("calculating percentile %d", percentile)
+                skip_size = int(
+                    (int(percentile)/100.0*total_valid) - current_offset)
+                current_offset += skip_size+1
+                if current_offset >= total_valid:
+                    skip_size -= current_offset-total_valid+2
+                percentile_value = next(itertools.islice(
+                    sorted_raster_iterator, skip_size, skip_size+1))
+                info_string += '%3dth percentile: %s\n' % (
+                    percentile, percentile_value)
+                output_csv_file.write(',%s' % percentile_value)
+        output_csv_file.write('\n')
+        output_csv_file.flush()
     output_csv_file.close()
     LOGGER.info(info_string)
 
@@ -251,7 +259,7 @@ def _make_logger_callback(message):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='raster stats.')
     parser.add_argument(
-        'filepath', help='Raster file to get stats.')
+        'filepath', nargs='+', help='Raster file to get stats.')
     parser.add_argument(
         '--percentiles', nargs='*', help='list of percentiles to calculate',
         type=int, default=None)
