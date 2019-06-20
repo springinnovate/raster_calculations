@@ -331,7 +331,7 @@ def _preprocess_rasters(
     else:
         result = base_raster_path_list
     with open(target_processed_raster_list_file_path, 'wb') as result_file:
-        json.dump(result, result_file)
+        pickle.dump(result, result_file)
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
