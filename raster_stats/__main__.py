@@ -44,6 +44,9 @@ def calculate_raster_stats(raster_path, output_csv_path, percentiles=None, ):
     """
     info_callback = _make_logger_callback(
         "Warp %.1f%% complete %s")
+    output_csv_file = open(output_csv_path, 'w')
+    output_csv_file.write('raster path,min,max,mean,stdev,%s\n' % ','.join([
+        str(x) for x in sorted(percentiles)]))
     raster = gdal.OpenEx(raster_path, gdal.OF_RASTER)
     band = raster.GetRasterBand(1)
     band.ComputeStatistics(0, info_callback, None)
@@ -53,17 +56,21 @@ def calculate_raster_stats(raster_path, output_csv_path, percentiles=None, ):
     info_string += '  max: %s\n' % max_val
     info_string += ' mean: %s\n' % mean
     info_string += 'stdev: %s\n' % stdev
-
+    output_csv_file.write('%s,%s,%s,%s,%s' % (
+        raster_path, min_val, max_val, mean, stdev))
+    LOGGER.info("intermediate result for %s:\n%s", raster_path, info_string)
     if percentiles:
-        nodata_count = 0
+        total_valid = 0
         nodata = band.GetNoDataValue()
+        band = None
+        raster = None
+        LOGGER.debug("calculating number of non-nodata pixels")
         for _, data_block in pygeoprocessing.iterblocks((raster_path, 1)):
-            nodata_count += numpy.count_nonzero(
-                numpy.isclose(data_block, nodata))
-        raster_size = raster.RasterXSize * raster.RasterYSize
-        total_valid = raster_size - nodata_count
+            total_valid += numpy.count_nonzero(
+                ~numpy.isclose(data_block, nodata))
         sorted_raster_iterator = _sort_to_disk(raster_path)
         current_offset = 0
+        LOGGER.info("calculating percentiles")
         for percentile in sorted(percentiles):
             LOGGER.info("calculating percentile %d", percentile)
             skip_size = int(
@@ -71,10 +78,13 @@ def calculate_raster_stats(raster_path, output_csv_path, percentiles=None, ):
             current_offset += skip_size+1
             if current_offset >= total_valid:
                 skip_size -= current_offset-total_valid+2
+            percentile_value = next(itertools.islice(
+                sorted_raster_iterator, skip_size, skip_size+1))
             info_string += '%3dth percentile: %s\n' % (
-                percentile, next(itertools.islice(
-                    sorted_raster_iterator, skip_size, skip_size+1)))
-
+                percentile, percentile_value)
+            output_csv_file.write(',%s' % percentile_value)
+            output_csv_file.flush()
+    output_csv_file.close()
     LOGGER.info(info_string)
 
 
