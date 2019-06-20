@@ -1,5 +1,7 @@
 """Calculate potential pollination."""
 import os
+import logging
+import sys
 
 import scipy
 import numpy
@@ -17,6 +19,14 @@ HAB_MASK_URL_MAP = {
     }
 THRESHOLD_VAL = 0.3
 TARGET_NODATA = -1.0
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
+        ' [%(funcName)s:%(lineno)d] %(message)s'),
+    stream=sys.stdout)
+LOGGER = logging.getLogger(__name__)
 
 
 def main():
