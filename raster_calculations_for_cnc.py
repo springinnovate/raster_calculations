@@ -8,6 +8,7 @@ import raster_calculations_core
 from osgeo import gdal
 import taskgraph
 
+gdal.SetCacheMax(2**30)
 
 WORKSPACE_DIR = 'raster_expression_workspace'
 NCPUS = multiprocessing.cpu_count()
@@ -24,7 +25,6 @@ logging.basicConfig(
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
 
-gdal.SetCacheMax(2**30)
 
 
 def main():

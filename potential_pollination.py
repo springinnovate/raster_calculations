@@ -13,8 +13,7 @@ WORKSPACE_DIR = 'workspace_potential_pollination'
 CHURN_DIR = os.path.join(WORKSPACE_DIR, 'churn')
 
 HAB_MASK_URL_MAP = {
-    'nathab': 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/masked_nathab_esa_md5_2991f8474e5c228344ce4614cac494e7.tif',
-    'nathab_without_herbaceous': 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/masked_nathab_without_herbaceous_esa_md5_2717403dc2918c88b420490d00527b8d.tif',
+    'nathab': 'https://storage.googleapis.com/ecoshard-root/working-shards/masked_nathab_esa_md5_40577bae3ef60519b1043bb8582a07af.tif',
     }
 THRESHOLD_VAL = 0.3
 TARGET_NODATA = -1.0
