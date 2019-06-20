@@ -330,7 +330,7 @@ def _preprocess_rasters(
         result = operand_raster_path_list
     else:
         result = base_raster_path_list
-    with open(target_processed_raster_list_file_path, 'w') as result_file:
+    with open(target_processed_raster_list_file_path, 'wb') as result_file:
         json.dump(result, result_file)
 
 
