@@ -75,7 +75,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
     download_task.join()
     LOGGER.debug(symbol_to_path_band_map)
     _preprocess_rasters(
-        [path for path in symbol_to_path_band_map.items()],
+        [path[0] for path in symbol_to_path_band_map.items()],
         process_raster_churn_dir, processed_raster_list_file_path)
 
     with open(processed_raster_list_file_path) as processed_raster_list_file:
