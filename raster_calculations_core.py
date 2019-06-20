@@ -80,7 +80,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
         process_raster_churn_dir, processed_raster_list_file_path)
 
     LOGGER.debug(processed_raster_list_file_path)
-    with open(processed_raster_list_file_path, 'r') as (
+    with open(processed_raster_list_file_path, 'rb') as (
             processed_raster_list_file):
         LOGGER.debug(processed_raster_list_file)
         raw_value = processed_raster_list_file.read()
