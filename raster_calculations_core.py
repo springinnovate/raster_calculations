@@ -71,9 +71,9 @@ def evaluate_calculation(args, task_graph, workspace_dir):
         os.makedirs(process_raster_churn_dir)
     except OSError:
         pass
+
     processed_raster_list_file_path = os.path.join(
         process_raster_churn_dir, 'processed_raster_list.pickle')
-    download_task.join()
     LOGGER.debug(symbol_to_path_band_map)
 
     target_sr_wkt = None
@@ -85,12 +85,46 @@ def evaluate_calculation(args, task_graph, workspace_dir):
     resample_method = 'near'
     if 'resample_method' in args:
         resample_method = args['resample_method']
-    _preprocess_rasters(
-        [path[0] for path in symbol_to_path_band_map.values()],
-        process_raster_churn_dir, processed_raster_list_file_path,
-        target_sr_wkt=target_sr_wkt, target_pixel_size=target_pixel_size,
-        resample_method=resample_method)
+    preprocess_task = task_graph.add_task(
+        func=_preprocess_rasters,
+        args=(
+            [path[0] for path in symbol_to_path_band_map.values()],
+            process_raster_churn_dir, processed_raster_list_file_path),
+        kwargs={
+            'target_sr_wkt': target_sr_wkt,
+            'target_pixel_size': target_pixel_size,
+            'resample_method': resample_method},
+        dependent_task_list=[download_task],
+        task_name='preprocess rasters for %s' % args['target_raster_path'])
 
+    evaluate_expression_task = task_graph.add_task(
+        func=_evaluate_expression,
+        args=(
+            processed_raster_list_file_path, symbol_to_path_band_map,
+            args_copy, workspace_dir),
+        target_path_list=[args['target_raster_path']],
+        dependent_task_list=[preprocess_task],
+        task_name='%s -> %s' % (
+            args['expression'],
+            os.path.basename(args['target_raster_path'])))
+
+    build_overview = (
+        'build_overview' in args and args['build_overview'])
+    if build_overview:
+        overview_path = '%s.ovr' % (
+            args['target_raster_path'])
+        task_graph.add_task(
+            func=build_overviews,
+            args=(args['target_raster_path'],),
+            dependent_task_list=[evaluate_expression_task],
+            target_path_list=[overview_path],
+            task_name='overview for %s' % args['target_raster_path'])
+
+
+def _evaluate_expression(
+        processed_raster_list_file_path, symbol_to_path_band_map, args,
+        workspace_dir):
+    """Evaluate expression once rasters have been processed."""
     LOGGER.debug(processed_raster_list_file_path)
     with open(processed_raster_list_file_path, 'rb') as (
             processed_raster_list_file):
@@ -104,25 +138,17 @@ def evaluate_calculation(args, task_graph, workspace_dir):
             raster_path, path_band_id)
 
     # this sets a common target sr, pixel size, and resample method .
-    args_copy.update({
+    args.update({
         'churn_dir': workspace_dir,
         'symbol_to_path_band_map': symbol_to_path_band_map,
         })
-    del args_copy['symbol_to_path_map']
-    build_overview = (
-        'build_overview' in args_copy and args_copy['build_overview'])
-    if 'build_overview' in args_copy:
-        del args_copy['build_overview']
+    del args['symbol_to_path_map']
+    if 'build_overview' in args:
+        del args['build_overview']
 
     if not args['expression'].startswith('mask(raster'):
-        eval_raster_task = task_graph.add_task(
-            func=pygeoprocessing.evaluate_raster_calculator_expression,
-            kwargs=args_copy,
-            dependent_task_list=download_task_list,
-            target_path_list=[args_copy['target_raster_path']],
-            task_name='%s -> %s' % (
-                args_copy['expression'],
-                os.path.basename(args_copy['target_raster_path'])))
+        pygeoprocessing.evaluate_raster_calculator_expression(**args)
+
     else:
         # parse out array
         arg_list = args['expression'].split(',')
@@ -135,26 +161,13 @@ def evaluate_calculation(args, task_graph, workspace_dir):
             # if it's not, it'll be another integer
             mask_val_list.append(int(arg_list[-1][:-1]))
             invert = False
-        eval_raster_task = task_graph.add_task(
-            func=mask_raster_by_array,
-            args=(
-                symbol_to_path_band_map['raster'],
-                numpy.array(mask_val_list),
-                args_copy['target_raster_path'], invert),
-            target_path_list=[args_copy['target_raster_path']],
-            dependent_task_list=download_task_list,
-            task_name='mask raster %s by %s -> %s' % (
-                symbol_to_path_band_map['raster'],
-                str(mask_val_list), args_copy['target_raster_path']))
-    if build_overview:
-        overview_path = '%s.ovr' % (
-            args_copy['target_raster_path'])
-        task_graph.add_task(
-            func=build_overviews,
-            args=(args_copy['target_raster_path'],),
-            dependent_task_list=[eval_raster_task],
-            target_path_list=[overview_path],
-            task_name='overview for %s' % args_copy['target_raster_path'])
+        LOGGER.debug('mask raster %s by %s -> %s' % (
+            symbol_to_path_band_map['raster'],
+            str(mask_val_list), args['target_raster_path']))
+        mask_raster_by_array(
+            symbol_to_path_band_map['raster'],
+            numpy.array(mask_val_list),
+            args['target_raster_path'], invert)
 
 
 def mask_raster_by_array(
