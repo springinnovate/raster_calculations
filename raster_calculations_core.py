@@ -1,4 +1,5 @@
 """Process a raster calculator plain text expression."""
+import json
 import pickle
 import time
 import sys
@@ -241,7 +242,8 @@ def _make_logger_callback(message):
 
 
 def _preprocess_rasters(
-        base_raster_path_list, churn_dir, target_sr_wkt=None,
+        base_raster_path_list, churn_dir,
+        target_processed_raster_list_file_path, target_sr_wkt=None,
         target_pixel_size=None, resample_method='near'):
     """Process base raster path list so it can be used in raster calcs.
 
@@ -250,6 +252,10 @@ def _preprocess_rasters(
         churn_dir (str): path to a directory that can be used to write
             temporary files that could be used later for
             caching/reproducibility.
+        target_processed_raster_list_file_path (str): path to a pickle file
+            for processed output list that contains the list of raster paths
+            that can be used in raster calcs, note this may be the original
+            list of rasters or they may have been created by this call.
         target_sr_wkt (string): if not None, this is the desired
             projection of the target rasters in Well Known Text format. If
             None and all symbol rasters have the same projection, that
@@ -264,9 +270,7 @@ def _preprocess_rasters(
             "near|bilinear|cubic|cubicspline|lanczos|average|mode|max".
 
     Returns:
-        list of raster paths that can be used in raster calcs, note this may
-        be the original list of rasters or they may have been created by
-        this call.
+
 
     """
     resample_inputs = False
@@ -321,10 +325,11 @@ def _preprocess_rasters(
             base_raster_path_list, operand_raster_path_list,
             [resample_method]*len(base_raster_path_list),
             target_pixel_size, 'intersection', target_sr_wkt=target_sr_wkt)
-        return operand_raster_path_list
+        result = operand_raster_path_list
     else:
-        return base_raster_path_list
-
+        result = base_raster_path_list
+    with open(target_processed_raster_list_file_path, 'w') as result_file:
+        json.dump(result, result_file)
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 def download_url(url, target_path, skip_if_target_exists=False):
