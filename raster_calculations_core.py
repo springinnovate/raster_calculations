@@ -1,4 +1,5 @@
 """Process a raster calculator plain text expression."""
+import pickle
 import time
 import sys
 import os
@@ -61,6 +62,30 @@ def evaluate_calculation(args, task_graph, workspace_dir):
             symbol_to_path_band_map[symbol] = (local_path, 1)
         else:
             symbol_to_path_band_map[symbol] = (path, 1)
+
+    # should i process rasters here?
+    try:
+        process_raster_churn_dir = os.path.join(
+            workspace_dir, 'processed_rasters_dir')
+        os.makedirs(process_raster_churn_dir)
+    except OSError:
+        pass
+    processed_raster_list_file_path = os.path.join(
+        process_raster_churn_dir, 'processed_raster_list.pickle')
+    download_task.join()
+    _preprocess_rasters(
+        [path for path in symbol_to_path_band_map.values()],
+        process_raster_churn_dir, processed_raster_list_file_path)
+
+    with open(processed_raster_list_file_path) as processed_raster_list_file:
+        processed_raster_path_list = pickle.load(processed_raster_list_file)
+
+    for symbol, raster_path in zip(
+            args_copy['symbol_to_path_band_map'],
+            processed_raster_path_list):
+        path_band_id = args_copy['symbol_to_path_band_map'][symbol][1]
+        args_copy['symbol_to_path_band_map'][symbol] = (
+            raster_path, path_band_id)
 
     # this sets a common target sr, pixel size, and resample method .
     args_copy.update({
