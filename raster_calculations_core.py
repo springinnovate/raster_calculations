@@ -81,6 +81,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
 
     with open(processed_raster_list_file_path, 'r') as (
             processed_raster_list_file):
+        LOGGER.debug(processed_raster_list_file)
         processed_raster_path_list = pickle.load(processed_raster_list_file)
 
     for symbol, raster_path in zip(
