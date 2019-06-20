@@ -73,6 +73,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
     processed_raster_list_file_path = os.path.join(
         process_raster_churn_dir, 'processed_raster_list.pickle')
     download_task.join()
+    LOGGER.debug(symbol_to_path_band_map)
     _preprocess_rasters(
         [path for path in symbol_to_path_band_map.values()],
         process_raster_churn_dir, processed_raster_list_file_path)
