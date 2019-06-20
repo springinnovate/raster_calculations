@@ -79,6 +79,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
         [path[0] for path in symbol_to_path_band_map.values()],
         process_raster_churn_dir, processed_raster_list_file_path)
 
+    LOGGER.debug(processed_raster_list_file_path)
     with open(processed_raster_list_file_path, 'r') as (
             processed_raster_list_file):
         LOGGER.debug(processed_raster_list_file)
@@ -333,6 +334,7 @@ def _preprocess_rasters(
         result = base_raster_path_list
     with open(target_processed_raster_list_file_path, 'w') as result_file:
         json.dump(result, result_file)
+
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 def download_url(url, target_path, skip_if_target_exists=False):
