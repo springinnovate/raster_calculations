@@ -1,4 +1,5 @@
 """Entry point for raster stats."""
+import time
 import itertools
 import os
 import tempfile
@@ -27,7 +28,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 
-def calculate_raster_stats(raster_path, percentiles=None):
+def calculate_raster_stats(raster_path, output_csv_path, percentiles=None, ):
     """Calculate raster stats.
 
     Parameters:
@@ -36,25 +37,26 @@ def calculate_raster_stats(raster_path, percentiles=None):
 
     Returns:
         dict of raster stats
-            -max, min, mean, user defined percentiles, mode, stdev, percent nodata.
+            -max, min, mean, user defined percentiles, mode, stdev, percent
+             nodata.
             -if int, table & count of values.
 
     """
-    info_options = gdal.InfoOptions(
-        computeMinMax=True, format='json', stats=True)
+    info_callback = _make_logger_callback(
+        "Warp %.1f%% complete %s")
     raster = gdal.OpenEx(raster_path, gdal.OF_RASTER)
-    if not raster:
-        raise ValueError("%s not found" % raster_path)
-    raster_info = gdal.Info(raster, options=info_options)
-    stats_to_list = ['min', 'max', 'mean', 'stdDev']
+    band = raster.GetRasterBand(1)
+    band.ComputeStatistics(0, info_callback, None)
+    min_val, max_val, mean, stdev = band.GetStatistics(0, 0)
     info_string = '\nRaster stats:\n*************\n'
-    for stat_key in stats_to_list:
-        info_string += '%7s: %s\n' % (
-            stat_key, raster_info['bands'][0][stat_key])
+    info_string += '  min: %s\n' % min_val
+    info_string += '  max: %s\n' % max_val
+    info_string += ' mean: %s\n' % mean
+    info_string += 'stdev: %s\n' % stdev
 
     if percentiles:
         nodata_count = 0
-        nodata = raster_info['bands'][0]['noDataValue']
+        nodata = band.GetNoDataValue()
         for _, data_block in pygeoprocessing.iterblocks((raster_path, 1)):
             nodata_count += numpy.count_nonzero(
                 numpy.isclose(data_block, nodata))
@@ -162,7 +164,6 @@ def _sort_to_disk(dataset_path):
     # This will be a list of file iterators we'll pass to heap.merge
     iters = []
 
-    n_cols = dataset_info['raster_size'][0]
     if dataset_info['datatype'] in (
             gdal.GDT_Byte, gdal.GDT_Int16, gdal.GDT_Int32):
         datatype_id = 'i'
@@ -197,13 +198,56 @@ def _sort_to_disk(dataset_path):
     return heapq.merge(*iters)
 
 
+def _make_logger_callback(message):
+    """Build a timed logger callback that prints ``message`` replaced.
+
+    Parameters:
+        message (string): a string that expects 2 placement %% variables,
+            first for % complete from ``df_complete``, second from
+            ``p_progress_arg[0]``.
+
+    Returns:
+        Function with signature:
+            logger_callback(df_complete, psz_message, p_progress_arg)
+
+    """
+    def logger_callback(df_complete, _, p_progress_arg):
+        """Argument names come from the GDAL API for callbacks."""
+        try:
+            current_time = time.time()
+            if ((current_time - logger_callback.last_time) > 5.0 or
+                    (df_complete == 1.0 and
+                     logger_callback.total_time >= 5.0)):
+                # In some multiprocess applications I was encountering a
+                # ``p_progress_arg`` of None. This is unexpected and I suspect
+                # was an issue for some kind of GDAL race condition. So I'm
+                # guarding against it here and reporting an appropriate log
+                # if it occurs.
+                if p_progress_arg:
+                    LOGGER.info(message, df_complete * 100, p_progress_arg[0])
+                else:
+                    LOGGER.info(
+                        'p_progress_arg is None df_complete: %s, message: %s',
+                        df_complete, message)
+                logger_callback.last_time = current_time
+                logger_callback.total_time += current_time
+        except AttributeError:
+            logger_callback.last_time = time.time()
+            logger_callback.total_time = 0.0
+
+    return logger_callback
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='raster stats.')
     parser.add_argument(
         'filepath', help='Raster file to get stats.')
     parser.add_argument(
-        'percentiles', nargs='*', help='list of percentiles to calculate',
+        '--percentiles', nargs='*', help='list of percentiles to calculate',
         type=int, default=None)
+    parser.add_argument(
+        '-o', '--output_csv', help='path to output CSV file', type=str)
     args = parser.parse_args()
-    raster_stats = calculate_raster_stats(args.filepath, args.percentiles)
+    raster_stats = calculate_raster_stats(
+        args.filepath, args.output_csv, percentiles=args.percentiles)
     LOGGER.debug(raster_stats)
