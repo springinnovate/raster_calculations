@@ -62,6 +62,7 @@ def main():
             'target_nodata': -1,
             'target_raster_path': "potential_sedimentdeposition.tif",
             'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
         {
             'expression': 'mask*service',
@@ -72,6 +73,7 @@ def main():
             'target_nodata': -1,
             'target_raster_path': "potential_nitrogenretention.tif",
             'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
     ]
 
