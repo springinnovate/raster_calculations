@@ -31,7 +31,7 @@ def main():
 
     raster_calculation_list = [
         {
-            'expression': 'x < 0.5',
+            'expression': '(x < 0) * x',
             'symbol_to_path_map': {
                 'x': r"C:\Users\rpsharp\Documents\output.tif",
             },
