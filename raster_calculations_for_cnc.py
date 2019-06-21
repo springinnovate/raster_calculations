@@ -30,8 +30,59 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    # Becky, here's an example of how to use mask:
+    raster_calculation_list = [
+        {
+            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
+            'symbol_to_path_map': {
+                'va': '../pollination_esa_tifs/prod_poll_dep_realized_va_1d_ESACCI_LC_L4_LCSS.tif',
+                'en': '../pollination_esa_tifs/prod_poll_dep_realized_en_1d_ESACCI_LC_L4_LCSS.tif',
+                'fo': '../pollination_esa_tifs/prod_poll_dep_realized_fo_1d_ESACCI_LC_L4_LCSS.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_ppl_fed_on_ag_10s_esa.tif",
+            'build_overview': True,
+        },
+    ]
 
+    for calculation in raster_calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+
+    
+    
+    potential_service_list = [
+        {
+            'expression': 'mask*service',
+            'symbol_to_path_map': {
+                'mask': 'https://storage.googleapis.com/ecoshard-root/working-shards/masked_nathab_esa_md5_40577bae3ef60519b1043bb8582a07af.tif',
+                'service': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ESACCI_LC_L4_LCCS_borrelli_sediment_deposition_md5_3e0ccb34352269d7eb688dd488de002f.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "potential_sedimentdeposition.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': 'mask*service',
+            'symbol_to_path_map': {
+                'mask': 'https://storage.googleapis.com/ecoshard-root/working-shards/masked_nathab_esa_md5_40577bae3ef60519b1043bb8582a07af.tif',
+                'service': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_esa_2015_n_retention_md5_d10a396b8f0fee70dd3bbd3524a6a97c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "potential_nitrogenretention.tif",
+            'build_overview': True,
+        },
+    ]
+
+    for calculation in potential_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return #terminates at this point
 
     masker_list = [
         {
@@ -49,58 +100,6 @@ def main():
             masker, TASK_GRAPH, WORKSPACE_DIR)
     TASK_GRAPH.join()
 
-    potential_service_list = [
-        {
-            'expression': 'mask*service',
-            'symbol_to_path_map': {
-                'mask': 'masked_nathab_esa.tif',
-                'service': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ESACCI_LC_L4_LCCS_borrelli_sediment_deposition_md5_3e0ccb34352269d7eb688dd488de002f.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "potential_sedimentdeposition.tif",
-            'build_overview': True,
-            'target_pixel_size': (0.002777777777778, -0.002777777777778),
-        },
-        {
-            'expression': 'mask*service',
-            'symbol_to_path_map': {
-                'mask': 'masked_nathab_esa.tif',
-                'service': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_esa_2015_n_retention_md5_d10a396b8f0fee70dd3bbd3524a6a97c.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "potential_nitrogenretention.tif",
-            'build_overview': True,
-        },
-    ]
-
-    for calculation in potential_service_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-
-    TASK_GRAPH.close()
-
-    return #terminates at this point
-
-    raster_calculation_list = [
-        {
-            'expression': '(load-export)/load',
-            'symbol_to_path_map': {
-                'load': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_modified_load_compressed_md5_e3072705a87b0db90e7620abbc0d75f1.tif',
-                'export': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_n_export_compressed_md5_fa15687cc4d4fdc5e7a6351200873578.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "outputs/NC_nutrient_10s_cur.tif",
-            'build_overview': True,
-        },
-    ]
-
-    for calculation in raster_calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
 
     derived_raster_calculation_list = [
         {
