@@ -30,7 +30,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
     
-     masker_list = [
+    masker_list = [
          {
             # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
             'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]),
