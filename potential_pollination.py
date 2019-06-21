@@ -89,7 +89,7 @@ def main():
                 interpolate_from_threshold,
                 potential_pollination_raster_path, gdal.GDT_Float32,
                 TARGET_NODATA),
-            target_raster_path_list=[potential_pollination_raster_path],
+            target_path_list=[potential_pollination_raster_path],
             dependent_task_list=[nathab_proportion_task],
             task_name='calculate potential pollination value')
 
