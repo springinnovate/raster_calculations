@@ -227,8 +227,6 @@ def build_overviews(raster_path):
             '%.2f%% complete'))
 
 
-
-
 def _make_logger_callback(message):
     """Build a timed logger callback that prints ``message`` replaced.
 
