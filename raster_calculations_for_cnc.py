@@ -34,9 +34,9 @@ def main():
         {
             'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
             'symbol_to_path_map': {
-                'va': '../pollination_esa_tifs/prod_poll_dep_realized_va_1d_ESACCI_LC_L4_LCSS.tif',
-                'en': '../pollination_esa_tifs/prod_poll_dep_realized_en_1d_ESACCI_LC_L4_LCSS.tif',
-                'fo': '../pollination_esa_tifs/prod_poll_dep_realized_fo_1d_ESACCI_LC_L4_LCSS.tif',
+                'va': '../pollination_esa_tifs/prod_poll_dep_realized_va_10s_ESACCI_LC_L4_LCSS.tif',
+                'en': '../pollination_esa_tifs/prod_poll_dep_realized_en_10s_ESACCI_LC_L4_LCSS.tif',
+                'fo': '../pollination_esa_tifs/prod_poll_dep_realized_fo_10s_ESACCI_LC_L4_LCSS.tif',
             },
             'target_nodata': -1,
             'target_raster_path': "pollination_ppl_fed_on_ag_10s_esa.tif",
@@ -95,6 +95,14 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': 'masked_nathab_esa.tif',
+        },
+        {
+            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]),
+            'symbol_to_path_map': {
+                'raster': '',
+            },
+            'target_nodata': -1,
+            'target_raster_path': 'masked_nathab_copernicus.tif',
         },
     ]
     for masker in masker_list:
