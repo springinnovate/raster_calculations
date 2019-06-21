@@ -94,7 +94,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
             'target_sr_wkt': target_sr_wkt,
             'target_pixel_size': target_pixel_size,
             'resample_method': resample_method},
-        dependent_task_list=[download_task],
+        dependent_task_list=download_task_list,
         task_name='preprocess rasters for %s' % args['target_raster_path'])
 
     evaluate_expression_task = task_graph.add_task(
