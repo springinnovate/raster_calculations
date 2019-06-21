@@ -23,20 +23,14 @@ def compress_to(task_graph, base_raster_path, resample_method, target_path):
     gtiff_driver = gdal.GetDriverByName('GTiff')
     base_raster = gdal.OpenEx(base_raster_path, gdal.OF_RASTER)
     LOGGER.info('compress %s to %s' % (base_raster_path, target_path))
-    compress_raster = task_graph.add_task(
-        func=gtiff_driver.CreateCopy,
-        args=(target_path, base_raster),
-        kwargs={'options':
-            ('TILED=YES', 'BIGTIFF=YES', 'COMPRESS=LZW',
-             'BLOCKXSIZE=256', 'BLOCKYSIZE=256')},
-        target_path_list=[target_path],
-        task_name=f'compress {base_raster_path}')
-    compress_raster.join()
+    compressed_raster = gtiff_driver.CreateCopy(
+        target_path, base_raster, options=(
+            'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=LZW', 'BLOCKXSIZE=256',
+            'BLOCKYSIZE=256'))
 
     min_dimension = min(
         pygeoprocessing.get_raster_info(target_path)['raster_size'])
     LOGGER.info(f"min min_dimension {min_dimension}")
-    raster_copy = gdal.OpenEx(target_path, gdal.OF_RASTER)
 
     overview_levels = []
     current_level = 2
@@ -46,8 +40,7 @@ def compress_to(task_graph, base_raster_path, resample_method, target_path):
         overview_levels.append(current_level)
         current_level *= 2
     LOGGER.info(f'level list: {overview_levels}')
-    gdal.SetConfigOption('COMPRESS_OVERVIEW', 'LZW')
-    raster_copy.BuildOverviews(
+    compressed_raster.BuildOverviews(
         resample_method, overview_levels, callback=_make_logger_callback(
             f'build overview for {os.path.basename(target_path)} '
             '%.2f%% complete'))
@@ -60,11 +53,14 @@ def main():
         description='Compress and build overview for raster.')
     parser.add_argument(
         'filepath', nargs='+', help='Files to hash and rename.')
+    parser.add_argument(
+        '--resample_method', default='near',
+        help='A gdal valid interpolation method (e.g. near, bilinear, etc.')
     args = parser.parse_args()
     for file_path in args.filepath:
         target_path = f'{os.path.splitext(file_path)[0]}_compressed.tif'
         LOGGER.info(f'starting {file_path} to {target_path}')
-        compress_to(task_graph, file_path, sys.argv[2], target_path)
+        compress_to(task_graph, file_path, args.resample_method, target_path)
 
 
 def _make_logger_callback(message):
