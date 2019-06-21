@@ -69,13 +69,21 @@ def calculate_raster_stats(
         if percentiles:
             total_valid = 0
             nodata = band.GetNoDataValue()
+            datatype = band.DataType
+            if datatype in (gdal.GDT_Byte, gdal.GDT_Int16, gdal.GDT_Int32):
+                datatype_id = 'i'
+            elif datatype in (gdal.GDT_Float32,):
+                datatype_id = 'f'
+            else:
+                raise ValueError("can't process stats for this raster type")
+
             band = None
             raster = None
             LOGGER.debug("calculating number of non-nodata pixels")
             for _, data_block in pygeoprocessing.iterblocks((raster_path, 1)):
                 total_valid += numpy.count_nonzero(
                     ~numpy.isclose(data_block, nodata))
-            sorted_raster_iterator = _sort_to_disk(raster_path)
+            sorted_raster_iterator = _sort_to_disk(raster_path, datatype_id)
             current_offset = 0
             LOGGER.info("calculating percentiles")
             for percentile in sorted(percentiles):
@@ -96,11 +104,12 @@ def calculate_raster_stats(
     LOGGER.info(info_string)
 
 
-def _sort_to_disk(dataset_path):
+def _sort_to_disk(dataset_path, datatype_id):
     """Return an iterable of non-nodata pixels in sorted order.
 
     Parameters:
         dataset_path (string): a path to a floating point GDAL dataset
+        datatype_id (string): either 'i' or 'f' to indicate int or float.
 
     Returns:
         an iterable that produces value in decreasing sorted order
@@ -114,8 +123,6 @@ def _sort_to_disk(dataset_path):
 
         score_file_path (string): a path to a file that has 32 bit data
             packed consecutively
-        datatype_id (str): either 'i' or 'f' indicating integer or floating
-            point types.
 
         Yields:
             next (score, index) tuple in the given score and index files.
@@ -181,14 +188,6 @@ def _sort_to_disk(dataset_path):
 
     # This will be a list of file iterators we'll pass to heap.merge
     iters = []
-
-    if dataset_info['datatype'] in (
-            gdal.GDT_Byte, gdal.GDT_Int16, gdal.GDT_Int32):
-        datatype_id = 'i'
-    elif dataset_info['datatype'] in (gdal.GDT_Float32,):
-        datatype_id = 'f'
-    else:
-        raise ValueError("can't process stats for this raster type")
     for scores_data, scores_block in pygeoprocessing.iterblocks(
             (dataset_path, 1), largest_block=_BLOCK_SIZE):
         # flatten and scale the results
