@@ -29,29 +29,36 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-
-    raster_calculation_list = [
-        {
-            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
+    
+     masker_list = [
+         {
+            # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
+            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]),
             'symbol_to_path_map': {
-                'va': '../pollination_esa_tifs/prod_poll_dep_realized_va_10s_ESACCI_LC_L4_LCSS.tif',
-                'en': '../pollination_esa_tifs/prod_poll_dep_realized_en_10s_ESACCI_LC_L4_LCSS.tif',
-                'fo': '../pollination_esa_tifs/prod_poll_dep_realized_fo_10s_ESACCI_LC_L4_LCSS.tif',
+                'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "pollination_ppl_fed_on_ag_10s_esa.tif",
-            'build_overview': True,
+            'target_raster_path': 'masked_nathab_esa.tif',
+        },
+        {
+            'expression': 'mask(raster, %s, invert=False)'%(str([20,30]+[x for x in range(80,127)])[1:-1]),
+            'symbol_to_path_map': {
+                'raster': 'https://storage.googleapis.com/ecoshard-root/working-shards/coopernicus_landcover_discrete_compressed_md5_264bda5338a02e4a6cc10412b8edad9f.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': 'masked_nathab_copernicus.tif',
         },
     ]
-
-    for calculation in raster_calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
+    for masker in masker_list:
+       raster_calculations_core.evaluate_calculation(
+            masker, TASK_GRAPH, WORKSPACE_DIR)
+    
 
     TASK_GRAPH.join()
+    TASK_GRAPH.close()
 
-    
-    
+    return #terminates at this point
+
     potential_service_list = [
         {
             'expression': 'mask*service',
@@ -82,34 +89,6 @@ def main():
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return #terminates at this point
-
-    masker_list = [
-        {
-            # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
-            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]),
-            'symbol_to_path_map': {
-                'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': 'masked_nathab_esa.tif',
-        },
-        {
-            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]),
-            'symbol_to_path_map': {
-                'raster': '',
-            },
-            'target_nodata': -1,
-            'target_raster_path': 'masked_nathab_copernicus.tif',
-        },
-    ]
-    for masker in masker_list:
-       raster_calculations_core.evaluate_calculation(
-            masker, TASK_GRAPH, WORKSPACE_DIR)
-    TASK_GRAPH.join()
-
 
     derived_raster_calculation_list = [
         {
@@ -124,14 +103,52 @@ def main():
         },
     ]
 
-
-
     for calculation in derived_raster_calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
+
+
+    # just build overviews
+    raster_calculation_list = [
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': '',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "potential_pollination.tif",
+            'build_overview': True,
+        },
+    ]
+
+    for calculation in raster_calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+
+    #calculate people fed equivalents from individual nutrient data
+    raster_calculation_list = [
+        {
+            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
+            'symbol_to_path_map': {
+                'va': '../pollination_esa_tifs/prod_poll_dep_realized_va_10s_ESACCI_LC_L4_LCSS.tif',
+                'en': '../pollination_esa_tifs/prod_poll_dep_realized_en_10s_ESACCI_LC_L4_LCSS.tif',
+                'fo': '../pollination_esa_tifs/prod_poll_dep_realized_fo_10s_ESACCI_LC_L4_LCSS.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_ppl_fed_on_ag_10s_esa.tif",
+            'build_overview': True,
+        },
+    ]
+
+    for calculation in raster_calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    
 
 
 if __name__ == '__main__':
