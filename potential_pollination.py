@@ -104,7 +104,7 @@ def interpolate_from_threshold(
     result[:] = target_nodata
     valid_mask = ~numpy.isclose(base_array, base_array_nodata)
     result[valid_mask] = numpy.interp(
-        base_array[valid_mask], [0, THRESHOLD_VAL, 1], [0, 1, 0])
+        base_array[valid_mask], [0, THRESHOLD_VAL], [0, 1])
     return result
 
 
