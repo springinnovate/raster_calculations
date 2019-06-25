@@ -28,11 +28,24 @@ def evaluate_calculation(args, task_graph, workspace_dir):
             `workspace_dir`
         args['target_nodata'] (numeric): desired output nodata value.
         args['target_raster_path'] (str): path to output raster.
+        args['resample_method'] (str): one of
+            'near|bilinear|cubic|cubicspline|lanczos|mode', if not defined
+            defaults to 'near'.
+        args['target_sr_wkt'] (str): if defined reprojects all inputs into
+            this coordinate reference system defined in WKT. If not defined
+            uses the inputs' SRS, and if the inputs' SRS are different will
+            raise a ValueError.
+        args['target_pixel_size'] (tuple): if defined resizes all inputs to
+            have this target pixel size (x_len, y_len). If input pixels sizes
+            are different will resize the input rasters using the
+            `'resample_method'` above. If not define and input rasters are
+            different sizes will raise a ValueError.
         workspace_dir (str): path to a directory that can be used to store
             intermediate values.
 
     Returns:
         None.
+
     """
     args_copy = args.copy()
     expression_id = os.path.splitext(
