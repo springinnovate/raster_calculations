@@ -1,4 +1,4 @@
-"""These calculations are for the science paper."""
+
 import sys
 import os
 import logging
@@ -30,6 +30,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
     
+
     masker_list = [
          {
             # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
@@ -59,6 +60,27 @@ def main():
 
     return #terminates at this point
 
+     # just build overviews
+    raster_calculation_list = [
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': '../nathab_potential_pollination.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "potential_pollination.tif",
+            'build_overview': True,
+        },
+    ]
+
+    for calculation in raster_calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+   
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+       
+
     potential_service_list = [
         {
             'expression': 'mask*service',
@@ -81,6 +103,7 @@ def main():
             'target_raster_path': "potential_nitrogenretention.tif",
             'build_overview': True,
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': average
         },
     ]
 
@@ -110,23 +133,6 @@ def main():
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
-
-    # just build overviews
-    raster_calculation_list = [
-        {
-            'expression': 'x',
-            'symbol_to_path_map': {
-                'x': '',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "potential_pollination.tif",
-            'build_overview': True,
-        },
-    ]
-
-    for calculation in raster_calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
 
 
     #calculate people fed equivalents from individual nutrient data
