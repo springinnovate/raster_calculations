@@ -38,6 +38,11 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Entry point."""
+    for dir_path in [WORKSPACE_DIR, CHURN_DIR, ECOSHARD_DIR]:
+        try:
+            os.makedirs(dir_path)
+        except OSError:
+            pass
     task_graph = taskgraph.TaskGraph(CHURN_DIR, -1, 5.0)
     try:
         os.makedirs(CHURN_DIR)
