@@ -35,57 +35,76 @@ def main():
         {
             'expression': 'x',
             'symbol_to_path_map': {
-                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_pollination_10s_cur_md5_0e86d02e9a0c96412e5217cee8540821.tif',
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_n_export_compressed_md5_fa15687cc4d4fdc5e7a6351200873578.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "science_outputs/poll_deficit_cur",
+            'target_raster_path': "science_outputs/wqr_deficit_cur.tif",
             'build_overview': True,
         },
         {
             'expression': 'x',
             'symbol_to_path_map': {
-                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_pollination_10s_ssp3_md5_e44b21621e077086e7deb2e2fad93062.tif',
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_nutrient_10s_ssp1_md5_98fba1a6dbbe52ba322e59a58fdc0a58.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "science_outputs/poll_deficit_change_s3",
+            'target_raster_path': "science_outputs/wqr_deficit_change_s1.tif",
             'build_overview': True,
         },
         {
             'expression': 'x',
             'symbol_to_path_map': {
-                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/NC_pollination_10s_cur_md5_c79490ecf640a9e5dc1c5ff1058f340a.tif',
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_nutrient_10s_ssp3_md5_80c5c4763d663490cfdf1bd4ed602403.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "science_outputs/poll_NC_cur",
+            'target_raster_path': "science_outputs/wqr_deficit_change_s3.tif",
             'build_overview': True,
         },
         {
             'expression': 'x',
             'symbol_to_path_map': {
-                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/NCchange_pollination_10s_ssp3_md5_fcc9ff3d88a392d6fc86cab80c4fa4bc.tif',
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_nutrient_10s_ssp5_md5_5c6f5b38753d092fa357d466a89ed63b.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "science_outputs/poll_NC_change_s3",
+            'target_raster_path': "science_outputs/wqr_deficit_change_s5.tif",
+            'build_overview': True,
+        },
+        {
+        'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_modified_load_compressed_md5_e3072705a87b0db90e7620abbc0d75f1.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/wqr_potential_cur.tif",
             'build_overview': True,
         },
         {
             'expression': 'x',
             'symbol_to_path_map': {
-                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_pollination_10s_cur_md5_cd977f88b4408f8d7eacd791c95d7792.tif',
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_nutrient_10s_ssp1_md5_e4ca2a294d210a296190553b95f32feb.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "science_outputs/poll_potential_cur",
+            'target_raster_path': "science_outputs/wqr_potential_change_s1.tif",
             'build_overview': True,
         },
         {
             'expression': 'x',
             'symbol_to_path_map': {
-                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_pollination_10s_ssp3_md5_02df500ba25428ace0d5e92bd2163650.tif',
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_nutrient_10s_ssp3_md5_a155fc1e2356dae0b66140d3b9002a2f.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "science_outputs/poll_potential_change_s3",
+            'target_raster_path': "science_outputs/wqr_potential_change_s3.tif",
             'build_overview': True,
         },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_nutrient_10s_ssp5_md5_48bf7884b115df5cb44bea1f3a434182.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/wqr_potential_change_s5.tif",
+            'build_overview': True,
+        },
+        
     ]
 
     for calculation in raster_calculation_list:
@@ -105,7 +124,7 @@ def main():
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_n_export_compressed_md5_fa15687cc4d4fdc5e7a6351200873578.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "wqr_deficit_cur.tif",
+            'target_raster_path': "science_outputs/wqr_deficit_cur.tif",
             'build_overview': True,
         },
         {
@@ -114,7 +133,7 @@ def main():
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_nutrient_10s_ssp1_md5_98fba1a6dbbe52ba322e59a58fdc0a58.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "wqr_deficit_change_s1.tif",
+            'target_raster_path': "science_outputs/wqr_deficit_change_s1.tif",
             'build_overview': True,
         },
         {
@@ -123,7 +142,7 @@ def main():
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_nutrient_10s_ssp3_md5_80c5c4763d663490cfdf1bd4ed602403.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "wqr_deficit_change_s3.tif",
+            'target_raster_path': "science_outputs/wqr_deficit_change_s3.tif",
             'build_overview': True,
         },
         {
@@ -132,7 +151,7 @@ def main():
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_nutrient_10s_ssp5_md5_5c6f5b38753d092fa357d466a89ed63b.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "wqr_deficit_change_s5.tif",
+            'target_raster_path': "science_outputs/wqr_deficit_change_s5.tif",
             'build_overview': True,
         },
         {
@@ -213,7 +232,7 @@ def main():
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_modified_load_compressed_md5_e3072705a87b0db90e7620abbc0d75f1.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "wqr_potential_cur.tif",
+            'target_raster_path': "science_outputs/wqr_potential_cur.tif",
             'build_overview': True,
         },
         {
@@ -222,7 +241,7 @@ def main():
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_nutrient_10s_ssp1_md5_e4ca2a294d210a296190553b95f32feb.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "wqr_potential_change_s1.tif",
+            'target_raster_path': "science_outputs/wqr_potential_change_s1.tif",
             'build_overview': True,
         },
         {
@@ -231,7 +250,7 @@ def main():
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_nutrient_10s_ssp3_md5_a155fc1e2356dae0b66140d3b9002a2f.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "wqr_potential_change_s3.tif",
+            'target_raster_path': "science_outputs/wqr_potential_change_s3.tif",
             'build_overview': True,
         },
         {
@@ -240,7 +259,61 @@ def main():
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_nutrient_10s_ssp5_md5_48bf7884b115df5cb44bea1f3a434182.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "wqr_potential_change_s5.tif",
+            'target_raster_path': "science_outputs/wqr_potential_change_s5.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_pollination_10s_cur_md5_0e86d02e9a0c96412e5217cee8540821.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_deficit_cur.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_pollination_10s_ssp3_md5_e44b21621e077086e7deb2e2fad93062.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_deficit_change_s3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/NC_pollination_10s_cur_md5_c79490ecf640a9e5dc1c5ff1058f340a.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_NC_cur.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/NCchange_pollination_10s_ssp3_md5_fcc9ff3d88a392d6fc86cab80c4fa4bc.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_NC_change_s3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_pollination_10s_cur_md5_cd977f88b4408f8d7eacd791c95d7792.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_potential_cur.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_pollination_10s_ssp3_md5_02df500ba25428ace0d5e92bd2163650.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_potential_change_s3.tif",
             'build_overview': True,
         },
     ]
