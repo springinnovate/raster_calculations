@@ -35,6 +35,73 @@ def main():
         {
             'expression': 'x',
             'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_pollination_10s_cur_md5_0e86d02e9a0c96412e5217cee8540821.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_deficit_cur",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/deficit_change_pollination_10s_ssp3_md5_e44b21621e077086e7deb2e2fad93062.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_deficit_change_s3",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/NC_pollination_10s_cur_md5_c79490ecf640a9e5dc1c5ff1058f340a.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_NC_cur",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/NCchange_pollination_10s_ssp3_md5_fcc9ff3d88a392d6fc86cab80c4fa4bc.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_NC_change_s3",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_pollination_10s_cur_md5_cd977f88b4408f8d7eacd791c95d7792.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_potential_cur",
+            'build_overview': True,
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/potential_change_pollination_10s_ssp3_md5_02df500ba25428ace0d5e92bd2163650.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "science_outputs/poll_potential_change_s3",
+            'build_overview': True,
+        },
+    ]
+
+    for calculation in raster_calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+   
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    # just build overviews
+    raster_calculation_list = [
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
                 'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/worldclim_2015_n_export_compressed_md5_fa15687cc4d4fdc5e7a6351200873578.tif',
             },
             'target_nodata': -1,
@@ -184,8 +251,6 @@ def main():
    
     TASK_GRAPH.join()
     TASK_GRAPH.close()
-
-    return
 
     raster_calculation_list = [
         {
