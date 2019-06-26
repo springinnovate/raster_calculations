@@ -44,10 +44,6 @@ def main():
         except OSError:
             pass
     task_graph = taskgraph.TaskGraph(CHURN_DIR, -1, 5.0)
-    try:
-        os.makedirs(CHURN_DIR)
-    except OSError:
-        pass
     kernel_raster_path = os.path.join(CHURN_DIR, 'radial_kernel.tif')
     kernel_task = task_graph.add_task(
         func=create_radial_convolution_mask,
