@@ -30,43 +30,40 @@ gdal.SetCacheMax(2**30)
 def main():
     """Write your expression here."""
 
-    raster_calculation_list4 = [
-         {
-            'expression': '(future-current)/current',
+    raster_change_calculation_list = [
+        {
+            'expression': '(future-current)',
             'symbol_to_path_map': {
-                'future': 'pollination_pop_30s_ssp1.tif',
-                'current': 'pollination_pop_30s_cur.tif',
+                'future': 'science_outputs/renaming_ecoshards/pollination_potential_10s_ssp1.tif',
+                'current': 'science_outputs/pollination_outputs/pollination_potential_10s_cur.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "pollination_pop_change_30s_ssp1.tif",
-            'build_overview': True,
-            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+            'target_raster_path': "science_outputs/renaming_ecoshards/pollination_potential_abschange_10s_ssp1.tif",
+            'build_overview': False,
         },
         {
-            'expression': '(future-current)/current',
+            'expression': '(future-current)',
             'symbol_to_path_map': {
-                'future': 'pollination_pop_30s_ssp3.tif',
-                'current': 'pollination_pop_30s_cur.tif',
+                'future': 'science_outputs/renaming_ecoshards/pollination_potential_10s_ssp3.tif',
+                'current': 'science_outputs/pollination_outputs/pollination_potential_10s_cur.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "pollination_pop_change_30s_ssp3.tif",
-            'build_overview': True,
-            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+            'target_raster_path': "science_outputs/renaming_ecoshards/pollination_potential_abschange_10s_ssp3.tif",
+            'build_overview': False,
         },
         {
-            'expression': '(future-current)/current',
+            'expression': '(future-current)',
             'symbol_to_path_map': {
-                'future': 'pollination_pop_30s_ssp5.tif',
-                'current': 'pollination_pop_30s_cur.tif',
+                'future': 'science_outputs/renaming_ecoshards/pollination_potential_10s_ssp5.tif',
+                'current': 'science_outputs/pollination_outputs/pollination_potential_10s_cur.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "pollination_pop_change_30s_ssp5.tif",
-            'build_overview': True,
-            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+            'target_raster_path': "science_outputs/renaming_ecoshards/pollination_potential_abschange_10s_ssp5.tif",
+            'build_overview': False,
         },
     ]
 
-    for calculation in raster_calculation_list4:
+    for calculation in raster_change_calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
     
