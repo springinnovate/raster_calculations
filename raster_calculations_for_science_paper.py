@@ -77,17 +77,6 @@ def main():
 
     raster_calulation_list1 = [
         {
-            'expression': 'x',
-            'symbol_to_path_map': {
-                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/relevant_min_pop_cur_md5_8e5ad3e452d021550b1db60f7c2b8b2f.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': 'masked_poll_pop_cur.tif',
-        },
-
-
-    raster_calulation_list1 = [
-        {
             'expression': 'mask(raster, 0, invert=True)',
             'symbol_to_path_map': {
                 'raster': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/relevant_min_pop_cur_md5_8e5ad3e452d021550b1db60f7c2b8b2f.tif',
