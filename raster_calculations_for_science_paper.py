@@ -30,7 +30,52 @@ gdal.SetCacheMax(2**30)
 def main():
     """Write your expression here."""
 
-     raster_calulation_list1 = [
+    raster_calculation_list4 = [
+         {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'pollination_pop_30s_ssp1.tif',
+                'current': 'pollination_pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_change_30s_ssp1.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'pollination_pop_30s_ssp3.tif',
+                'current': 'pollination_pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_change_30s_ssp3.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'pollination_pop_30s_ssp5.tif',
+                'current': 'pollination_pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_change_30s_ssp5.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+    ]
+
+    for calculation in raster_calculation_list4:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+    
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return #terminates at this point
+
+    raster_calulation_list1 = [
         {
             'expression': 'x',
             'symbol_to_path_map': {
@@ -116,10 +161,9 @@ def main():
             'target_raster_path': "pop_30s_cur.tif",
             'build_overview': False,
             'target_pixel_size': (0.00833333333333339, -0.00833333333333339)
-        },
-
-        
+        },   
     ]
+
     for calculation in  raster_calulation_list1:
        raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
@@ -172,7 +216,6 @@ def main():
             'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
         }, 
     ]
-
 
     for calculation in raster_calculation_list2:
         raster_calculations_core.evaluate_calculation(
@@ -261,6 +304,7 @@ def main():
     for calculation in raster_calculation_list4:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
+    
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
