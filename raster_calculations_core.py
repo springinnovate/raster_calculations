@@ -1,8 +1,7 @@
 """Process a raster calculator plain text expression."""
-import json
+import hashlib
 import pickle
 import time
-import sys
 import os
 import logging
 import urllib.request
@@ -79,8 +78,13 @@ def evaluate_calculation(args, task_graph, workspace_dir):
 
     # should i process rasters here?
     try:
+        # this first part makes a unique working directory based on the target
+        # path name
+        md5_hash = hashlib.md5()
+        md5_hash.update(args['target_raster_path'].encode('utf-8'))
+        hash_dir = md5_hash.hexdigest()
         process_raster_churn_dir = os.path.join(
-            workspace_dir, 'processed_rasters_dir')
+            workspace_dir, 'processed_rasters_dir', hash_dir)
         os.makedirs(process_raster_churn_dir)
     except OSError:
         pass
