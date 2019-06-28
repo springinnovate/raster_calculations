@@ -29,7 +29,7 @@ gdal.SetCacheMax(2**30)
 
 def main():
     """Write your expression here."""
-    
+
     raster_calulation_list1 = [
         {
             'expression': 'mask(raster, 0, invert=True)',
@@ -64,7 +64,7 @@ def main():
             'target_raster_path': 'masked_poll_pop_ssp5.tif',
         },
         {
-            'expression': '(future-current)/current',
+            'expression': 'future/current',
             'symbol_to_path_map': {
                 'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp1_2050_md5_cf75de1bd71035236594d2e48c31c245.tif',
                 'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp1_2010_md5_5edda6266351ccc7dbd587c89fa2ab65.tif',
@@ -75,7 +75,7 @@ def main():
             'target_pixel_size': (0.125, -0.125),
         },
         {
-            'expression': '(future-current)/current',
+            'expression': 'future/current',
             'symbol_to_path_map': {
                 'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp3_2050_md5_b0608d53870b9a7e315bf9593c43be86.tif',
                 'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp1_2010_md5_5edda6266351ccc7dbd587c89fa2ab65.tif',
@@ -86,7 +86,7 @@ def main():
             'target_pixel_size': (0.125, -0.125),
         },
         {
-            'expression': '(future-current)/current',
+            'expression': 'future/current',
             'symbol_to_path_map': {
                 'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp5_2050_md5_99dcce1d1578fa9f3906227c112837e5.tif',
                 'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp1_2010_md5_5edda6266351ccc7dbd587c89fa2ab65.tif',
@@ -124,7 +124,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "pollination_pop_30s_cur.tif",
-            'build_overview': False,
+            'build_overview': True,
             'target_pixel_size': (0.00833333333333339, -0.00833333333333339)
         },
         {
@@ -178,7 +178,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "pollination_pop_30s_ssp1.tif",
-            'build_overview': False,
+            'build_overview': True,
             'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
         },
         {
@@ -189,7 +189,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "pollination_pop_30s_ssp3.tif",
-            'build_overview': False,
+            'build_overview': True,
             'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
         },
         {
@@ -200,7 +200,7 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "pollination_pop_30s_ssp5.tif",
-            'build_overview': False,
+            'build_overview': True,
             'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
         },
     ]
