@@ -29,78 +29,8 @@ gdal.SetCacheMax(2**30)
 
 def main():
     """Write your expression here."""
-    raster_calculation_list = [
-    {
-            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
-            'symbol_to_path_map': {
-                'va': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_va_30s_cur_md5_5dc3b32361e73deefe0c1d3405d1887b.tif',
-                'en': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_cur_md5_a0216f9f217a5960179720585720d4fa.tif',
-                'fo': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_fo_30s_cur_md5_01077b8ee4bae46e1d07c23728d740fc.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "pollination_pop_30s_cur.tif",
-            'build_overview': True,
-        },
-        {
-            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
-            'symbol_to_path_map': {
-                'va': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_ssp1_md5_2dec3f715e60666797c3ec170ee86cce.tif',
-                'en': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_ssp1_md5_2dec3f715e60666797c3ec170ee86cce.tif',
-                'fo': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_fo_30s_ssp1_md5_655aa774ebd352d5bf82336c4c4a72ab.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "pollination_pop_30s_ssp1.tif",
-            'build_overview': True,
-        },
-        {
-            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
-            'symbol_to_path_map': {
-                'va': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_va_30s_ssp3_md5_024b2aa9c2e71e72c246c34b71b75bf8.tif',
-                'en': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_ssp3_md5_2cd38b2e5b32238f24b635dfdd70cf22.tif',
-                'fo': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_fo_30s_ssp3_md5_3f8b935a55836c44f7912f5520699179.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "pollination_pop_30s_ssp3.tif",
-            'build_overview': True,
-        },
-        {
-            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
-            'symbol_to_path_map': {
-                'va': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_va_30s_ssp5_md5_4267bfdd9392dff1d8cfd30f504567d9.tif',
-                'en': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_ssp5_md5_279c0ec49113c0036d3dc8c9ef387469.tif',
-                'fo': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_fo_30s_ssp5_md5_8b1dfa322e4e9202711e8057a34c508e.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "pollination_pop_30s_ssp5.tif",
-            'build_overview': True,
-        },
-
-    ]
-
-    for calculation in raster_calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return #terminates at this point
-
-    raster_calculation_list = [
-        {
-            'expression': 'masker*pop',
-            'symbol_to_path_map': {
-                'masker': '',
-                'pop': '',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "pollnation_pop_30s_cur.tif",
-            'build_overview': True,
-        },
-    ]
-
-
-    masker_list = [
+    
+    raster_calulation_list1 = [
         {
             'expression': 'mask(raster, 0, invert=True)',
             'symbol_to_path_map': {
@@ -133,17 +63,158 @@ def main():
             'target_nodata': -1,
             'target_raster_path': 'masked_poll_pop_ssp5.tif',
         },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp1_2050_md5_cf75de1bd71035236594d2e48c31c245.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp1_2010_md5_5edda6266351ccc7dbd587c89fa2ab65.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pop_change_30s_ssp1.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.125, -0.125),
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp3_2050_md5_b0608d53870b9a7e315bf9593c43be86.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp1_2010_md5_5edda6266351ccc7dbd587c89fa2ab65.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pop_change_30s_ssp3.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.125, -0.125),
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp5_2050_md5_99dcce1d1578fa9f3906227c112837e5.tif',
+                'current': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/ssp1_2010_md5_5edda6266351ccc7dbd587c89fa2ab65.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pop_change_30s_ssp5.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.125, -0.125),
+        },
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/gpw-v4-population-count_2015_md5_683d55e67b3829ab2d8045ebed9ec5d1_md5_683d55e67b3829ab2d8045ebed9ec5d1.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pop_30s_cur.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339)
+        },
+
         
     ]
-    for masker in masker_list:
+    for calculation in  raster_calulation_list1:
        raster_calculations_core.evaluate_calculation(
-            masker, TASK_GRAPH, WORKSPACE_DIR)
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
    
+    TASK_GRAPH.join()
+    
+    raster_calculation_list2 = [
+        {
+            'expression': 'masker*pop',
+            'symbol_to_path_map': {
+                'masker': 'masked_poll_pop_cur.tif',
+                'pop': 'pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_30s_cur.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339)
+        },
+        {
+            'expression': 'change*pop',
+            'symbol_to_path_map': {
+                'change': 'pop_change_30s_ssp1.tif',
+                'pop': 'pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pop_30s_ssp1.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+        {
+            'expression': 'change*pop',
+            'symbol_to_path_map': {
+                'change': 'pop_change_30s_ssp3.tif',
+                'pop': 'pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pop_30s_ssp3.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+        {
+            'expression': 'change*pop',
+            'symbol_to_path_map': {
+                'change': 'pop_change_30s_ssp5.tif',
+                'pop': 'pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pop_30s_ssp5.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        }, 
+    ]
+
+
+    for calculation in raster_calculation_list2:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+
+    raster_calculation_list3 = [
+         {
+            'expression': 'masker*pop',
+            'symbol_to_path_map': {
+                'masker': 'masked_poll_pop_ssp1.tif',
+                'pop': 'pop_30s_ssp1.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_30s_ssp1.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+        {
+            'expression': 'masker*pop',
+            'symbol_to_path_map': {
+                'masker': 'masked_poll_pop_ssp3.tif',
+                'pop': 'pop_30s_ssp3.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_30s_ssp3.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+        {
+            'expression': 'masker*pop',
+            'symbol_to_path_map': {
+                'masker': 'masked_poll_pop_ssp5.tif',
+                'pop': 'pop_30s_ssp5.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_30s_ssp5.tif",
+            'build_overview': False,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+    ]
+
+    for calculation in raster_calculation_list3:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
-    return
+    return #terminates at this point
 
+    
     # just build overviews
     raster_calculation_list = [
         {
@@ -526,7 +597,50 @@ def main():
             'target_raster_path': "pollination_pop_30s_ssp5.tif",
             'build_overview': True,
         },
-
+        {
+            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
+            'symbol_to_path_map': {
+                'va': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_va_30s_cur_md5_5dc3b32361e73deefe0c1d3405d1887b.tif',
+                'en': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_cur_md5_a0216f9f217a5960179720585720d4fa.tif',
+                'fo': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_fo_30s_cur_md5_01077b8ee4bae46e1d07c23728d740fc.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_nut_req_30s_cur.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
+            'symbol_to_path_map': {
+                'va': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_ssp1_md5_2dec3f715e60666797c3ec170ee86cce.tif',
+                'en': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_ssp1_md5_2dec3f715e60666797c3ec170ee86cce.tif',
+                'fo': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_fo_30s_ssp1_md5_655aa774ebd352d5bf82336c4c4a72ab.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_nut_req_30s_ssp1.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
+            'symbol_to_path_map': {
+                'va': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_va_30s_ssp3_md5_024b2aa9c2e71e72c246c34b71b75bf8.tif',
+                'en': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_ssp3_md5_2cd38b2e5b32238f24b635dfdd70cf22.tif',
+                'fo': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_fo_30s_ssp3_md5_3f8b935a55836c44f7912f5520699179.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_nut_req_30s_ssp3.tif",
+            'build_overview': True,
+        },
+        {
+            'expression': '(va/486980 + en/3319921 + fo/132654) / 3',
+            'symbol_to_path_map': {
+                'va': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_va_30s_ssp5_md5_4267bfdd9392dff1d8cfd30f504567d9.tif',
+                'en': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_en_30s_ssp5_md5_279c0ec49113c0036d3dc8c9ef387469.tif',
+                'fo': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/nut_req_fo_30s_ssp5_md5_8b1dfa322e4e9202711e8057a34c508e.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_nut_req_30s_ssp5.tif",
+            'build_overview': True,
+        },
     ]
 
     for calculation in raster_calculation_list:
