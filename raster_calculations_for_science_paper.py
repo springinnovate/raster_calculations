@@ -30,6 +30,17 @@ gdal.SetCacheMax(2**30)
 def main():
     """Write your expression here."""
 
+     raster_calulation_list1 = [
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': 'https://storage.googleapis.com/ipbes-natcap-ecoshard-data-for-publication/relevant_min_pop_cur_md5_8e5ad3e452d021550b1db60f7c2b8b2f.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': 'masked_poll_pop_cur.tif',
+        },
+
+
     raster_calulation_list1 = [
         {
             'expression': 'mask(raster, 0, invert=True)',
@@ -209,6 +220,47 @@ def main():
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
+    TASK_GRAPH.join()
+
+    raster_calculation_list4 = [
+         {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'pollination_pop_30s_ssp1.tif',
+                'current': 'pollination_pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_change_30s_ssp1.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'pollination_pop_30s_ssp3.tif',
+                'current': 'pollination_pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_change_30s_ssp3.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+        {
+            'expression': '(future-current)/current',
+            'symbol_to_path_map': {
+                'future': 'pollination_pop_30s_ssp5.tif',
+                'current': 'pollination_pop_30s_cur.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "pollination_pop_change_30s_ssp5.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
+        },
+    ]
+
+    for calculation in raster_calculation_list4:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
