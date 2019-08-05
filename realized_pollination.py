@@ -88,7 +88,7 @@ def main():
     # mask ppl fed reach by the hab mask.
     raster_calculations_core.evaluate_calculation(
         {
-            'expression': 'ppl_fed_reach*(hab_mask=1)',
+            'expression': 'ppl_fed_reach*(hab_mask>.99)',
             'symbol_to_path_map': {
                 'ppl_fed_reach': ppl_fed_reach_raster_path,
                 'hab_mask': hab_fetch_path_map['hab_mask'],
