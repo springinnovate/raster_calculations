@@ -74,11 +74,12 @@ def main():
         kwargs={
             'working_dir': CHURN_DIR,
             'ignore_nodata': True,
-            'gtiff_creation_options': (
-                'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=DEFLATE',
-                'PREDICTOR=3', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
-                'NUM_THREADS=2'),
-            'n_threads': 4},
+            'raster_driver_creation_tuple': (
+                'GTiff', (
+                    'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=ZSTD',
+                    'PREDICTOR=2', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
+                    'NUM_THREADS=2')),
+                'n_threads': 4},
         dependent_task_list=[kernel_task],
         target_path_list=[ppl_fed_reach_raster_path],
         task_name=(
