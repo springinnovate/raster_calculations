@@ -77,7 +77,7 @@ def main():
             'raster_driver_creation_tuple': (
                 'GTiff', (
                     'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=ZSTD',
-                    'PREDICTOR=2', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
+                    'PREDICTOR=1', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
                     'NUM_THREADS=2')),
                 'n_threads': 4},
         dependent_task_list=[kernel_task],
