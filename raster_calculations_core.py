@@ -10,6 +10,7 @@ from retrying import retry
 from osgeo import osr
 from osgeo import gdal
 import pygeoprocessing
+import pygeoprocessing.symbolic
 import numpy
 
 LOGGER = logging.getLogger(__name__)
@@ -165,7 +166,8 @@ def _evaluate_expression(
         del args['build_overview']
 
     if not args['expression'].startswith('mask(raster'):
-        pygeoprocessing.evaluate_raster_calculator_expression(**args)
+        pygeoprocessing.symbolic.evaluate_raster_calculator_expression(
+            **args)
 
     else:
         # parse out array
