@@ -165,10 +165,18 @@ def _evaluate_expression(
     if 'build_overview' in args:
         del args['build_overview']
 
+    default_nan = None
+    default_inf = None
+    if 'default_nan' in args:
+        default_nan = args['default_nan']
+    if 'default_inf' in args:
+        default_inf = args['default_inf']
+
     if not args['expression'].startswith('mask(raster'):
         pygeoprocessing.symbolic.evaluate_raster_calculator_expression(
-            **args)
-
+            args['expression'], args['symbol_to_path_band_map'],
+            args['target_nodata'], args['target_raster_path'],
+            default_nan=default_nan, default_inf=default_inf)
     else:
         # parse out array
         arg_list = args['expression'].split(',')
