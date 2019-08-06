@@ -36,6 +36,13 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 
+def _nodata_to_zero_op(base_array, base_nodata):
+    """Convert nodata to zero."""
+    result = numpy.copy(base_array)
+    result[numpy.isclose(base_array, base_nodata)] = 0.0
+    return result
+
+
 def main():
     """Entry point."""
     for dir_path in [WORKSPACE_DIR, CHURN_DIR, ECOSHARD_DIR]:
@@ -46,7 +53,7 @@ def main():
     task_graph = taskgraph.TaskGraph(CHURN_DIR, -1, 5.0)
     kernel_raster_path = os.path.join(CHURN_DIR, 'radial_kernel.tif')
     kernel_task = task_graph.add_task(
-        func=create_radial_convolution_mask,
+        func=create_flat_radial_convolution_mask,
         args=(0.00277778, 2000., kernel_raster_path),
         target_path_list=[kernel_raster_path],
         task_name='make convolution kernel')
@@ -61,19 +68,37 @@ def main():
             task_name='fetch hab mask')
         hab_fetch_path_map[raster_id] = raster_path
     task_graph.join()
+
     hab_mask_raster_info = pygeoprocessing.get_raster_info(
         hab_fetch_path_map['hab_mask'])
+
+    ppl_fed_raster_info = pygeoprocessing.get_raster_info(
+        hab_fetch_path_map['ppl_fed'])
+
+    ppl_fed_nodata_to_zero_path = os.path.join(
+        CHURN_DIR, 'ppl_fed__nodata_to_zero.tif')
+
+    task_graph.add_task(
+        func=pygeoprocessing.raster_calculator,
+        args=(
+            [(hab_fetch_path_map['ppl_fed'], 1),
+             (ppl_fed_raster_info['nodata'][0], 'raw')],
+            _nodata_to_zero_op, ppl_fed_nodata_to_zero_path,
+            gdal.GDT_Float32, None),
+        target_path_list=[ppl_fed_nodata_to_zero_path],
+        task_name='hab mask nodata to zero')
+    task_graph.join()
 
     # calculate extent of ppl fed by 2km.
     ppl_fed_reach_raster_path = os.path.join(CHURN_DIR, 'ppl_fed_reach.tif')
     ppl_fed_reach_task = task_graph.add_task(
         func=pygeoprocessing.convolve_2d,
         args=[
-            (hab_fetch_path_map['ppl_fed'], 1), (kernel_raster_path, 1),
+            (ppl_fed_nodata_to_zero_path, 1), (kernel_raster_path, 1),
             ppl_fed_reach_raster_path],
         kwargs={
             'working_dir': CHURN_DIR,
-            'ignore_nodata': True,
+            'mask_nodata': False,
             'raster_driver_creation_tuple': (
                 'GTiff', (
                     'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=ZSTD',
@@ -89,7 +114,7 @@ def main():
     # mask ppl fed reach by the hab mask.
     raster_calculations_core.evaluate_calculation(
         {
-            'expression': 'ppl_fed_reach*(hab_mask>.99)',
+            'expression': 'ppl_fed_reach*(hab_mask>0.0)',
             'symbol_to_path_map': {
                 'ppl_fed_reach': ppl_fed_reach_raster_path,
                 'hab_mask': hab_fetch_path_map['hab_mask'],
@@ -107,7 +132,7 @@ def main():
     task_graph.close()
 
 
-def create_radial_convolution_mask(
+def create_flat_radial_convolution_mask(
         pixel_size_degree, radius_meters, kernel_filepath):
     """Create a radial mask to sample pixels in convolution filter.
 
@@ -139,7 +164,8 @@ def create_radial_convolution_mask(
         in_circle.shape[0] // sample_pixels, sample_pixels,
         in_circle.shape[1] // sample_pixels, sample_pixels)
     kernel_array = numpy.sum(reshaped, axis=(1, 3)) / sample_pixels**2
-    normalized_kernel_array = kernel_array / numpy.sum(kernel_array)
+    normalized_kernel_array = kernel_array / numpy.max(kernel_array)
+    LOGGER.debug(normalized_kernel_array)
     reshaped = None
 
     driver = gdal.GetDriverByName('GTiff')
