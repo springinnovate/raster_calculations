@@ -10,7 +10,7 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-WORKSPACE_DIR = 'raster_expression_workspace'
+WORKSPACE_DIR = 'CNC_workspace'
 NCPUS = multiprocessing.cpu_count()
 try:
     os.makedirs(WORKSPACE_DIR)
@@ -30,6 +30,46 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
     
+    
+    grazing_service_list = [
+        {
+            'expression': 'mask*service',
+            'symbol_to_path_map': {
+                'mask': 'masked_nathab_notforest_esa.tif',
+                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_grazing_value/potential_grazing_value.asc',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "potential_grazing.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': average
+        },
+        {
+            'expression': 'mask*service',
+            'symbol_to_path_map': {
+                'mask': 'masked_nathab_notforest_esa.tif',
+                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_grazing_value/realised_grazing_value.asc',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "realized_grazing.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': average
+        },
+    ]
+
+    for calculation in grazing_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return #terminates at this point
+
+
+
+
     masker_list = [
          {
             # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
@@ -48,6 +88,16 @@ def main():
             'target_nodata': -1,
             'target_raster_path': 'masked_nathab_copernicus.tif',
         },
+        {
+            # this is for masking out forest from natural habitat, for livestock production
+            # this counts the >50% herbaceous / < 50% tree cover category as "not forest"; also includes lichens, mosses  and shrubland which maybe isn't totally edible by cattle either
+            'expression': 'mask(raster, %s, invert=False)'%(str([x for x in range(110,154)]+[180])[1:-1]),
+            'symbol_to_path_map': {
+                'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': 'masked_nathab_notforest_esa.tif',
+        },
     ]
     for masker in masker_list:
        raster_calculations_core.evaluate_calculation(
@@ -57,7 +107,6 @@ def main():
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
-    return #terminates at this point
 
      # just build overviews
     raster_calculation_list = [
@@ -107,25 +156,6 @@ def main():
     ]
 
     for calculation in potential_service_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-
-    derived_raster_calculation_list = [
-        {
-            'expression': '(potential-deficit)/potential',
-            'symbol_to_path_map': {
-                'potential': 'outputs/potential_pollination_10s_cur.tif',
-                'deficit': 'outputs/deficit_pollination_10s_cur.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "outputs/NC_pollination_10s_cur.tif",
-            'build_overview': True,
-        },
-    ]
-
-    for calculation in derived_raster_calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
