@@ -30,35 +30,35 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
     
-    
-    grazing_service_list = [
+
+    realized_service_list = [
         {
-            'expression': 'mask*service',
+            'expression': 'beneficiaries*service',
             'symbol_to_path_map': {
-                'mask': 'masked_nathab_notforest_esa.tif',
-                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_grazing_value/potential_grazing_value.asc',
+                'beneficiaries': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/downstream_beneficiaries_md5_68495f4bbdd889d7aaf9683ce958a4fe.tif',
+                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_nitrogenretention.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "potential_grazing.tif",
+            'target_raster_path': "realized_nitrogenretention_downstream.tif",
             'build_overview': True,
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': average
+            'resample_method': 'average'
         },
         {
-            'expression': 'mask*service',
+            'expression': 'beneficiaries*service',
             'symbol_to_path_map': {
-                'mask': 'masked_nathab_notforest_esa.tif',
-                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_grazing_value/realised_grazing_value.asc',
+                'beneficiaries': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/downstream_beneficiaries_md5_68495f4bbdd889d7aaf9683ce958a4fe.tif',
+                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_sedimentdeposition.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "realized_grazing.tif",
+            'target_raster_path': "realized_sedimentdeposition_downstream.tif",
             'build_overview': True,
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': average
+            'resample_method': 'average'
         },
     ]
 
-    for calculation in grazing_service_list:
+    for calculation in realized_service_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
@@ -66,8 +66,6 @@ def main():
     TASK_GRAPH.close()
 
     return #terminates at this point
-
-
 
 
     masker_list = [
@@ -106,29 +104,42 @@ def main():
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
-
-
-     # just build overviews
-    raster_calculation_list = [
+       
+    
+    grazing_service_list = [
         {
-            'expression': 'x',
+            'expression': 'mask*service',
             'symbol_to_path_map': {
-                'x': '../nathab_potential_pollination.tif',
+                'mask': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/masked_nathab_notforest_esa.tif',
+                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_grazing_value.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "potential_pollination.tif",
+            'target_raster_path': "potential_grazing.tif",
             'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'mask*service',
+            'symbol_to_path_map': {
+                'mask': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/masked_nathab_notforest_esa.tif',
+                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/realised_grazing_value.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "realized_grazing.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
         },
     ]
 
-    for calculation in raster_calculation_list:
+    for calculation in grazing_service_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
-   
+
     TASK_GRAPH.join()
     TASK_GRAPH.close()
-       
-
+    
     potential_service_list = [
         {
             'expression': 'mask*service',
@@ -151,7 +162,7 @@ def main():
             'target_raster_path': "potential_nitrogenretention.tif",
             'build_overview': True,
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': average
+            'resample_method': 'average'
         },
     ]
 
@@ -162,7 +173,25 @@ def main():
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
+    # just build overviews
+    raster_calculation_list = [
+        {
+            'expression': 'x',
+            'symbol_to_path_map': {
+                'x': '../nathab_potential_pollination.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "potential_pollination.tif",
+            'build_overview': True,
+        },
+    ]
 
+    for calculation in raster_calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+   
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
 
     #calculate people fed equivalents from individual nutrient data
     raster_calculation_list = [
