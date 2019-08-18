@@ -67,7 +67,7 @@ def main():
 
     clamping_service_list = [
         {
-            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)'
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)',
             'symbol_to_path_map': {
                 'val': "raw_normalized_realized_nitrogen_downstream.tif",
             },
@@ -75,7 +75,7 @@ def main():
             'target_raster_path': "normalized_realized_nitrogen_downstream.tif",
         },
         {
-            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)'
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)',
             'symbol_to_path_map': {
                 'val': "raw_normalized_realized_sediment_downstream.tif",
             },
@@ -83,7 +83,7 @@ def main():
             'target_raster_path': "normalized_realized_sediment_downstream.tif",
         },
         {
-            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)'
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)',
             'symbol_to_path_map': {
                 'val': "raw_normalized_realized_pollination.tif",
             },
@@ -100,7 +100,7 @@ def main():
     TASK_GRAPH.join()
     
     synthesis_index_expression = {
-            'expression': 'nitrogen + sediment + pollination + nwfp + timber + grazing'
+            'expression': 'nitrogen + sediment + pollination + nwfp + timber + grazing',
             'symbol_to_path_map': {
                 'nitrogen': "normalized_realized_nitrogen_downstream.tif",
                 'sediment': "normalized_realized_sediment_downstream.tif",
@@ -110,7 +110,7 @@ def main():
                 'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "normalized_realized_nitrogen_downstream.tif",
+            'target_raster_path': "aggregate_realized_score_nspntg.tif",
     }
 
     raster_calculations_core.evaluate_calculation(
