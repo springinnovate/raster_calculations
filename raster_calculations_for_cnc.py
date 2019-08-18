@@ -31,36 +31,90 @@ def main():
     """Write your expression here."""
     
 
-    realized_service_list = [
+    normalized_service_list = [
         {
-            'expression': 'beneficiaries*service',
+            'expression': 'service/ percentile(service, 99)',
             'symbol_to_path_map': {
-                'beneficiaries': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/downstream_beneficiaries_md5_68495f4bbdd889d7aaf9683ce958a4fe.tif',
-                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_nitrogenretention.tif',
+                'service': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "realized_nitrogenretention_downstream.tif",
-            'build_overview': True,
-            'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': 'average'
+            'target_raster_path': "raw_normalized_realized_nitrogen_downstream.tif",
         },
         {
-            'expression': 'beneficiaries*service',
+            'expression': 'service/ percentile(service, 99)',
             'symbol_to_path_map': {
-                'beneficiaries': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/downstream_beneficiaries_md5_68495f4bbdd889d7aaf9683ce958a4fe.tif',
-                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_sedimentdeposition.tif',
+                'service': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_sedimentdeposition_downstream_md5_1613b12643898c1475c5ec3180836770.tif',
             },
             'target_nodata': -1,
-            'target_raster_path': "realized_sedimentdeposition_downstream.tif",
-            'build_overview': True,
-            'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': 'average'
+            'target_raster_path': "raw_normalized_realized_sediment_downstream.tif",
+        },
+        {
+            'expression': 'service/ percentile(service, 99)',
+            'symbol_to_path_map': {
+                'service': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_pollination_md5_8a780d5962aea32aaa07941bde7d8832.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "raw_normalized_realized_pollination.tif",
+        },
+        
+    ]
+
+    for calculation in normalized_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+
+    clamping_service_list = [
+        {
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)'
+            'symbol_to_path_map': {
+                'val': "raw_normalized_realized_nitrogen_downstream.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "normalized_realized_nitrogen_downstream.tif",
+        },
+        {
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)'
+            'symbol_to_path_map': {
+                'val': "raw_normalized_realized_sediment_downstream.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "normalized_realized_sediment_downstream.tif",
+        },
+        {
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)'
+            'symbol_to_path_map': {
+                'val': "raw_normalized_realized_pollination.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "normalized_realized_pollination.tif",
         },
     ]
 
-    for calculation in realized_service_list:
+    for calculation in clamping_service_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+
+    TASK_GRAPH.join()
+    
+    synthesis_index_expression = {
+            'expression': 'nitrogen + sediment + pollination + nwfp + timber + grazing'
+            'symbol_to_path_map': {
+                'nitrogen': "normalized_realized_nitrogen_downstream.tif",
+                'sediment': "normalized_realized_sediment_downstream.tif",
+                'pollination': "normalized_realized_pollination.tif",
+                'nwfp': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_nwfp_md5_f1cce72af652fd16e25bfa34a6bddc63.tif',
+                'timber': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_timber_md5_5154151ebe061cfa31af2c52595fa5f9.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "normalized_realized_nitrogen_downstream.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        synthesis_index_expression, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
@@ -172,6 +226,41 @@ def main():
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
+
+    realized_service_list = [
+        {
+            'expression': 'beneficiaries*service',
+            'symbol_to_path_map': {
+                'beneficiaries': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/downstream_beneficiaries_md5_68495f4bbdd889d7aaf9683ce958a4fe.tif',
+                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_nitrogenretention.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "realized_nitrogenretention_downstream.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'beneficiaries*service',
+            'symbol_to_path_map': {
+                'beneficiaries': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/downstream_beneficiaries_md5_68495f4bbdd889d7aaf9683ce958a4fe.tif',
+                'service': 'C:/Users/Becky/Documents/raster_calculations/CNC_workspace/potential_sedimentdeposition.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "realized_sedimentdeposition_downstream.tif",
+            'build_overview': True,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+    ]
+
+    for calculation in realized_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
 
     # just build overviews
     raster_calculation_list = [
