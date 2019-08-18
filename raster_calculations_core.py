@@ -1,4 +1,6 @@
 """Process a raster calculator plain text expression."""
+import tempfile
+import re
 import hashlib
 import pickle
 import time
@@ -172,14 +174,33 @@ def _evaluate_expression(
     if 'default_inf' in args:
         default_inf = args['default_inf']
 
-    if not args['expression'].startswith('mask(raster'):
+    expression = args['expression']
+    # search for percentile functions
+    match_obj = re.match(
+        r'(.*)(percentile\(([^,]*), ([^)]*)\))(.*)', expression)
+    if match_obj:
+        base_raster_path_band = args['symbol_to_path_band_map'][
+            match_obj.group(3)]
+        percentile_threshold = float(match_obj.group(4))
+        working_sort_directory = tempfile.mkdtemp(dir=workspace_dir)
+        LOGGER.debug(
+            'doing percentile of %s to %s', base_raster_path_band,
+            percentile_threshold)
+        percentile_val = pygeoprocessing.raster_band_percentile(
+            base_raster_path_band, working_sort_directory,
+            [percentile_threshold])[0]
+        expression = '%s%f%s' % (
+            match_obj.group(1), percentile_val, match_obj.group(5))
+        LOGGER.debug('new expression: %s', expression)
+
+    if not expression.startswith('mask(raster'):
         pygeoprocessing.symbolic.evaluate_raster_calculator_expression(
-            args['expression'], args['symbol_to_path_band_map'],
+            expression, args['symbol_to_path_band_map'],
             args['target_nodata'], args['target_raster_path'],
             default_nan=default_nan, default_inf=default_inf)
     else:
         # parse out array
-        arg_list = args['expression'].split(',')
+        arg_list = expression.split(',')
         # the first 1 to n-1 args must be integers
         mask_val_list = [int(val) for val in arg_list[1:-1]]
         # the last argument could be 'invert=?'
