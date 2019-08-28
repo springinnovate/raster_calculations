@@ -111,6 +111,8 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "aggregate_realized_score_nspntg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
     }
 
     raster_calculations_core.evaluate_calculation(

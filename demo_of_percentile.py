@@ -32,7 +32,7 @@ def main():
     """Write your expression here."""
 
 
-    path = r"C:\Users\Becky\Documents\raster_calculations\realized_pollination_with_overviews_md5_8a780d5962aea32aaa07941bde7d8832.tif"
+    path = r"C:\Users\Becky\Documents\raster_calculations\aggregate_realized_ES_score_nspntg_renorm_md5_f788b5b627aa06c4028a2277da9d8dc0.tif"
     percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:
@@ -52,8 +52,18 @@ def main():
 #        0th           25th    50th                 75th                   95th               99th                 100th    
 #  -680618713.5250311, 0.0, 13816.789725814846, 6,973,767.683561915, 79,365,495.3211188, 301,244,797.7473311, 38,828,470,375.24423
 # realized_sedimentdeposition_downstream_md5_1613b12643898c1475c5ec3180836770
-#        0th           1st  25th  50th                 75th                   95th               99th                 100th  
-# [-2858.336473792897, 0.0, 0.0, 0.0,            402.0619507020006,    357620.664287882,   16,535,749.256560648,   6,597,664,634,840.14]
+#        0th           1st  25th       50th          75th                   95th               99th                 100th  
+# [-2858.336473792897, 0.0, 0.0,        0.0,     402.0619507020006,    357620.664287882,   16,535,749.256560648,   6,597,664,634,840.14]
+#realized_timber_md5_5154151ebe061cfa31af2c52595fa5f9
+#        [0.0,        0.0,    0.0,       0.0,   0.012081013061106205,  0.31635093688964844, 0.7717771530151367,     1.0]
+#realized_nwfp_md5_f1cce72af652fd16e25bfa34a6bddc63.tif
+#        [0.0,        0.0,    0.0,       0.0,    0.001921603106893599, 0.10424786061048508, 0.548800528049469,      1.0]
+#realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif
+#[0.0, 0.0, 0.0, 0.0, 0.0, 0.14973261952400208, 0.47111403942108154, 1.0]
+#aggregate
+#        [0.0,         0.0, 9.21e-05, 0.03501,     0.2486041,          1.0089664579947066, 1.708877055645255,       5.465055904557587]
+# [0.0, 0.0, 0.00011389717641436895, 0.04634972283590727, 0.35257506411377726, 1.242382827708929, 2.0108227921844755, 5.953480030698451] (renorm, with Mark's layers normalized)
+
 
     percentile_expression = {
         'expression': 'service / percentile(service, 100.0)',
