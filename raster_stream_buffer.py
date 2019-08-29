@@ -340,6 +340,7 @@ if __name__ == '__main__':
         kwargs={
             'working_dir': WORKSPACE_DIR,
             'ignore_nodata': True,
+            'normalize_kernel': True,
             },
         dependent_task_list=[kernel_task, slope_task],
         target_path_list=[average_slope_raster],
