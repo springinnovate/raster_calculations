@@ -396,14 +396,15 @@ if __name__ == '__main__':
             dependent_task_list=[kernel_task, stream_task],
             target_path_list=[stream_buffer_raster],
             task_name='stream buffer %d pixels' % pixel_radius)
-    slope_threshold = 40.0
+    # cut it by half so we still get 40%
+    average_slope_threshold = 40.0 / 2.0
     slope_mask_nodata = -9999
     steep_slope_mask_path = os.path.join(
-        WORKSPACE_DIR, 'steep_slope_%.2f_mask.tif' % slope_threshold)
+        WORKSPACE_DIR, 'average_steep_slope_%.2f_mask.tif' % average_slope_threshold)
     task_graph.add_task(
         func=pygeoprocessing.symbolic.evaluate_raster_calculator_expression,
         args=(
-            'slope > %f' % slope_threshold,
+            'slope > %f' % average_slope_threshold,
             {'slope': (average_slope_raster, 1)}, slope_mask_nodata,
             steep_slope_mask_path),
         target_path_list=[steep_slope_mask_path],
