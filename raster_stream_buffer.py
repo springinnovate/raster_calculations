@@ -23,7 +23,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 DEM_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Dem10cr1_md5_1ec5d8b327316c8adc888dde96595a82.zip'
-LULC_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/LULC_scenario_new_updated1_md5_56e542974d914d073dfe97fa44f3a9a1.tif'
+LULC_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Base_LULC_CR_updated1_md5_a63f1e8a0538e268c6ae8701ccf0291b.tif'
 STREAM_LAYER_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Rivers_lascruces_KEL-20190827T205323Z-001_md5_76455ad11ee32423388f0bbf22f07795.zip'
 WORKSPACE_DIR = 'raster_stream_buffer_workspace'
 
@@ -145,7 +145,7 @@ def rasterize_streams(
         burn_values=[1])
 
 
-def distance_kernel(pixel_radius, kernel_filepath):
+def hat_distance_kernel(pixel_radius, kernel_filepath):
     """Create a raster-based 0, 1 kernel path.
 
     Parameters:
@@ -159,32 +159,70 @@ def distance_kernel(pixel_radius, kernel_filepath):
 
     """
     kernel_size = int((pixel_radius)*2+1)
-
     driver = gdal.GetDriverByName('GTiff')
     kernel_dataset = driver.Create(
         kernel_filepath.encode('utf-8'), kernel_size, kernel_size, 1,
         gdal.GDT_Float32, options=[
             'BIGTIFF=IF_SAFER', 'TILED=YES', 'BLOCKXSIZE=256',
             'BLOCKYSIZE=256'])
-
     # Make some kind of geotransform, it doesn't matter what but
     # will make GIS libraries behave better if it's all defined
     kernel_dataset.SetGeoTransform([0, 1, 0, 0, 0, -1])
     srs = osr.SpatialReference()
     srs.SetWellKnownGeogCS('WGS84')
     kernel_dataset.SetProjection(srs.ExportToWkt())
-
     kernel_band = kernel_dataset.GetRasterBand(1)
     kernel_band.SetNoDataValue(-9999)
-
     cols_per_block, rows_per_block = kernel_band.GetBlockSize()
-
     row_indices, col_indices = numpy.indices(
         (kernel_size, kernel_size), dtype=numpy.float) - pixel_radius
 
     kernel_index_distances = numpy.hypot(row_indices, col_indices)
     kernel = kernel_index_distances <= pixel_radius
     kernel_band.WriteArray(kernel)
+
+    kernel_band.FlushCache()
+    kernel_dataset.FlushCache()
+    kernel_band = None
+    kernel_dataset = None
+
+
+def linear_decay_kernel(pixel_radius, kernel_filepath):
+    """Create a raster-based linear decay kernel path.
+
+    Parameters:
+        pixel_radius (int): Radius of the kernel in pixels.
+        kernel_filepath (string): The path to the file on disk where this
+            kernel should be stored.  If this file exists, it will be
+            overwritten.
+
+    Returns:
+        None
+
+    """
+    kernel_size = int((pixel_radius)*2+1)
+    driver = gdal.GetDriverByName('GTiff')
+    kernel_dataset = driver.Create(
+        kernel_filepath.encode('utf-8'), kernel_size, kernel_size, 1,
+        gdal.GDT_Float32, options=[
+            'BIGTIFF=IF_SAFER', 'TILED=YES', 'BLOCKXSIZE=256',
+            'BLOCKYSIZE=256'])
+    # Make some kind of geotransform, it doesn't matter what but
+    # will make GIS libraries behave better if it's all defined
+    kernel_dataset.SetGeoTransform([0, 1, 0, 0, 0, -1])
+    srs = osr.SpatialReference()
+    srs.SetWellKnownGeogCS('WGS84')
+    kernel_dataset.SetProjection(srs.ExportToWkt())
+    kernel_band = kernel_dataset.GetRasterBand(1)
+    kernel_band.SetNoDataValue(-9999)
+    cols_per_block, rows_per_block = kernel_band.GetBlockSize()
+    row_indices, col_indices = numpy.indices(
+        (kernel_size, kernel_size), dtype=numpy.float) - pixel_radius
+
+    kernel_index_distances = numpy.hypot(row_indices, col_indices)
+    inverse_distances = (pixel_radius - kernel_index_distances) / pixel_radius
+    inverse_distances[inverse_distances < 0] = 0
+    kernel_band.WriteArray(inverse_distances)
 
     kernel_band.FlushCache()
     kernel_dataset.FlushCache()
@@ -283,6 +321,29 @@ if __name__ == '__main__':
         dependent_task_list=[align_task],
         task_name='calculate slope')
 
+    slope_avg_pixel_radius = 5
+    slope_avg_kernel_filepath = os.path.join(
+        WORKSPACE_DIR, 'slope_kernel_%d.tif' % slope_avg_pixel_radius)
+    kernel_task = task_graph.add_task(
+        func=linear_decay_kernel,
+        args=(slope_avg_pixel_radius, slope_avg_kernel_filepath),
+        target_path_list=[slope_avg_kernel_filepath],
+        task_name='make slope average kernel %d' % slope_avg_pixel_radius)
+    average_slope_raster = os.path.join(
+        WORKSPACE_DIR, '%_avg_slope.tif' % (slope_avg_pixel_radius))
+    avg_slope_task = task_graph.add_task(
+        func=pygeoprocessing.convolve_2d,
+        args=(
+            (slope_raster_path, 1), (slope_avg_kernel_filepath, 1),
+            average_slope_raster),
+        kwargs={
+            'working_dir': WORKSPACE_DIR,
+            'ignore_nodata': True,
+            },
+        dependent_task_list=[kernel_task, slope_task],
+        target_path_list=[average_slope_raster],
+        task_name='slope average to %d pixels' % slope_avg_pixel_radius)
+
     flow_direction_path = os.path.join(WORKSPACE_DIR, 'mfd_flow_dir.tif')
     flow_dir_task = task_graph.add_task(
         func=pygeoprocessing.routing.flow_dir_mfd,
@@ -314,7 +375,7 @@ if __name__ == '__main__':
         kernel_filepath = os.path.join(
             WORKSPACE_DIR, '%d_kernel.tif' % pixel_radius)
         kernel_task = task_graph.add_task(
-            func=distance_kernel,
+            func=hat_distance_kernel,
             args=(pixel_radius, kernel_filepath),
             target_path_list=[kernel_filepath],
             task_name='make kernel')
@@ -341,10 +402,10 @@ if __name__ == '__main__':
         func=pygeoprocessing.symbolic.evaluate_raster_calculator_expression,
         args=(
             'slope > %f' % slope_threshold,
-            {'slope': (slope_raster_path, 1)}, slope_mask_nodata,
+            {'slope': (average_slope_raster, 1)}, slope_mask_nodata,
             steep_slope_mask_path),
         target_path_list=[steep_slope_mask_path],
-        dependent_task_list=[slope_task],
+        dependent_task_list=[avg_slope_task],
         task_name='mask slope')
 
     lulc_to_converted_map = {
