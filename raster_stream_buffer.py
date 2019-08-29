@@ -32,11 +32,11 @@ def conditional_convert_op(
         base_lulc, lulc_nodata, converted_lulc, buffer_1_array,
         buffer_5_array, high_slope_array, high_slope_nodata,
         stream_array, target_nodata):
-    """Convert LULC to the converted one on the special cases:
+    """Convert LULC to the converted one on the special cases.
 
-        convert lulc to converted if:
-            buffer_size_path_map[1] == 1
-            or buffer_size_path_map[5] == 1 & steep_slope_mask_path
+    convert lulc to converted if:
+        buffer_size_path_map[1] == 1
+        or buffer_size_path_map[5] == 1 & steep_slope_mask_path
 
     """
     result = numpy.empty(base_lulc.shape, dtype=numpy.int16)
@@ -129,7 +129,8 @@ def length_of_degree(lat):
         m1 + m2 * numpy.cos(2 * lat_rad) + m3 * numpy.cos(4 * lat_rad) +
         m4 * numpy.cos(6 * lat_rad))
     longlen = abs(
-        p1 * numpy.cos(lat_rad) + p2 * numpy.cos(3 * lat_rad) + p3 * numpy.cos(5 * lat_rad))
+        p1 * numpy.cos(lat_rad) + p2 * numpy.cos(3 * lat_rad) + p3 *
+        numpy.cos(5 * lat_rad))
     return max(latlen, longlen)
 
 
@@ -330,7 +331,7 @@ if __name__ == '__main__':
         target_path_list=[slope_avg_kernel_filepath],
         task_name='make slope average kernel %d' % slope_avg_pixel_radius)
     average_slope_raster = os.path.join(
-        WORKSPACE_DIR, '%_avg_slope.tif' % (slope_avg_pixel_radius))
+        WORKSPACE_DIR, '%d_avg_slope.tif' % (slope_avg_pixel_radius))
     avg_slope_task = task_graph.add_task(
         func=pygeoprocessing.convolve_2d,
         args=(
