@@ -31,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    path = r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_sedimentdeposition.tif"
+    path = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif'
     percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:
