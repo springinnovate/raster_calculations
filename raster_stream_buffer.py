@@ -379,7 +379,7 @@ if __name__ == '__main__':
     distance_to_stream_path = os.path.join(
         WORKSPACE_DIR, 'distance_to_stream_in_pixels.tif')
     distance_to_stream_task = task_graph.add_task(
-        func=pygeoprocessing.distance_to_channel_mfd,
+        func=pygeoprocessing.routing.distance_to_channel_mfd,
         args=(
             (flow_direction_path, 1), (stream_raster_path, 1),
             distance_to_stream_path),
@@ -391,7 +391,7 @@ if __name__ == '__main__':
     slope_sum_to_stream_path = os.path.join(
         WORKSPACE_DIR, 'sum_of_slope_to_stream.tif')
     slope_sum_to_stream_task = task_graph.add_task(
-        func=pygeoprocessing.distance_to_channel_mfd,
+        func=pygeoprocessing.routing.distance_to_channel_mfd,
         args=(
             (flow_direction_path, 1), (stream_raster_path, 1),
             slope_sum_to_stream_path),
