@@ -29,7 +29,120 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+    normalized_service_list = [
+        {
+            'expression': 'service/ percentile(service, 99)',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_wood_products.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "raw_normalized_potential_wood_products.tif",
+        },
+        {
+            'expression': 'service/ percentile(service, 99)',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_pollination_edge.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "raw_normalized_potential_pollination_edge.tif",
+        },
+        {
+            'expression': 'service/ percentile(service, 99)',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_sedimentdeposition.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "raw_normalized_potential_sediment.tif",
+        },
+        {
+            'expression': 'service/ percentile(service, 99)',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_grazing.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "raw_normalized_potential_grazing.tif",
+        },
+        {
+            'expression': 'service/ percentile(service, 99)',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_nitrogenretention.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "raw_normalized_potential_nitrogen.tif",
+        },
+    ]
+
+    for calculation in normalized_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return #terminates at this point
+
+    clamping_service_list = [
+        {
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)',
+            'symbol_to_path_map': {
+                'val': "raw_normalized_realized_nitrogen_downstream.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "normalized_realized_nitrogen_downstream.tif",
+        },
+        {
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)',
+            'symbol_to_path_map': {
+                'val': "raw_normalized_realized_sediment_downstream.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "normalized_realized_sediment_downstream.tif",
+        },
+        {
+            'expression': '(val >= 0) * (val < 1) * val + (val >= 1)',
+            'symbol_to_path_map': {
+                'val': "raw_normalized_realized_pollination.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "normalized_realized_pollination.tif",
+        },
+    ]
+
+    for calculation in clamping_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+
+    TASK_GRAPH.join()
     
+    synthesis_index_expression = {
+            'expression': 'nitrogen + sediment + pollination + nwfp + timber + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': "normalized_realized_nitrogen_downstream.tif",
+                'sediment': "normalized_realized_sediment_downstream.tif",
+                'pollination': "normalized_realized_pollination.tif",
+                'nwfp': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_nwfp_md5_f1cce72af652fd16e25bfa34a6bddc63.tif',
+                'timber': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_timber_md5_5154151ebe061cfa31af2c52595fa5f9.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_score_nspntg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        synthesis_index_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return #terminates at this point
+
+
+
+
+
 
     normalized_service_list = [
         {

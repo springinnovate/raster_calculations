@@ -31,8 +31,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-
-    path = r"C:\Users\Becky\Documents\raster_calculations\aggregate_realized_ES_score_nspntg_renorm_md5_f788b5b627aa06c4028a2277da9d8dc0.tif"
+    path = r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_sedimentdeposition.tif"
     percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:
@@ -46,6 +45,7 @@ def main():
     shutil.rmtree(percentile_working_dir)
     #this gets rid of that termporary directory
     print(percentile_values_list)
+
     return  # terminates at this point
 
 #realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501
@@ -63,6 +63,65 @@ def main():
 #aggregate
 #        [0.0,         0.0, 9.21e-05, 0.03501,     0.2486041,          1.0089664579947066, 1.708877055645255,       5.465055904557587]
 # [0.0, 0.0, 0.00011389717641436895, 0.04634972283590727, 0.35257506411377726, 1.242382827708929, 2.0108227921844755, 5.953480030698451] (renorm, with Mark's layers normalized)
+
+## potential
+# \raster_calculations\CNC_workspace\potential_wood_products.tif
+# [0.0, 0.0, 0.0, 5.337533800359173e-13, 0.07046046108007431, 0.6822813153266907, 0.9767299890518188, 1.0]
+# \raster_calculations\CNC_workspace\potential_grazing.tif
+#[0.0, 0.0, 0.0, 0.0, 0.0, 0.3169699013233185, 0.6685281991958618, 1.0]
+# r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_nitrogenretention.tif"
+# [-860.8894653320312, 0.0, 0.0, 30.9406681060791, 44.82950973510742, 68.58059692382812, 122.13092803955078, 11120.1875]
+# r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_sedimentdeposition.tif"
+
+
+
+
+
+
+    poll_path = r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_pollination_edge.tif"
+    poll_working_dir = r"C:\Users\Becky\Documents\raster_calculations\poll_working_dir"
+    try:
+        os.makedirs(poll_working_dir)
+    except OSError:
+        pass
+    poll_values_list = pygeoprocessing.raster_band_percentile(
+        (poll_path, 1), poll_working_dir, [0, 1, 25, 50, 75, 95, 99, 100])
+    shutil.rmtree(poll_working_dir)
+    print("potential_pollination_edge.tif")
+    print(poll_values_list)
+   
+    TASK_GRAPH.join()
+
+    sed_path = r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_sedimentdeposition.tif"
+    sed_working_dir = r"C:\Users\Becky\Documents\raster_calculations\sed_working_dir"
+    try:
+        os.makedirs(sed_working_dir)
+    except OSError:
+        pass
+    sed_values_list = pygeoprocessing.raster_band_percentile(
+        (sed_path, 1), sed_working_dir, [0, 1, 25, 50, 75, 95, 99, 100])
+    shutil.rmtree(sed_working_dir)
+    
+    print("potential_sedimentdeposition.tif")
+    print(sed_values_list)
+   
+    TASK_GRAPH.join()
+
+    nit_path = r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_nitrogenretention.tif"
+    nit_working_dir = r"C:\Users\Becky\Documents\raster_calculations\nit_working_dir"
+    try:
+        os.makedirs(nit_working_dir)
+    except OSError:
+        pass
+    nit_values_list = pygeoprocessing.raster_band_percentile(
+        (nit_path, 1), nit_working_dir, [0, 1, 25, 50, 75, 95, 99, 100])
+    shutil.rmtree(nit_working_dir)
+    
+    print("potential_nitrogenretention.tif")
+    print(nit_values_list)
+   
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
 
 
     percentile_expression = {
