@@ -42,14 +42,11 @@ def conditional_convert_op(
     result[:] = target_nodata
     lulc_nodata_mask = (base_lulc == lulc_nodata)
     result[~lulc_nodata_mask] = base_lulc[~lulc_nodata_mask]
-    nodata_mask = (
-        lulc_nodata_mask |
-        (numpy.isclose(high_slope_array, high_slope_nodata)))
-    valid_mask = (~nodata_mask) & (
+    valid_mask = (~lulc_nodata_mask) & (
         (buffer_10m_array >= 1) | (
             (flow_accum_50m_slope_mask_array >= 1)))
     result[valid_mask] = converted_lulc[valid_mask]
-    stream_mask = (stream_array == 1) & (~nodata_mask)
+    stream_mask = (stream_array == 1) & (~lulc_nodata_mask)
     result[stream_mask] = 4
     return result
 
