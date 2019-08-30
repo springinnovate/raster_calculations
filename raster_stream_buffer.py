@@ -322,29 +322,7 @@ if __name__ == '__main__':
         dependent_task_list=[align_task],
         task_name='calculate slope')
 
-    slope_avg_pixel_radius = 5
-    slope_avg_kernel_filepath = os.path.join(
-        WORKSPACE_DIR, 'slope_kernel_%d.tif' % slope_avg_pixel_radius)
-    kernel_task = task_graph.add_task(
-        func=linear_decay_kernel,
-        args=(slope_avg_pixel_radius, slope_avg_kernel_filepath),
-        target_path_list=[slope_avg_kernel_filepath],
-        task_name='make slope average kernel %d' % slope_avg_pixel_radius)
-    average_slope_raster = os.path.join(
-        WORKSPACE_DIR, '%d_avg_slope.tif' % (slope_avg_pixel_radius))
-    avg_slope_task = task_graph.add_task(
-        func=pygeoprocessing.convolve_2d,
-        args=(
-            (slope_raster_path, 1), (slope_avg_kernel_filepath, 1),
-            average_slope_raster),
-        kwargs={
-            'working_dir': WORKSPACE_DIR,
-            'ignore_nodata': True,
-            'normalize_kernel': True,
-            },
-        dependent_task_list=[kernel_task, slope_task],
-        target_path_list=[average_slope_raster],
-        task_name='slope average to %d pixels' % slope_avg_pixel_radius)
+    slope_avg_pixel_length = 5
 
     flow_direction_path = os.path.join(WORKSPACE_DIR, 'mfd_flow_dir.tif')
     flow_dir_task = task_graph.add_task(
@@ -396,8 +374,54 @@ if __name__ == '__main__':
             dependent_task_list=[kernel_task, stream_task],
             target_path_list=[stream_buffer_raster],
             task_name='stream buffer %d pixels' % pixel_radius)
-    # cut it by half so we still get 40%
-    average_slope_threshold = 40.0 / 2.0
+
+    # 1) calculate distance to channel
+    distance_to_stream_path = os.path.join(
+        WORKSPACE_DIR, 'distance_to_stream_in_pixels.tif')
+    distance_to_stream_task = task_graph.add_task(
+        func=pygeoprocessing.distance_to_channel_mfd,
+        args=(
+            (flow_direction_path, 1), (stream_raster_path, 1),
+            distance_to_stream_path),
+        dependent_task_list=[stream_task],
+        target_path_list=[distance_to_stream_path],
+        task_name='distance to stream')
+
+    # 2) calculate weighted distance to channel with slope as distance
+    slope_sum_to_stream_path = os.path.join(
+        WORKSPACE_DIR, 'sum_of_slope_to_stream.tif')
+    slope_sum_to_stream_task = task_graph.add_task(
+        func=pygeoprocessing.distance_to_channel_mfd,
+        args=(
+            (flow_direction_path, 1), (stream_raster_path, 1),
+            slope_sum_to_stream_path),
+        kwargs={
+            'weight_raster_path_band': (slope_raster_path, 1)
+        },
+        target_path_list=[slope_sum_to_stream_path],
+        dependent_task_list=[slope_task, stream_task],
+        task_name='slope sum to stream')
+
+    # 3) divide weighted distance by distance -- this is the average slope
+    #    to the stream -- use that in the threshold
+    slope_to_stream_nodata = -1
+    slope_to_stream_path = os.path.join(
+        WORKSPACE_DIR, 'slope_to_stream.tif')
+    slope_to_stream_task = task_graph.add_task(
+        func=pygeoprocessing.symbolic.evaluate_raster_calculator_expression,
+        args=(
+            'sum_of_slope / distance_to_stream',
+            {
+                'sum_of_slope': slope_sum_to_stream_path,
+                'distance_to_stream': distance_to_stream_path,
+            },
+            slope_to_stream_nodata, slope_to_stream_path),
+        target_path_list=[slope_to_stream_path],
+        dependent_task_list=[
+            slope_sum_to_stream_task, distance_to_stream_task],
+        task_name='slope to stream')
+
+    average_slope_threshold = 40.0
     slope_mask_nodata = -9999
     steep_slope_mask_path = os.path.join(
         WORKSPACE_DIR, 'average_steep_slope_%.2f_mask.tif' % average_slope_threshold)
@@ -405,10 +429,10 @@ if __name__ == '__main__':
         func=pygeoprocessing.symbolic.evaluate_raster_calculator_expression,
         args=(
             'slope > %f' % average_slope_threshold,
-            {'slope': (average_slope_raster, 1)}, slope_mask_nodata,
+            {'slope': (slope_to_stream_path, 1)}, slope_mask_nodata,
             steep_slope_mask_path),
         target_path_list=[steep_slope_mask_path],
-        dependent_task_list=[avg_slope_task],
+        dependent_task_list=[slope_to_stream_task],
         task_name='mask slope')
 
     lulc_to_converted_map = {
