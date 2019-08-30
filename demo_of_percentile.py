@@ -31,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    path = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif'
+    path = 'potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif'
     percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:
@@ -49,10 +49,10 @@ def main():
     return  # terminates at this point
 
 #realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501
-#        0th           25th    50th                 75th                   95th               99th                 100th    
+#        0th           25th    50th                 75th                   95th               99th                 100th
 #  -680618713.5250311, 0.0, 13816.789725814846, 6,973,767.683561915, 79,365,495.3211188, 301,244,797.7473311, 38,828,470,375.24423
 # realized_sedimentdeposition_downstream_md5_1613b12643898c1475c5ec3180836770
-#        0th           1st  25th       50th          75th                   95th               99th                 100th  
+#        0th           1st  25th       50th          75th                   95th               99th                 100th
 # [-2858.336473792897, 0.0, 0.0,        0.0,     402.0619507020006,    357620.664287882,   16,535,749.256560648,   6,597,664,634,840.14]
 #realized_timber_md5_5154151ebe061cfa31af2c52595fa5f9
 #        [0.0,        0.0,    0.0,       0.0,   0.012081013061106205,  0.31635093688964844, 0.7717771530151367,     1.0]
@@ -89,7 +89,7 @@ def main():
     shutil.rmtree(poll_working_dir)
     print("potential_pollination_edge.tif")
     print(poll_values_list)
-   
+
     TASK_GRAPH.join()
 
     sed_path = r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_sedimentdeposition.tif"
@@ -101,10 +101,10 @@ def main():
     sed_values_list = pygeoprocessing.raster_band_percentile(
         (sed_path, 1), sed_working_dir, [0, 1, 25, 50, 75, 95, 99, 100])
     shutil.rmtree(sed_working_dir)
-    
+
     print("potential_sedimentdeposition.tif")
     print(sed_values_list)
-   
+
     TASK_GRAPH.join()
 
     nit_path = r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_nitrogenretention.tif"
@@ -116,10 +116,10 @@ def main():
     nit_values_list = pygeoprocessing.raster_band_percentile(
         (nit_path, 1), nit_working_dir, [0, 1, 25, 50, 75, 95, 99, 100])
     shutil.rmtree(nit_working_dir)
-    
+
     print("potential_nitrogenretention.tif")
     print(nit_values_list)
-   
+
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
@@ -138,7 +138,7 @@ def main():
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
-    
+
 
 
 if __name__ == '__main__':
