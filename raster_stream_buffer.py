@@ -22,6 +22,8 @@ logging.basicConfig(
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
 
+N_CPUS = 4
+
 DEM_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Dem10cr1_md5_1ec5d8b327316c8adc888dde96595a82.zip'
 LULC_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Base_LULC_CR_updated1_md5_a63f1e8a0538e268c6ae8701ccf0291b.tif'
 STREAM_LAYER_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Rivers_lascruces_KEL-20190827T205323Z-001_md5_76455ad11ee32423388f0bbf22f07795.zip'
@@ -232,7 +234,7 @@ if __name__ == '__main__':
         os.makedirs(WORKSPACE_DIR)
     except OSError:
         pass
-    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, 4, 5)
+    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, N_CPUS, 5)
     dem_download_token_path = os.path.join(
         WORKSPACE_DIR, 'dem_downloaded.TOKEN')
     dem_raster_path = os.path.join(WORKSPACE_DIR, 'Dem10cr1', 'Dem10cr1')
@@ -378,7 +380,7 @@ if __name__ == '__main__':
     steep_slope_50m_task = task_graph.add_task(
         func=pygeoprocessing.symbolic.evaluate_raster_calculator_expression,
         args=(
-            '(slope > %f) * (distance_to_stream < %d)' % (
+            '(slope > %f) * (distance_to_stream <= %d)' % (
                 slope_threshold, 5),
             {'slope': (slope_raster_path, 1),
              'distance_to_stream': (stream_dist_task_path_map[5][1], 1)},
@@ -395,7 +397,7 @@ if __name__ == '__main__':
         func=pygeoprocessing.routing.flow_accumulation_mfd,
         args=(
             (flow_direction_path, 1), flow_accum_slope_mask_path),
-        kwargs={'weight_raster_path_band': steep_slope_50m_mask_path},
+        kwargs={'weight_raster_path_band': (steep_slope_50m_mask_path, 1)},
         target_path_list=[flow_accum_slope_mask_path],
         dependent_task_list=[steep_slope_50m_task, flow_dir_task],
         task_name='masked slope weighted flow accum')
