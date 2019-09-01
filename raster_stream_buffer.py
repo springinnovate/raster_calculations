@@ -337,24 +337,15 @@ if __name__ == '__main__':
         dependent_task_list=[flow_dir_task],
         task_name='flow accum')
 
-    stream_raster_path = os.path.join(WORKSPACE_DIR, 'stream.tif')
-    stream_task = task_graph.add_task(
-        func=pygeoprocessing.routing.extract_streams_mfd,
-        args=((flow_accum_path, 1), (flow_direction_path, 1), 1000,
-              stream_raster_path),
-        target_path_list=[stream_raster_path],
-        dependent_task_list=[flow_accum_task],
-        task_name='calc stream')
-
     # 1) calculate distance to channel
     distance_to_stream_path = os.path.join(
         WORKSPACE_DIR, 'distance_to_stream_in_pixels.tif')
     distance_to_stream_task = task_graph.add_task(
         func=pygeoprocessing.routing.distance_to_channel_mfd,
         args=(
-            (flow_direction_path, 1), (stream_raster_path, 1),
+            (flow_direction_path, 1), (rasterized_streams_raster_path, 1),
             distance_to_stream_path),
-        dependent_task_list=[stream_task],
+        dependent_task_list=[rasterize_streams_task],
         target_path_list=[distance_to_stream_path],
         task_name='distance to stream')
 
@@ -458,7 +449,7 @@ if __name__ == '__main__':
             ((aligned_raster_path_list[1], 1), (base_lulc_nodata, 'raw'),
              (potential_converted_landover_raster_path, 1),
              (stream_dist_task_path_map[1][1], 1),
-             (flow_accum_slope_mask_path, 1), (stream_raster_path, 1),
+             (flow_accum_slope_mask_path, 1), (rasterized_streams_raster_path, 1),
              (target_lulc_nodata, 'raw')),
             conditional_convert_op, converted_landover_raster_path,
             gdal.GDT_Int16, target_lulc_nodata),
