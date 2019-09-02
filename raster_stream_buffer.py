@@ -49,7 +49,7 @@ def conditional_convert_op(
     lulc_nodata_mask = (base_lulc == lulc_nodata)
     result[~lulc_nodata_mask] = base_lulc[~lulc_nodata_mask]
     valid_mask = (~lulc_nodata_mask) & (
-        (buffer_10m_array >= 1) | (
+        (buffer_10m_array == 1) | (
             (rasterized_50m_buffer_raster_path == 1) &
             (flow_accum_50m_slope_mask_array >= 1)))
     result[valid_mask] = converted_lulc[valid_mask]
