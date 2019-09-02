@@ -27,12 +27,16 @@ N_CPUS = 4
 DEM_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Dem10cr1_md5_1ec5d8b327316c8adc888dde96595a82.zip'
 LULC_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Base_LULC_CR_updated1_md5_a63f1e8a0538e268c6ae8701ccf0291b.tif'
 STREAM_LAYER_ECOSHARD_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/Rivers_lascruces_KEL-20190827T205323Z-001_md5_76455ad11ee32423388f0bbf22f07795.zip'
+STREAM_10M_BUFFER_PATH = '10mbuffer.gpkg'
+STREAM_50M_BUFFER_PATH = '50mbuffer.gpkg'
 WORKSPACE_DIR = 'raster_stream_buffer_workspace'
 
 
 def conditional_convert_op(
         base_lulc, lulc_nodata, converted_lulc, buffer_10m_array,
-        flow_accum_50m_slope_mask_array, stream_array, target_nodata):
+        flow_accum_50m_slope_mask_array,
+        rasterized_50m_buffer_raster_path,
+        stream_array, target_nodata):
     """Convert LULC to the converted one on the special cases.
 
     convert lulc to converted if:
@@ -46,6 +50,7 @@ def conditional_convert_op(
     result[~lulc_nodata_mask] = base_lulc[~lulc_nodata_mask]
     valid_mask = (~lulc_nodata_mask) & (
         (buffer_10m_array >= 1) | (
+            rasterized_50m_buffer_raster_path &
             (flow_accum_50m_slope_mask_array >= 1)))
     result[valid_mask] = converted_lulc[valid_mask]
     stream_mask = (stream_array == 1) & (~lulc_nodata_mask)
@@ -59,6 +64,20 @@ def mask_by_value_op(array, value, nodata):
     result[:] = 0
     result[array == value] = 1
     result[numpy.isclose(array, nodata)] = 2
+    return result
+
+
+def mask_slope_and_distance(
+        slope_array, slope_threshold, slope_nodata,
+        dist_array, dist_threshold, dist_nodata, target_nodata):
+    result = numpy.empty(slope_array.shape, dtype=numpy.int8)
+    result[:] = target_nodata
+    valid_mask = (
+        ~numpy.isclose(slope_array, slope_nodata) &
+        ~numpy.isclose(dist_array, dist_nodata))
+    result[valid_mask] = (
+        (slope_array[valid_mask] < slope_threshold) &
+        (dist_array[valid_mask] < dist_threshold))
     return result
 
 
@@ -292,6 +311,26 @@ if __name__ == '__main__':
             dependent_task_list=[align_task],
             task_name='rasterize streams')
 
+    rasterized_10m_buffer_raster_path = os.path.join(
+        WORKSPACE_DIR, 'rasterized_10m_buffer_streams.tif')
+    rasterize_10m_buffer_task = task_graph.add_task(
+            func=rasterize_streams,
+            args=(aligned_raster_path_list[0], STREAM_10M_BUFFER_PATH,
+                  rasterized_10m_buffer_raster_path),
+            target_path_list=[rasterized_10m_buffer_raster_path],
+            dependent_task_list=[align_task],
+            task_name='rasterize 10m buffer')
+
+    rasterized_50m_buffer_raster_path = os.path.join(
+        WORKSPACE_DIR, 'rasterized_50m_buffer_streams.tif')
+    rasterize_50m_buffer_task = task_graph.add_task(
+            func=rasterize_streams,
+            args=(aligned_raster_path_list[0], STREAM_50M_BUFFER_PATH,
+                  rasterized_50m_buffer_raster_path),
+            target_path_list=[rasterized_50m_buffer_raster_path],
+            dependent_task_list=[align_task],
+            task_name='rasterize 50m buffer')
+
     burned_dem_path = os.path.join(WORKSPACE_DIR, 'burned_dem.tif')
     burn_dem_task = task_graph.add_task(
         func=burn_dem,
@@ -320,8 +359,6 @@ if __name__ == '__main__':
         dependent_task_list=[align_task],
         task_name='calculate slope')
 
-    slope_avg_pixel_length = 5
-
     flow_direction_path = os.path.join(WORKSPACE_DIR, 'mfd_flow_dir.tif')
     flow_dir_task = task_graph.add_task(
         func=pygeoprocessing.routing.flow_dir_mfd,
@@ -339,38 +376,6 @@ if __name__ == '__main__':
         dependent_task_list=[flow_dir_task],
         task_name='flow accum')
 
-    # 1) calculate distance to channel
-    distance_to_stream_path = os.path.join(
-        WORKSPACE_DIR, 'distance_to_stream_in_pixels.tif')
-    distance_to_stream_task = task_graph.add_task(
-        func=pygeoprocessing.routing.distance_to_channel_mfd,
-        args=(
-            (flow_direction_path, 1), (rasterized_streams_raster_path, 1),
-            distance_to_stream_path),
-        dependent_task_list=[rasterize_streams_task],
-        target_path_list=[distance_to_stream_path],
-        task_name='distance to stream')
-
-    # 2) make a mask for 10m and 50m to channel
-    stream_dist_task_path_map = {}
-    buffer_nodata = -1
-    for pixel_radius in [1, 5]:
-        stream_distance_raster = os.path.join(
-            WORKSPACE_DIR, '%d_stream_buffer.tif' % (pixel_radius))
-        dist_to_stream_task = task_graph.add_task(
-            func=pygeoprocessing.symbolic.evaluate_raster_calculator_expression,
-            args=(
-                'distance_to_stream < %d' % pixel_radius,
-                {
-                    'distance_to_stream': (distance_to_stream_path, 1),
-                },
-                buffer_nodata, stream_distance_raster),
-            target_path_list=[stream_distance_raster],
-            dependent_task_list=[distance_to_stream_task],
-            task_name='stream buffer %d pixels' % pixel_radius)
-        stream_dist_task_path_map[pixel_radius] = (
-            dist_to_stream_task, stream_distance_raster)
-
     # 3) make slope threshold mask
     slope_threshold = 40.0
     slope_mask_nodata = -9999
@@ -380,15 +385,14 @@ if __name__ == '__main__':
     steep_slope_50m_task = task_graph.add_task(
         func=pygeoprocessing.symbolic.evaluate_raster_calculator_expression,
         args=(
-            '(slope > %f) * (distance_to_stream <= %d)' % (
-                slope_threshold, 5),
+            'And(slope > %f, buffer_50m_mask)' % slope_threshold,
             {'slope': (slope_raster_path, 1),
-             'distance_to_stream': (stream_dist_task_path_map[5][1], 1)},
+             'buffer_50m_mask': (rasterized_50m_buffer_raster_path, 1)},
             slope_mask_nodata,
             steep_slope_50m_mask_path),
         target_path_list=[steep_slope_50m_mask_path],
-        dependent_task_list=[slope_task, stream_dist_task_path_map[5][0]],
-        task_name='mask slope to 40%')
+        dependent_task_list=[slope_task, rasterize_50m_buffer_task],
+        task_name='mask slope to %.2f%%' % slope_threshold)
 
     # 4) weighted flow accum of slope threshold mask
     flow_accum_slope_mask_path = os.path.join(
@@ -450,8 +454,10 @@ if __name__ == '__main__':
         args=(
             ((aligned_raster_path_list[1], 1), (base_lulc_nodata, 'raw'),
              (potential_converted_landover_raster_path, 1),
-             (stream_dist_task_path_map[1][1], 1),
-             (flow_accum_slope_mask_path, 1), (rasterized_streams_raster_path, 1),
+             (rasterized_10m_buffer_raster_path, 1),
+             (flow_accum_slope_mask_path, 1),
+             (rasterized_50m_buffer_raster_path, 1),
+             (rasterized_streams_raster_path, 1),
              (target_lulc_nodata, 'raw')),
             conditional_convert_op, converted_landover_raster_path,
             gdal.GDT_Int16, target_lulc_nodata),
