@@ -31,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    path = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif'
+    path = r"C:\Users\Becky\Documents\raster_calculations\aggregate_potential_ES_score_nspwng.tif"
     percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:
@@ -40,7 +40,7 @@ def main():
         pass
         #checks to see if the directory already exists, if it doesn't it makes it, if it does it doesn't do anything
     percentile_values_list = pygeoprocessing.raster_band_percentile(
-        (path, 1), percentile_working_dir, [0, 1, 25, 50, 75, 95, 99, 100])
+        (path, 1), percentile_working_dir, [0, 10, 20, 30,40, 50, 60, 70, 80, 90, 95, 97.5, 100])
     # (path,1) is indicating the first band in that "path" raster; the 2nd argument is the working dir; the third is the list of percentiles we want
     shutil.rmtree(percentile_working_dir)
     #this gets rid of that termporary directory
@@ -72,8 +72,10 @@ def main():
 # r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_nitrogenretention.tif"
 # [-860.8894653320312, 0.0, 0.0, 30.9406681060791, 44.82950973510742, 68.58059692382812, 122.13092803955078, 11120.1875]
 # r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\potential_sedimentdeposition.tif"
-
-
+# [-0.0012096621794626117, 0.0, 0.0, 1.7197262422996573e-05, 0.007970078848302364, 1.40674889087677, 35.2034797668457, 1729475.125]
+# aggregate_potential_ES_score_nspwpg (only 5 services; nothing to surrogate for non-wood foraged products)
+# [8.223874317755279e-18, 0.06277088660611055, 0.31905198201749124, 0.43141886583982053, 0.5513050308982201, 0.7021776828519225, 0.8801414329582294, 1.0867488999270096, 1.3572950878165897, 1.5653558772021574, 2.14759821821794, 4.87844488615983]
+    
 
 
 
