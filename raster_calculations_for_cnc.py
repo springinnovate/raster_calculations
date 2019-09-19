@@ -305,9 +305,10 @@ def main():
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
-    TASK_GRAPH.join()
 
-    ecoshard aggregate*.tif --hash_file --rename --buildoverviews --interpolation_method average 
+    #why doesn't this work??    
+    #TASK_GRAPH.join()
+    #ecoshard aggregate*.tif --hash_file --rename --buildoverviews --interpolation_method average    
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
