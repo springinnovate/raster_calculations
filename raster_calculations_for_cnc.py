@@ -29,6 +29,291 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+    
+    aggregate_service_list = [
+        {
+            'expression': 'nitrogen + sediment + pollination + wood + nonwood + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_nitrogen_md5_00765388b2c864dbf242674187956d3d.tif',
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_sediment_md5_dc83a48d1879284106d093d9cf87b085.tif',
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_wood_masked_md5_0f8766045ac50683db7af59f988bcad8.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_md5_40577bae3ef60519b1043bb8582a07af.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_grazing_md5_36cf99f8af9743264b8cbaa72229488c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_nspwog.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + sediment + pollination + wood + nonwood + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nitrogen_downstream_md5_437e1759b0f994b47add4baf76509bbe.tif',
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_sediment_downstream_md5_daa86f70232c5e1a8a0efaf0b2653db2.tif',
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_pollination_md5_06f52f2854ae1c584742d587b1c31359.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_timber_masked_md5_fc5ad0ff1f4702d75f204267fc90b33f.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nwfp_masked_md5_754ba4d8cd0c54399fd816748a9e0091.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_nspwog.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + sediment + pollination + wood + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_nitrogen_md5_00765388b2c864dbf242674187956d3d.tif',
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_sediment_md5_dc83a48d1879284106d093d9cf87b085.tif',
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_wood_masked_md5_0f8766045ac50683db7af59f988bcad8.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_grazing_md5_36cf99f8af9743264b8cbaa72229488c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_nspwg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + sediment + pollination + wood + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nitrogen_downstream_md5_437e1759b0f994b47add4baf76509bbe.tif',
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_sediment_downstream_md5_daa86f70232c5e1a8a0efaf0b2653db2.tif',
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_pollination_md5_06f52f2854ae1c584742d587b1c31359.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_timber_masked_md5_fc5ad0ff1f4702d75f204267fc90b33f.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_nspwg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + pollination + wood + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_nitrogen_md5_00765388b2c864dbf242674187956d3d.tif',
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_wood_masked_md5_0f8766045ac50683db7af59f988bcad8.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_grazing_md5_36cf99f8af9743264b8cbaa72229488c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_npwg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + pollination + wood + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nitrogen_downstream_md5_437e1759b0f994b47add4baf76509bbe.tif',
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_pollination_md5_06f52f2854ae1c584742d587b1c31359.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_timber_masked_md5_fc5ad0ff1f4702d75f204267fc90b33f.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_npwg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'pollination + wood + grazing',
+            'symbol_to_path_map': {
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_wood_masked_md5_0f8766045ac50683db7af59f988bcad8.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_grazing_md5_36cf99f8af9743264b8cbaa72229488c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_pwg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'pollination + wood + grazing',
+            'symbol_to_path_map': {
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_pollination_md5_06f52f2854ae1c584742d587b1c31359.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_timber_masked_md5_fc5ad0ff1f4702d75f204267fc90b33f.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_pwg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'wood + grazing',
+            'symbol_to_path_map': {
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_wood_masked_md5_0f8766045ac50683db7af59f988bcad8.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_grazing_md5_36cf99f8af9743264b8cbaa72229488c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_wg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'wood + grazing',
+            'symbol_to_path_map': {
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_timber_masked_md5_fc5ad0ff1f4702d75f204267fc90b33f.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_wg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'pollination + grazing',
+            'symbol_to_path_map': {
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_grazing_md5_36cf99f8af9743264b8cbaa72229488c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_pg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'pollination + grazing',
+            'symbol_to_path_map': {
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_pollination_md5_06f52f2854ae1c584742d587b1c31359.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_pg.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'pollination + wood',
+            'symbol_to_path_map': {
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_wood_masked_md5_0f8766045ac50683db7af59f988bcad8.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_pw.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'pollination + wood',
+            'symbol_to_path_map': {
+                'pollination': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_pollination_md5_06f52f2854ae1c584742d587b1c31359.tif',
+                'wood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_timber_masked_md5_fc5ad0ff1f4702d75f204267fc90b33f.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_pw.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + sediment + nonwood + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_nitrogen_md5_00765388b2c864dbf242674187956d3d.tif',
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_sediment_md5_dc83a48d1879284106d093d9cf87b085.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_md5_40577bae3ef60519b1043bb8582a07af.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_grazing_md5_36cf99f8af9743264b8cbaa72229488c.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_nsog.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + sediment + nonwood + grazing',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nitrogen_downstream_md5_437e1759b0f994b47add4baf76509bbe.tif',
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_sediment_downstream_md5_daa86f70232c5e1a8a0efaf0b2653db2.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nwfp_masked_md5_754ba4d8cd0c54399fd816748a9e0091.tif',
+                'grazing': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_nsog.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + sediment + nonwood',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_nitrogen_md5_00765388b2c864dbf242674187956d3d.tif',
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_sediment_md5_dc83a48d1879284106d093d9cf87b085.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_md5_40577bae3ef60519b1043bb8582a07af.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_nso.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + sediment + nonwood',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nitrogen_downstream_md5_437e1759b0f994b47add4baf76509bbe.tif',
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_sediment_downstream_md5_daa86f70232c5e1a8a0efaf0b2653db2.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nwfp_masked_md5_754ba4d8cd0c54399fd816748a9e0091.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_nso.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'sediment + nonwood',
+            'symbol_to_path_map': {
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_sediment_md5_dc83a48d1879284106d093d9cf87b085.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_md5_40577bae3ef60519b1043bb8582a07af.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_so.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'sediment + nonwood',
+            'symbol_to_path_map': {
+                'sediment': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_sediment_downstream_md5_daa86f70232c5e1a8a0efaf0b2653db2.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nwfp_masked_md5_754ba4d8cd0c54399fd816748a9e0091.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_so.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + nonwood',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_nitrogen_md5_00765388b2c864dbf242674187956d3d.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_md5_40577bae3ef60519b1043bb8582a07af.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_potential_ES_score_no.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+        {
+            'expression': 'nitrogen + nonwood',
+            'symbol_to_path_map': {
+                'nitrogen': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nitrogen_downstream_md5_437e1759b0f994b47add4baf76509bbe.tif',
+                'nonwood': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_nwfp_masked_md5_754ba4d8cd0c54399fd816748a9e0091.tif',
+            },
+            'target_nodata': -1,
+            'target_raster_path': "aggregate_realized_ES_score_no.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        },
+    ]
+
+    for calculation in aggregate_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+
+    ecoshard  aggregate*.tif --hash_file --rename --buildoverviews --interpolation_method average 
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     normalized_service_list = [
         {
             'expression': 'service/ percentile(service, 99)',
