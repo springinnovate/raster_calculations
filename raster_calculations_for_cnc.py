@@ -307,7 +307,7 @@ def main():
 
     TASK_GRAPH.join()
 
-    ecoshard  aggregate*.tif --hash_file --rename --buildoverviews --interpolation_method average 
+    ecoshard aggregate*.tif --hash_file --rename --buildoverviews --interpolation_method average 
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
