@@ -135,3 +135,7 @@ def main():
         #     '90                     %14.2f\n'
         #     '100                    %14.2f\n' % (
         #         path, top2_sum, top5_sum, top10_sum, top20_sum, top30_sum, top40_sum, top50_sum, top60_sum, top70_sum, top80_sum, top90_sum, full_sum))
+
+
+if __name__ == '__main__':
+    main()
