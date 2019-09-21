@@ -4,13 +4,10 @@ import sys
 import os
 import shutil
 import logging
-import multiprocessing
 
 import pygeoprocessing
 import numpy
-import raster_calculations_core
 from osgeo import gdal
-import taskgraph
 
 gdal.SetCacheMax(2**30)
 
@@ -30,7 +27,6 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 def main():
-
     """Write your expression here."""
 
     # commenting out because you have a loop to do this now
