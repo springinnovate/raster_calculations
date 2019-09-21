@@ -42,6 +42,9 @@ def main():
     except OSError:
         pass
 
+    table_path = 'percentile_cdf_pipline_table.csv'
+    table_file = open(table_path, 'w')
+
     # this is the directory the loop will search through
     base_directory = r"C:\Users\Becky\Documents\raster_calculations"
     # this will loop through every file that ends in ".tif" in the base
@@ -62,51 +65,12 @@ def main():
         print(path, percentile_values_list)
 
         nodata_value = pygeoprocessing.get_raster_info(path)['nodata'][0]
-        #top2_sum = 0.0
-        #top5_sum = 0.0
-        #top10_sum = 0.0
-        #top20_sum = 0.0
-        #top30_sum = 0.0
-        #top40_sum = 0.0
-        #top50_sum = 0.0
-        #top60_sum = 0.0
-        #top70_sum = 0.0
-        #top80_sum = 0.0
-        #top90_sum = 0.0
-        #full_sum = 0.0
-
         for _, block_data in pygeoprocessing.iterblocks((path, 1)):
             nodata_mask = numpy.isclose(block_data, nodata_value)
             # this loop makes the block below a lot simpler
             for index, percentile in enumerate(percentiles_list):
                 mask = (block_data > percentile) & (~nodata_mask)
                 percentile_sum_list[index] += numpy.sum(block_data[mask])
-
-            # top2_mask = block_data > percentile_values_list[12]
-            # top2_sum += numpy.sum(block_data[top2_mask & ~nodata_mask])
-            # top5_mask = block_data > percentile_values_list[11]
-            # top5_sum += numpy.sum(block_data[top5_mask & ~nodata_mask])
-            # top10_mask = block_data > percentile_values_list[10]
-            # top10_sum += numpy.sum(block_data[top10_mask & ~nodata_mask])
-            # top20_mask = block_data > percentile_values_list[9]
-            # top20_sum += numpy.sum(block_data[top20_mask & ~nodata_mask])
-            # top30_mask = block_data > percentile_values_list[8]
-            # top30_sum += numpy.sum(block_data[top30_mask & ~nodata_mask])
-            # top40_mask = block_data > percentile_values_list[7]
-            # top40_sum += numpy.sum(block_data[top40_mask & ~nodata_mask])
-            # top50_mask = block_data > percentile_values_list[6]
-            # top50_sum += numpy.sum(block_data[top50_mask & ~nodata_mask])
-            # top60_mask = block_data > percentile_values_list[5]
-            # top60_sum += numpy.sum(block_data[top60_mask & ~nodata_mask])
-            # top70_mask = block_data > percentile_values_list[4]
-            # top70_sum += numpy.sum(block_data[top70_mask & ~nodata_mask])
-            # top80_mask = block_data > percentile_values_list[3]
-            # top80_sum += numpy.sum(block_data[top80_mask & ~nodata_mask])
-            # top90_mask = block_data > percentile_values_list[2]
-            # top90_sum += numpy.sum(block_data[top90_mask & ~nodata_mask])
-
-            #nonzero_mask = block_data != 0
-            #full_sum += numpy.sum(block_data[nonzero_mask & ~nodata_mask])
 
         # this is a fancy way of making a list of strings from each of the
         # pairs of percentiles and their sums such that the percentile is
@@ -135,9 +99,16 @@ def main():
         #     '90                     %14.2f\n'
         #     '100                    %14.2f\n' % (
         #         path, top2_sum, top5_sum, top10_sum, top20_sum, top30_sum, top40_sum, top50_sum, top60_sum, top70_sum, top80_sum, top90_sum, full_sum))
-
+        table_file.write('%s\n' % path)
+        table_file.write('percentile,percentile_value,percentile_sum\n')
+        pixel_stats_string = (
+            '\n'.join(['%f,%f' % (percentile, percentile_value, percentile_sum)
+                       for percentile, percentile_value, percentile_sum in zip(
+                       percentiles_list, percentile_values_list,
+                       percentile_sum_list)]))
+        table_file.write(pixel_stats_string)
+        table_file.write('\n')
+    table_file.close()
 
 if __name__ == '__main__':
     main()
-
-

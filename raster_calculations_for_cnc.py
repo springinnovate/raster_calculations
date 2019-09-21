@@ -43,7 +43,7 @@ def main():
             pass
 
     mask_url = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_nodata_md5_7c9acfe052cb7bdad319f011e9389fb1.tif'
-    mask_path = os.path.basename(mask_url)
+    mask_path = os.path.join(ecoshard_workspace_dir, os.path.basename(mask_url))
     download_task = TASK_GRAPH.add_task(
         func=raster_calculations_core.download_url,
         args=(mask_url, mask_path),
