@@ -4,7 +4,7 @@ import sys
 import os
 import logging
 import multiprocessing
-import re
+import datetime
 
 import raster_calculations_core
 from osgeo import gdal
@@ -26,16 +26,16 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
-
+LOGGER.addHandler(logging.FileHandler(
+    '%s_log.txt' % str(datetime.datetime.now()).replace(' ', '_')))
 
 
 def main():
     """Write your expression here."""
-
     base_directory = os.getcwd()
 
     for path in glob.glob(os.path.join(base_directory, '*.tif')):
-    
+
         path_root_name = os.path.basename(path)
         # if we wanted to split off an ecoshard....
             #path_root_name = re.match('(.*)_md5_.*\.tif', os.path.basename(path))[1]
@@ -62,12 +62,11 @@ def main():
 
         raster_calculations_core.evaluate_calculation(
             remasking_expression, TASK_GRAPH, WORKSPACE_DIR)
-    
 
-        TASK_GRAPH.join()
-        TASK_GRAPH.close()
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
 
-        return
+    return
 
 
 
@@ -347,9 +346,9 @@ def main():
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
 
-    #why doesn't this work??    
+    #why doesn't this work??
     #TASK_GRAPH.join()
-    #ecoshard aggregate*.tif --hash_file --rename --buildoverviews --interpolation_method average    
+    #ecoshard aggregate*.tif --hash_file --rename --buildoverviews --interpolation_method average
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
@@ -441,7 +440,7 @@ def main():
 
 
     TASK_GRAPH.join()
-    
+
     synthesis_index_expression = {
             'expression': 'nitrogen + sediment + pollination + nwfp + timber + grazing',
             'symbol_to_path_map': {
@@ -496,7 +495,7 @@ def main():
             'target_nodata': -1,
             'target_raster_path': "raw_normalized_realized_pollination.tif",
         },
-        
+
     ]
 
     for calculation in normalized_service_list:
@@ -538,7 +537,7 @@ def main():
 
 
     TASK_GRAPH.join()
-    
+
     synthesis_index_expression = {
             'expression': 'nitrogen + sediment + pollination + nwfp + timber + grazing',
             'symbol_to_path_map': {
@@ -596,12 +595,12 @@ def main():
     for masker in masker_list:
        raster_calculations_core.evaluate_calculation(
             masker, TASK_GRAPH, WORKSPACE_DIR)
-    
+
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
-       
-    
+
+
     grazing_service_list = [
         {
             'expression': 'mask*service',
@@ -635,7 +634,7 @@ def main():
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
-    
+
     potential_service_list = [
         {
             'expression': 'mask*service',
@@ -720,7 +719,7 @@ def main():
     for calculation in raster_calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
-   
+
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
@@ -743,7 +742,7 @@ def main():
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
-    
+
 
 
 if __name__ == '__main__':
