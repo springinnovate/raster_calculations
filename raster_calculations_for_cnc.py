@@ -36,7 +36,17 @@ def main():
 
     for path in glob.glob(os.path.join(base_directory, '*.tif')):
     
-        path_root_name = re.match('(.*)_md5_.*\.tif', os.path.basename(path))[1]
+        path_root_name = os.path.basename(path)
+        # if we wanted to split off an ecoshard....
+            #path_root_name = re.match('(.*)_md5_.*\.tif', os.path.basename(path))[1]
+            #so this is a regular expression that's matching the pattern [something]_md5_[something].tif
+            #the first part that says (.*) says match any characters and remember them
+            #the _md5_ means literally match md5, and it just remembers everything before the _md5_...tif
+            #the os.path.basename(path) part ensures that the path you're putting in is just the filename... in case there's a directory in there
+            #then the last [1] means "pick the first match that I remembered" which will be the leading part of your filename
+            #so you can see how it works like this:
+            #>>> path='dir/foo_md5_aaaabbbcccdddeeeff121235.tif'
+            #>>> re.match('(.*)_md5_.*\.tif', os.path.basename(path))[1]
 
         remasking_expression = {
                 'expression': 'mask*service',
