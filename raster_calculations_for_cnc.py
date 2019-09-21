@@ -34,9 +34,14 @@ def main():
     """Write your expression here."""
     base_directory = os.getcwd()
 
+    masked_workspace_dir = 'masked_workspace_dir'
+    try:
+        os.makedirs(masked_workspace_dir)
+    except:
+        pass
     for path in glob.glob(os.path.join(base_directory, '*.tif')):
 
-        path_root_name = os.path.basename(path)
+        path_root_name = os.path.splitext(os.path.basename(path))[0]
         # if we wanted to split off an ecoshard....
             #path_root_name = re.match('(.*)_md5_.*\.tif', os.path.basename(path))[1]
             #so this is a regular expression that's matching the pattern [something]_md5_[something].tif
@@ -55,7 +60,8 @@ def main():
                     'service': path,
                 },
                 'target_nodata': -1,
-                'target_raster_path': '%s_masked' % (path_root_name),
+                'target_raster_path': os.path.join(
+                    masked_workspace_dir, '%s_masked.tif' % (path_root_name)),
                  ###file name split off from its path and its ecoshard too because it will be re-ecosharded
                 'target_pixel_size': (0.002777777777778, -0.002777777777778),
             }
