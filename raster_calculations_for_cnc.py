@@ -35,10 +35,22 @@ def main():
     base_directory = os.getcwd()
 
     masked_workspace_dir = 'masked_workspace_dir'
-    try:
-        os.makedirs(masked_workspace_dir)
-    except:
-        pass
+    ecoshard_workspace_dir = 'ecoshard_dir'
+    for dirname in [masked_workspace_dir, ecoshard_workspace_dir]:
+        try:
+            os.makedirs(dirname)
+        except OSError:
+            pass
+
+    mask_url = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_nodata_md5_7c9acfe052cb7bdad319f011e9389fb1.tif'
+    mask_path = os.path.basename(mask_url)
+    download_task = TASK_GRAPH.add_task(
+        func=raster_calculations_core.download_url,
+        args=(mask_url, mask_path),
+        target_path_list=[mask_path],
+        task_name='download %s' % mask_path)
+    download_task.join()
+
     for path in glob.glob(os.path.join(base_directory, '*.tif')):
         path_root_name = os.path.splitext(os.path.basename(path))[0]
         target_raster_path = os.path.join(
@@ -58,7 +70,7 @@ def main():
         remasking_expression = {
                 'expression': 'mask*service',
                 'symbol_to_path_map': {
-                    'mask': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_nodata_md5_7c9acfe052cb7bdad319f011e9389fb1.tif',
+                    'mask': mask_path,
                     'service': path,
                 },
                 'target_nodata': -1,
