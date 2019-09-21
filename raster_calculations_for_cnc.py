@@ -3,6 +3,7 @@ import sys
 import os
 import logging
 import multiprocessing
+import re
 
 import raster_calculations_core
 from osgeo import gdal
@@ -29,22 +30,22 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-    
 
     base_directory = os.getcwd()
 
     for path in glob.glob(os.path.join(base_directory, '*.tif')):
     
-        remasking_expression = 
-            {
+        path_root_name = re.match('(.*)_md5_.*\.tif', os.path.basename(path))[1]
+
+        remasking_expression = {
                 'expression': 'mask*service',
                 'symbol_to_path_map': {
                     'mask': 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_nodata_md5_7c9acfe052cb7bdad319f011e9389fb1.tif',
                     'service': path,
                 },
                 'target_nodata': -1,
-                'target_raster_path': '%s_masked' % (path),
-                 ### I need a way to just get the filename split off and rename it as masked. Ideally split off its ecoshard too because it will be re-ecosharded
+                'target_raster_path': '%s_masked' % (path_root_name),
+                 ###file name split off from its path and its ecoshard too because it will be re-ecosharded
                 'target_pixel_size': (0.002777777777778, -0.002777777777778),
             }
 
