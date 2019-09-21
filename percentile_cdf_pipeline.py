@@ -14,7 +14,7 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-WORKSPACE_DIR = 'CNC_workspace'
+WORKSPACE_DIR = 'raster_calculations'
 NCPUS = -1
 try:
     os.makedirs(WORKSPACE_DIR)
@@ -62,18 +62,18 @@ def main():
         print(path, percentile_values_list)
 
         nodata_value = pygeoprocessing.get_raster_info(path)['nodata'][0]
-        top2_sum = 0.0
-        top5_sum = 0.0
-        top10_sum = 0.0
-        top20_sum = 0.0
-        top30_sum = 0.0
-        top40_sum = 0.0
-        top50_sum = 0.0
-        top60_sum = 0.0
-        top70_sum = 0.0
-        top80_sum = 0.0
-        top90_sum = 0.0
-        full_sum = 0.0
+        #top2_sum = 0.0
+        #top5_sum = 0.0
+        #top10_sum = 0.0
+        #top20_sum = 0.0
+        #top30_sum = 0.0
+        #top40_sum = 0.0
+        #top50_sum = 0.0
+        #top60_sum = 0.0
+        #top70_sum = 0.0
+        #top80_sum = 0.0
+        #top90_sum = 0.0
+        #full_sum = 0.0
 
         for _, block_data in pygeoprocessing.iterblocks((path, 1)):
             nodata_mask = numpy.isclose(block_data, nodata_value)
@@ -105,8 +105,8 @@ def main():
             # top90_mask = block_data > percentile_values_list[2]
             # top90_sum += numpy.sum(block_data[top90_mask & ~nodata_mask])
 
-            nonzero_mask = block_data != 0
-            full_sum += numpy.sum(block_data[nonzero_mask & ~nodata_mask])
+            #nonzero_mask = block_data != 0
+            #full_sum += numpy.sum(block_data[nonzero_mask & ~nodata_mask])
 
         # this is a fancy way of making a list of strings from each of the
         # pairs of percentiles and their sums such that the percentile is
@@ -139,3 +139,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
