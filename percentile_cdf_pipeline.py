@@ -42,7 +42,7 @@ def main():
     table_file = open(table_path, 'w')
 
     # this is the directory the loop will search through
-    base_directory = ./masked_workspace_dir
+    base_directory = './masked_workspace_dir'
     # this will loop through every file that ends in ".tif" in the base
     # directory
     for path in glob.glob(os.path.join(base_directory, '*.tif')):
