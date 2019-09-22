@@ -56,7 +56,6 @@ def main():
         percentile_sum_list = [0.] * len(percentiles_list)
         percentile_values_list = pygeoprocessing.raster_band_percentile(
             (path, 1), percentile_working_dir, percentiles_list)
-        shutil.rmtree(percentile_working_dir)
 
         print(path, percentile_values_list)
 
@@ -105,6 +104,8 @@ def main():
         table_file.write(pixel_stats_string)
         table_file.write('\n')
     table_file.close()
+    shutil.rmtree(percentile_working_dir)
+
 
 if __name__ == '__main__':
     main()
