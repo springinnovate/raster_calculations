@@ -98,7 +98,7 @@ def main():
         table_file.write('%s\n' % path)
         table_file.write('percentile,percentile_value,percentile_sum\n')
         pixel_stats_string = (
-            '\n'.join(['%f,%f' % (percentile, percentile_value, percentile_sum)
+            '\n'.join(['%f,%f,%f' % (percentile, percentile_value, percentile_sum)
                        for percentile, percentile_value, percentile_sum in zip(
                        percentiles_list, percentile_values_list,
                        percentile_sum_list)]))
