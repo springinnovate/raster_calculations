@@ -12,7 +12,6 @@ import os
 import shutil
 import logging
 import multiprocessing
-import datetime
 
 import taskgraph
 import pygeoprocessing
@@ -45,7 +44,7 @@ def main():
     except OSError:
         pass
 
-    table_path = 'percentile_cdf_pipline_table.csv'
+    table_path = 'percentile_cdf_pipeline_table.csv'
     # this is the directory the loop will search through
     base_directory = './masked_workspace_dir'
     # you can modify this list and the rest of the code will adapt
@@ -80,7 +79,7 @@ def main():
     for raster_path, result_pickle_path in zip(
             pickle_path_list, raster_path_list):
         raster_filename = os.path.basename(raster_path)
-        with open(result_pickle_path, 'r') as result_pickle_file:
+        with open(result_pickle_path, 'rb') as result_pickle_file:
             result_dict = pickle.loads(result_pickle_file.read())
         table_file.write('%s\n' % raster_filename)
         table_file.write('percentile,percentile_value,percentile_sum\n')
@@ -140,7 +139,7 @@ def calculate_percentile(
     LOGGER.debug(
         'pickling percentile results of %s to %s', raster_path,
         result_pickle_path)
-    with open(result_pickle_path, 'w') as pickle_file:
+    with open(result_pickle_path, 'wb') as pickle_file:
         pickle_file.write(pickle.dumps(result_dict))
     shutil.rmtree(churn_dir)
 
