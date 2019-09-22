@@ -11,6 +11,8 @@ import sys
 import os
 import shutil
 import logging
+import multiprocessing
+import datetime
 
 import taskgraph
 import pygeoprocessing
@@ -20,7 +22,7 @@ from osgeo import gdal
 gdal.SetCacheMax(2**30)
 
 WORKSPACE_DIR = 'raster_calculations'
-NCPUS = -1
+NCPUS = multiprocessing.cpu_count()
 try:
     os.makedirs(WORKSPACE_DIR)
 except OSError:
@@ -51,7 +53,7 @@ def main():
     percentiles_list = [
         0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 97.5, 100]
 
-    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1, 5.0)
+    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, NCPUS, 5.0)
 
     pickle_path_list = []
     # this will loop through every file that ends in ".tif" in the base
@@ -115,7 +117,7 @@ def calculate_percentile(
         None.
 
     """
-    churn_dir = tempfile.mkktemp(dir=workspace_dir)
+    churn_dir = tempfile.mkdtemp(dir=workspace_dir)
     LOGGER.debug('processing percentiles for %s', raster_path)
     result_dict = {
         'percentiles_list': percentiles_list,
@@ -144,4 +146,7 @@ def calculate_percentile(
 
 
 if __name__ == '__main__':
+    file_logger = logging.FileHandler('percentile_cdf_log.txt')
+    file_logger.setLevel(logging.DEBUG)
+    logging.getLogger().addHandler(file_logger)
     main()
