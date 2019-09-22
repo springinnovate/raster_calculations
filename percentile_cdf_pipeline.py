@@ -32,7 +32,7 @@ def main():
     # commenting out because you have a loop to do this now
     #path = r"C:\Users\Becky\Documents\raster_calculations\aggregate_potential_ES_score_nspwng.tif"
     ## How would I loop through a set of paths -- do this for a whole directory of rasters, and have it print out (or even better, add to a table) as it completes each one?
-    percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
+    percentile_working_dir = 'percentile_working_dir'
     try:
         os.makedirs(percentile_working_dir)
     except OSError:
@@ -42,7 +42,7 @@ def main():
     table_file = open(table_path, 'w')
 
     # this is the directory the loop will search through
-    base_directory = r"C:\Users\Becky\Documents\raster_calculations"
+    base_directory = os.getcwd()
     # this will loop through every file that ends in ".tif" in the base
     # directory
     for path in glob.glob(os.path.join(base_directory, '*.tif')):
