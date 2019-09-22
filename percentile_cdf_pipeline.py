@@ -42,7 +42,7 @@ def main():
     table_file = open(table_path, 'w')
 
     # this is the directory the loop will search through
-    base_directory = ./masked_workspace_dir
+    base_directory = './masked_workspace_dir'
     # this will loop through every file that ends in ".tif" in the base
     # directory
     for path in glob.glob(os.path.join(base_directory, '*.tif')):
@@ -98,7 +98,7 @@ def main():
         table_file.write('%s\n' % path)
         table_file.write('percentile,percentile_value,percentile_sum\n')
         pixel_stats_string = (
-            '\n'.join(['%f,%f' % (percentile, percentile_value, percentile_sum)
+            '\n'.join(['%f,%f,%f' % (percentile, percentile_value, percentile_sum)
                        for percentile, percentile_value, percentile_sum in zip(
                        percentiles_list, percentile_values_list,
                        percentile_sum_list)]))
