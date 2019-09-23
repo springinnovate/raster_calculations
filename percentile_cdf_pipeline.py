@@ -72,6 +72,7 @@ def main():
                 result_pickle_path),
             target_path_list=[result_pickle_path],
             task_name='%s percentile' % raster_path)
+        break
 
     LOGGER.debug('waiting for pipeline to process')
     task_graph.join()
@@ -130,7 +131,7 @@ def calculate_percentile(
             (raster_path, 1), churn_dir, percentiles_list,
             heap_size, ffi_buffer_size)
     }
-
+    LOGGER.debug('intermediate result_dict: %s', str(result_dict))
     LOGGER.debug('processing percentile sums for %s', raster_path)
     nodata_value = pygeoprocessing.get_raster_info(raster_path)['nodata'][0]
     for _, block_data in pygeoprocessing.iterblocks((raster_path, 1)):
@@ -138,7 +139,7 @@ def calculate_percentile(
         # this loop makes the block below a lot simpler
         for index, percentile_value in enumerate(
                 result_dict['percentile_values_list']):
-            mask = (block_data > percentile_value) & (~nodata_mask)
+            mask = (block_data <= percentile_value) & (~nodata_mask)
             result_dict['percentile_sum_list'][index] += (
                 numpy.sum(block_data[mask]))
 
