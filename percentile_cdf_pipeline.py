@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Run CDF pipeline')
     parser.add_argument(
-        '--ncpus', dest='n_cpus', action='store_const', default=N_CPUS)
+        '--n_cpus', dest='n_cpus', type=int, default=N_CPUS)
     args = parser.parse_args()
     N_CPUS = args.n_cpus
     main()
