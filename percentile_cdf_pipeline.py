@@ -81,11 +81,7 @@ def main():
             pickle_path_list, raster_path_list):
         raster_filename = os.path.basename(raster_path)
         with open(result_pickle_path, 'rb') as result_pickle_file:
-            pickle_file_contents = result_pickle_file.read()
-            LOGGER.debug(
-                'pickle file contents: %s %s', len(pickle_file_contents),
-                type(pickle_file_contents))
-            result_dict = pickle.loads(pickle_file_contents)
+            result_dict = pickle.load(result_pickle_file)
         table_file.write('%s\n' % raster_filename)
         table_file.write('percentile,percentile_value,percentile_sum\n')
         pixel_stats_string = (
