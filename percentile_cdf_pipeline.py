@@ -77,7 +77,7 @@ def main():
     task_graph.join()
     LOGGER.debug('saving results to a csv table')
     table_file = open(table_path, 'w')
-    for raster_path, result_pickle_path in zip(
+    for result_pickle_path, raster_path in zip(
             pickle_path_list, raster_path_list):
         raster_filename = os.path.basename(raster_path)
         LOGGER.debug('loading: %s', result_pickle_path)
