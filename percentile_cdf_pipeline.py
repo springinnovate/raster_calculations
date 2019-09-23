@@ -83,6 +83,7 @@ def main():
         LOGGER.debug('loading: %s', result_pickle_path)
         with open(result_pickle_path, 'rb') as result_pickle_file:
             result_dict = pickle.load(result_pickle_file)
+        LOGGER.debug(result_dict)
         table_file.write('%s\n' % raster_filename)
         table_file.write('percentile,percentile_value,percentile_sum\n')
         pixel_stats_string = (
