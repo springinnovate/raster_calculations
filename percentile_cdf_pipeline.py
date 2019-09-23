@@ -21,7 +21,7 @@ from osgeo import gdal
 gdal.SetCacheMax(2**30)
 
 WORKSPACE_DIR = 'raster_calculations'
-NCPUS = max(1, multiprocessing.cpu_count() - 2)
+NCPUS = -1 #max(1, multiprocessing.cpu_count() - 2)
 try:
     os.makedirs(WORKSPACE_DIR)
 except OSError:
