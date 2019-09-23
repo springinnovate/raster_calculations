@@ -80,6 +80,7 @@ def main():
     for raster_path, result_pickle_path in zip(
             pickle_path_list, raster_path_list):
         raster_filename = os.path.basename(raster_path)
+        LOGGER.debug('loading: %s', result_pickle_path)
         with open(result_pickle_path, 'rb') as result_pickle_file:
             result_dict = pickle.load(result_pickle_file)
         table_file.write('%s\n' % raster_filename)
