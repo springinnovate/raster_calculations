@@ -4,6 +4,7 @@ Percentile calculations.
 Count non-zero non-nodata pixels in raster, get percentile values, and sum
 above each percentile to build the CDF.
 """
+import argparse
 import pickle
 import tempfile
 import glob
@@ -21,7 +22,7 @@ from osgeo import gdal
 gdal.SetCacheMax(2**30)
 
 WORKSPACE_DIR = 'raster_calculations'
-NCPUS = -1 #max(1, multiprocessing.cpu_count() - 2)
+N_CPUS = max(1, multiprocessing.cpu_count() - 2)
 try:
     os.makedirs(WORKSPACE_DIR)
 except OSError:
@@ -52,7 +53,7 @@ def main():
     percentiles_list = [
         0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 97.5, 100]
 
-    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, NCPUS, 5.0)
+    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, N_CPUS, 5.0)
 
     pickle_path_list = []
     # this will loop through every file that ends in ".tif" in the base
@@ -118,11 +119,14 @@ def calculate_percentile(
     """
     churn_dir = tempfile.mkdtemp(dir=workspace_dir)
     LOGGER.debug('processing percentiles for %s', raster_path)
+    heap_size = 2**28
+    ffi_buffer_size = 2**10
     result_dict = {
         'percentiles_list': percentiles_list,
         'percentile_sum_list': [0.] * len(percentiles_list),
         'percentile_values_list': pygeoprocessing.raster_band_percentile(
-            (raster_path, 1), churn_dir, percentiles_list)
+            (raster_path, 1), churn_dir, percentiles_list,
+            heap_size, ffi_buffer_size)
     }
 
     LOGGER.debug('processing percentile sums for %s', raster_path)
@@ -148,4 +152,10 @@ if __name__ == '__main__':
     file_logger = logging.FileHandler('percentile_cdf_log.txt')
     file_logger.setLevel(logging.DEBUG)
     logging.getLogger().addHandler(file_logger)
+
+    parser = argparse.ArgumentParser(description='Run CDF pipeline')
+    parser.add_argument(
+        '--ncpus', dest='n_cpus', action='store_const', default=N_CPUS)
+    args = parser.parse_args()
+    N_CPUS = args.n_cpus
     main()
