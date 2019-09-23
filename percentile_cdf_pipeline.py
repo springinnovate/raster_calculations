@@ -72,7 +72,6 @@ def main():
                 result_pickle_path),
             target_path_list=[result_pickle_path],
             task_name='%s percentile' % raster_path)
-        break
 
     LOGGER.debug('waiting for pipeline to process')
     task_graph.join()
