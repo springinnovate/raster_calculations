@@ -59,7 +59,7 @@ def main():
     # this will loop through every file that ends in ".tif" in the base
     # directory
     raster_path_list = glob.glob(os.path.join(base_directory, '*.tif'))
-    for raster_path in raster_path_list:
+    for raster_path in sorted(raster_path_list):
         LOGGER.debug('processing %s', raster_path)
         result_pickle_path = os.path.join(
             percentile_working_dir, '%s.pickle' % (
