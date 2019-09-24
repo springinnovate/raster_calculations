@@ -116,11 +116,13 @@ def normalize_by_polygon(
     raster_nodata = pygeoprocessing.get_raster_info(raster_path)['nodata'][0]
     pygeoprocessing.raster_calculator(
         [(raster_path, 1), (global_norm_value_raster_path, 1),
-         (raster_nodata, 'raw'), (-1, 'raw'), (-1, 'raw')], divide_op,
+         (clamp_range, 'raw'), (raster_nodata, 'raw'), (-1, 'raw'),
+         (-1, 'raw')], divide_op,
         target_path, gdal.GDT_Float32, -1)
 
 
-def divide_op(raster_a, raster_b, a_nodata, b_nodata, target_nodata):
+def divide_op(
+        raster_a, raster_b, clamp_range, a_nodata, b_nodata, target_nodata):
     """Divide a by b."""
     result = numpy.empty(raster_a.shape)
     result[:] = target_nodata
@@ -129,6 +131,8 @@ def divide_op(raster_a, raster_b, a_nodata, b_nodata, target_nodata):
         (~numpy.isclose(raster_b, b_nodata)) &
         (raster_b != 0.0))
     result[valid_mask] = raster_a[valid_mask] / raster_b[valid_mask]
+    result[result[valid_mask] <= clamp_range[0]] = clamp_range[0]
+    result[result[valid_mask] >= clamp_range[1]] = clamp_range[1]
     return result
 
 
@@ -199,6 +203,7 @@ def calculate_percentile(
 
 if __name__ == '__main__':
     TASK_GRAPH = taskgraph.TaskGraph('.', 4)
+
     RASTER_PATH = 'local_data/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif'
     VECTOR_PATH = 'local_data/TM_WORLD_BORDERS_SIMPL-0.3_md5_c0d1b65f6986609031e4d26c6c257f07.gpkg'
     TARGET_PATH = 'normalize_workspace/normalized_by_country.tif'
