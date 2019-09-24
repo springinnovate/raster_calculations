@@ -104,6 +104,14 @@ def normalize_by_polygon(
         with open(pickle_path, 'rb') as pickle_file:
             percentile_list = pickle.load(pickle_file)
         feature.SetField('norm_val', percentile_list[0])
+        local_layer.SetFeature(feature)
+        feature = None
+    local_layer = None
+    local_vector = None
+
+    pygeoprocessing.rasterize(
+        local_vector_path, global_norm_value_raster_path,
+        option_list=['ATTRIBUTE=norm_val'])
 
 
 def clip_and_mask_raster(
@@ -171,7 +179,7 @@ def calculate_percentile(
 
 
 if __name__ == '__main__':
-    TASK_GRAPH = taskgraph.TaskGraph('.', 0)
+    TASK_GRAPH = taskgraph.TaskGraph('.', 4)
     RASTER_PATH = 'local_data/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif'
     VECTOR_PATH = 'local_data/TM_WORLD_BORDERS_SIMPL-0.3_md5_c0d1b65f6986609031e4d26c6c257f07.gpkg'
     TARGET_PATH = 'normalize_workspace/normalized_by_country.tif'
