@@ -18,6 +18,7 @@ from osgeo import gdal
 from osgeo import ogr
 import taskgraph
 import pygeoprocessing
+import raster_calculations_core
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -247,6 +248,7 @@ if __name__ == '__main__':
         'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_timber_md5_340467b17d0950d381f55cd355ae688a.tif']
 
     RASTERS_TO_NORMALIZE_PATH_LIST = []
+    LOCAL_RASTER_PATH_LIST = []
     for URL in RASTERS_TO_MASK_AND_NORMALIZE_URL_LIST:
         LOCAL_RASTER_PATH = os.path.join(ECOSHARD_DIR, os.path.basename(URL))
         DOWNLOAD_TASK = TASK_GRAPH.add_task(
@@ -254,17 +256,26 @@ if __name__ == '__main__':
             args=(URL, LOCAL_RASTER_PATH),
             target_path_list=[LOCAL_RASTER_PATH],
             task_name='download %s' % LOCAL_RASTER_PATH)
+        LOCAL_RASTER_PATH_LIST.append(LOCAL_RASTER_PATH)
 
+    TASK_GRAPH.join()
+
+    for LOCAL_RASTER_PATH in LOCAL_RASTER_PATH_LIST:
         MASKED_LOCAL_RASTER_PATH = os.path.join(
             CHURN_DIR, 'masked_%s' % os.path.basename(LOCAL_RASTER_PATH))
-        mask_task = TASK_GRAPH.add_task(
-            func=pygeoprocessing.raster_calculator,
-            args=(
-                [(MASK_RASTER_PATH, 1), (LOCAL_RASTER_PATH, 1)], mask_op,
-                MASKED_LOCAL_RASTER_PATH, gdal.GDT_Float32, -1),
-            target_path_list=[MASKED_LOCAL_RASTER_PATH],
-            dependent_task_list=[DOWNLOAD_TASK, DOWNLOAD_MASK_TASK],
-            task_name='mask %s' % MASKED_LOCAL_RASTER_PATH)
+        REMASKING_EXPRESSION = {
+            'expression': 'mask*service',
+            'symbol_to_path_map': {
+                'mask': MASK_RASTER_PATH,
+                'service': LOCAL_RASTER_PATH,
+            },
+            'target_nodata': -1,
+            'target_raster_path': MASKED_LOCAL_RASTER_PATH,
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        }
+
+        raster_calculations_core.evaluate_calculation(
+            REMASKING_EXPRESSION, TASK_GRAPH, WORKSPACE_DIR)
         RASTERS_TO_NORMALIZE_PATH_LIST.append(
             MASKED_LOCAL_RASTER_PATH)
 
