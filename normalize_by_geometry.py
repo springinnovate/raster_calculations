@@ -115,7 +115,7 @@ def normalize_by_polygon(
     raster_nodata = pygeoprocessing.get_raster_info(raster_path)['nodata'][0]
     pygeoprocessing.raster_calculator(
         [(raster_path, 1), (global_norm_value_raster_path, 1),
-         ('raw', raster_nodata), ('raw', -1), ('raw', -1)], divide_op,
+         (raster_nodata, 'raw'), (-1, 'raw'), (-1, 'raw')], divide_op,
         target_path, gdal.GDT_Float32, -1)
 
 
