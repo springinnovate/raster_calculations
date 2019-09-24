@@ -27,6 +27,9 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
+FH = logging.FileHandler('normalize_log.txt')
+FH.setLevel(logging.DEBUG)
+LOGGER.attachHandler(FH)
 
 
 def normalize_by_polygon(
