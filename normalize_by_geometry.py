@@ -11,6 +11,7 @@ import os
 import tempfile
 import logging
 
+import numpy
 import shapely.wkb
 from osgeo import gdal
 from osgeo import ogr
@@ -112,6 +113,24 @@ def normalize_by_polygon(
     pygeoprocessing.rasterize(
         local_vector_path, global_norm_value_raster_path,
         option_list=['ATTRIBUTE=norm_val'])
+
+    raster_nodata = pygeoprocessing.get_raster_info(raster_path)['nodata'][0]
+    pygeoprocessing.raster_calculator(
+        [(raster_path, 1), (global_norm_value_raster_path, 1),
+         ('raw', raster_nodata), ('raw', -1), ('raw', -1)], divide_op,
+        target_path, gdal.GDT_Float32, -1)
+
+
+def divide_op(raster_a, raster_b, a_nodata, b_nodata, target_nodata):
+    """Divide a by b."""
+    result = numpy.empty(raster_a.shape)
+    result[:] = target_nodata
+    valid_mask = (
+        ~numpy.isclose(raster_a, a_nodata) &
+        ~numpy.isclose(raster_b, b_nodata) &
+        raster_b != 0.0)
+    result[valid_mask] = raster_a[valid_mask] / raster_b[valid_mask]
+    return result
 
 
 def clip_and_mask_raster(
