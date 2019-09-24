@@ -70,7 +70,7 @@ def normalize_by_polygon(
             target_path_list=[feature_mask_path],
             task_name='mask feature %d' % fid)
         percentile_pickle_path = os.path.join(
-            workspace_dir, '%d_%d.pickle' % (fid, percentile)
+            workspace_dir, '%d_%d.pickle' % (fid, percentile))
         _ = TASK_GRAPH.add_task(
             func=calculate_percentile,
             args=(feature_mask_path, [percentile], base_dir,
