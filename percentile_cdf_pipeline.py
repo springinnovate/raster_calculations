@@ -87,7 +87,7 @@ def main():
         table_file.write('%s\n' % raster_filename)
         table_file.write('percentile,percentile_value,percentile_sum\n')
         pixel_stats_string = (
-            '\n'.join(['%f,%f,%f' % (
+            '\n'.join(['%f,%.10e,%.10e' % (
                 percentile, percentile_value, percentile_sum)
                    for percentile, percentile_value, percentile_sum in zip(
                    result_dict['percentiles_list'],
@@ -138,7 +138,7 @@ def calculate_percentile(
         # this loop makes the block below a lot simpler
         for index, percentile_value in enumerate(
                 result_dict['percentile_values_list']):
-            mask = (block_data <= percentile_value) & (~nodata_mask)
+            mask = (block_data > percentile_value) & (~nodata_mask)
             result_dict['percentile_sum_list'][index] += (
                 numpy.sum(block_data[mask]))
 
