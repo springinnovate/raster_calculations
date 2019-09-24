@@ -1,8 +1,8 @@
-"""Normalize a raster by percentile in a polygon.
+"""
+Normalize a raster by percentile in a polygon.
 
     * given a polygon make a local stats list there.
     * option to clamp 0..1
-
 """
 import sys
 import pickle
@@ -11,6 +11,7 @@ import os
 import tempfile
 import logging
 
+import ecoshard
 import numpy
 import shapely.wkb
 from osgeo import gdal
@@ -201,12 +202,100 @@ def calculate_percentile(
     shutil.rmtree(churn_dir)
 
 
-if __name__ == '__main__':
-    TASK_GRAPH = taskgraph.TaskGraph('.', 4)
+def mask_op(base_array, mask_array):
+    """Mask base array assume nodata is -1."""
+    base_array[mask_array == 1] = -1
+    return base_array
 
-    RASTER_PATH = 'local_data/potential_pollination_edge_md5_3b0171d8dac47d2aa2c6f41fb94b6243.tif'
-    VECTOR_PATH = 'local_data/TM_WORLD_BORDERS_SIMPL-0.3_md5_c0d1b65f6986609031e4d26c6c257f07.gpkg'
-    TARGET_PATH = 'normalize_workspace/normalized_by_country.tif'
-    normalize_by_polygon(
-        RASTER_PATH, VECTOR_PATH, 97, [0, 1], 'normalize_workspace/churn',
-        TARGET_PATH)
+
+if __name__ == '__main__':
+    TASK_GRAPH = taskgraph.TaskGraph('.', int(sys.argv[1]))
+
+    WORKSPACE_DIR = 'normalize_workspace'
+    ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshard')
+    CHURN_DIR = os.path.join(WORKSPACE_DIR, 'churn')
+    for dir_path in [WORKSPACE_DIR, ECOSHARD_DIR, CHURN_DIR]:
+        try:
+            os.makedirs(dir_path)
+        except OSError:
+            pass
+
+    MASK_RASTER_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_nathab_esa_nodata_md5_7c9acfe052cb7bdad319f011e9389fb1.tif'
+    MASK_RASTER_PATH = os.path.join(ECOSHARD_DIR, os.path.basename(MASK_RASTER_URL))
+    DOWNLOAD_MASK_TASK = TASK_GRAPH.add_task(
+        func=ecoshard.download_url,
+        args=(MASK_RASTER_URL, MASK_RASTER_PATH),
+        target_path_list=[MASK_RASTER_PATH],
+        task_name='download mask')
+
+    RASTERS_TO_MASK_AND_NORMALIZE_URL_LIST = [
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_nwfp_masked_md5_a907048c3cc62ec51640048bb710d8d8.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_grazing_md5_cf6c597be3b0df9b8379c16c732d3ee7.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_nitrogenretention_md5_286c51393042973f71884ddc701be03d.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_all_md5_b91afbddd0576c7951ec08864a1b08ef.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_sedimentdeposition_md5_aa9ee6050c423b6da37f8c2723d9b513.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_wood_products_md5_a5429e1381d35e6632a16d550147ff32.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_pollination_md5_443522f6688011fd561297e9a556629b.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_sedimentdeposition_downstream_md5_1613b12643898c1475c5ec3180836770.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_timber_md5_340467b17d0950d381f55cd355ae688a.tif']
+
+    RASTERS_TO_NORMALIZE_PATH_LIST = []
+    for URL in RASTERS_TO_MASK_AND_NORMALIZE_URL_LIST:
+        LOCAL_RASTER_PATH = os.path.join(ECOSHARD_DIR, os.path.basename(URL))
+        DOWNLOAD_TASK = TASK_GRAPH.add_task(
+            func=ecoshard.download_url,
+            args=(URL, LOCAL_RASTER_PATH),
+            target_path_list=[LOCAL_RASTER_PATH],
+            task_name='download %s' % LOCAL_RASTER_PATH)
+
+        MASKED_LOCAL_RASTER_PATH = os.path.join(
+            CHURN_DIR, 'masked_%s' % os.path.basename(LOCAL_RASTER_PATH))
+        mask_task = TASK_GRAPH.add_task(
+            func=pygeoprocessing.raster_calculator,
+            args=(
+                [(MASK_RASTER_PATH, 1), (LOCAL_RASTER_PATH, 1)], mask_op,
+                MASKED_LOCAL_RASTER_PATH, gdal.GDT_Float32, -1),
+            target_path_list=[MASKED_LOCAL_RASTER_PATH],
+            dependent_task_list=[DOWNLOAD_TASK, DOWNLOAD_MASK_TASK],
+            task_name='mask %s' % MASKED_LOCAL_RASTER_PATH)
+        RASTERS_TO_NORMALIZE_PATH_LIST.append(
+            MASKED_LOCAL_RASTER_PATH)
+
+    NORMALIZE_THESE_DIRECTLY = [
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_moisture_md5_d5396383d8a30f296988f86bb0fc0528.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_flood_md5_6b603609e55d3a17d20ea76699aaaf79.tif',
+        'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_flood_md5_f1237e76a41039e22629abb85963ba16.tif']
+
+    for URL in RASTERS_TO_MASK_AND_NORMALIZE_URL_LIST:
+        LOCAL_RASTER_PATH = os.path.join(ECOSHARD_DIR, os.path.basename(URL))
+        DOWNLOAD_TASK = TASK_GRAPH.add_task(
+            func=ecoshard.download_url,
+            args=(URL, LOCAL_RASTER_PATH),
+            target_path_list=[LOCAL_RASTER_PATH],
+            task_name='download %s' % LOCAL_RASTER_PATH)
+        RASTERS_TO_NORMALIZE_PATH_LIST.append(LOCAL_RASTER_PATH)
+
+    WORLD_BORDERS_URL = 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/TM_WORLD_BORDERS-0.3_simplified_md5_47f2059be8d4016072aa6abe77762021.gpkg'
+    WORLD_BORDERS_PATH = os.path.join(
+        ECOSHARD_DIR, os.path.basename(WORLD_BORDERS_URL))
+    _ = TASK_GRAPH.add_task(
+        func=ecoshard.download_url,
+        args=(WORLD_BORDERS_URL, WORLD_BORDERS_PATH),
+        target_path_list=[WORLD_BORDERS_PATH],
+        task_name='download %s' % WORLD_BORDERS_PATH)
+
+    TASK_GRAPH.join()
+
+    for PATH in RASTERS_TO_NORMALIZE_PATH_LIST:
+        BASE_NAME = os.path.splitext(os.path.basename(PATH))[0]
+        NORMALIZE_WORKSPACE_DIR = os.path.join(WORKSPACE_DIR, BASE_NAME)
+        TARGET_PATH = os.path.join(
+            WORKSPACE_DIR, 'normalized_%s.tif' % BASE_NAME)
+        normalize_by_polygon(
+            PATH, WORLD_BORDERS_PATH, 99, [0, 1], NORMALIZE_WORKSPACE_DIR,
+            TARGET_PATH)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
