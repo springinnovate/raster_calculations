@@ -94,8 +94,9 @@ def normalize_by_polygon(
     pygeoprocessing.new_raster_from_base(
         raster_path, global_norm_value_raster_path, gdal.GDT_Float32,
         [-1], raster_driver_creation_tuple=(
-            'GTIFF', ('TILED=YES', 'BIGTIFF=YES', 'COMPRESS=ZSTD',
-            'BLOCKXSIZE=256', 'BLOCKYSIZE=256', 'SPARSE_OK=TRUE')))
+            'GTIFF', (
+                'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=ZSTD',
+                'BLOCKXSIZE=256', 'BLOCKYSIZE=256', 'SPARSE_OK=TRUE')))
 
     TASK_GRAPH.join()
     for fid, pickle_path in fid_to_percentile_pickle_path.items():
@@ -192,6 +193,7 @@ def calculate_percentile(
         heap_size, ffi_buffer_size)
     with open(result_pickle_path, 'wb') as pickle_file:
         pickle.dump(percentile_values_list, pickle_file)
+        pickle_file.flush()
     shutil.rmtree(churn_dir)
 
 
