@@ -27,9 +27,6 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
-FH = logging.FileHandler('log.txt')
-FH.setLevel(logging.DEBUG)
-LOGGER.addHandler(FH)
 
 
 def normalize_by_polygon(
@@ -213,9 +210,11 @@ def mask_op(base_array, mask_array):
 
 
 if __name__ == '__main__':
+    FH = logging.FileHandler('log.txt')
+    FH.setLevel(logging.DEBUG)
+    LOGGER.addHandler(FH)
+
     TASK_GRAPH = taskgraph.TaskGraph('.', int(sys.argv[1]))
-
-
 
     WORKSPACE_DIR = 'normalize_workspace'
     ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshard')
