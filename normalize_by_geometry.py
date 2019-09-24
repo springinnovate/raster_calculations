@@ -27,9 +27,6 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
-FH = logging.FileHandler('normalize_log.txt')
-FH.setLevel(logging.DEBUG)
-LOGGER.attachHandler(FH)
 
 
 def normalize_by_polygon(
@@ -76,15 +73,17 @@ def normalize_by_polygon(
             task_name='mask feature %d' % fid)
         percentile_pickle_path = os.path.join(
             workspace_dir, '%d_%d.pickle' % (fid, percentile))
-        _ = TASK_GRAPH.add_task(
-            func=calculate_percentile,
-            args=(feature_mask_path, [percentile], base_dir,
-                  percentile_pickle_path),
-            target_path_list=[percentile_pickle_path],
-            dependent_task_list=[mask_raster_task],
-            task_name='calculating %s' % percentile_pickle_path)
+        # _ = TASK_GRAPH.add_task(
+        #     func=calculate_percentile,
+        #     args=(feature_mask_path, [percentile], base_dir,
+        #           percentile_pickle_path),
+        #     target_path_list=[percentile_pickle_path],
+        #     dependent_task_list=[mask_raster_task],
+        #     task_name='calculating %s' % percentile_pickle_path)
         fid_to_percentile_pickle_path[fid] = percentile_pickle_path
         feature = None
+
+    return
 
     local_vector_path = os.path.join(workspace_dir, 'local_vector.gpkg')
     gpkg_driver = ogr.GetDriverByName('GPKG')
@@ -166,12 +165,13 @@ def clip_and_mask_raster(
     fh, target_clipped_path = tempfile.mkstemp(
         suffix='.tif', prefix='clipped', dir=base_dir)
     os.close(fh)
-    pygeoprocessing.warp_raster(
-        raster_path, pixel_size, target_clipped_path,
-        'near', target_bb=geometry.bounds)
-    pygeoprocessing.mask_raster(
-        (target_clipped_path, 1), vector_path, target_mask_path,
-        where_clause='FID=%d' % fid)
+    LOGGER.debug('%s: %s', vector_path, str(geometry.bounds))
+    # pygeoprocessing.warp_raster(
+    #     raster_path, pixel_size, target_clipped_path,
+    #     'near', target_bb=geometry.bounds)
+    # pygeoprocessing.mask_raster(
+    #     (target_clipped_path, 1), vector_path, target_mask_path,
+    #     where_clause='FID=%d' % fid)
     os.remove(target_clipped_path)
 
 
@@ -213,7 +213,7 @@ def mask_op(base_array, mask_array):
 
 
 if __name__ == '__main__':
-    FH = logging.FileHandler('log.txt')
+    FH = logging.FileHandler('normalize_log.txt')
     FH.setLevel(logging.DEBUG)
     LOGGER.addHandler(FH)
 
