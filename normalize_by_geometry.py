@@ -239,11 +239,11 @@ if __name__ == '__main__':
 
     RASTERS_TO_MASK_AND_NORMALIZE_URL_LIST = [
         'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_nwfp_masked_md5_a907048c3cc62ec51640048bb710d8d8.tif',
-        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_grazing_md5_cf6c597be3b0df9b8379c16c732d3ee7.tif',
-        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_nitrogenretention_md5_286c51393042973f71884ddc701be03d.tif',
-        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_all_md5_b91afbddd0576c7951ec08864a1b08ef.tif',
-        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_sedimentdeposition_md5_aa9ee6050c423b6da37f8c2723d9b513.tif',
-        'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_wood_products_md5_a5429e1381d35e6632a16d550147ff32.tif',
+        # 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_grazing_md5_cf6c597be3b0df9b8379c16c732d3ee7.tif',
+        # 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_nitrogenretention_md5_286c51393042973f71884ddc701be03d.tif',
+        # 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_pollination_all_md5_b91afbddd0576c7951ec08864a1b08ef.tif',
+        # 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_sedimentdeposition_md5_aa9ee6050c423b6da37f8c2723d9b513.tif',
+        # 'https://storage.googleapis.com/critical-natural-capital-ecoshards/potential_wood_products_md5_a5429e1381d35e6632a16d550147ff32.tif',
         'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif',
         'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501.tif',
         'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_pollination_md5_443522f6688011fd561297e9a556629b.tif',
@@ -285,8 +285,8 @@ if __name__ == '__main__':
             MASKED_LOCAL_RASTER_PATH)
 
     NORMALIZE_THESE_DIRECTLY = [
-        'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_moisture_md5_d5396383d8a30f296988f86bb0fc0528.tif',
-        'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_flood_md5_6b603609e55d3a17d20ea76699aaaf79.tif',
+        # 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_moisture_md5_d5396383d8a30f296988f86bb0fc0528.tif',
+        # 'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_potential_flood_md5_6b603609e55d3a17d20ea76699aaaf79.tif',
         'https://storage.googleapis.com/critical-natural-capital-ecoshards/normalized_realized_flood_md5_f1237e76a41039e22629abb85963ba16.tif']
 
     for URL in RASTERS_TO_MASK_AND_NORMALIZE_URL_LIST:
