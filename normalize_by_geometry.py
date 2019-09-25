@@ -74,17 +74,15 @@ def normalize_by_polygon(
             task_name='mask feature %d' % fid)
         percentile_pickle_path = os.path.join(
             workspace_dir, '%d_%d.pickle' % (fid, percentile))
-        # _ = TASK_GRAPH.add_task(
-        #     func=calculate_percentile,
-        #     args=(feature_mask_path, [percentile], base_dir,
-        #           percentile_pickle_path),
-        #     target_path_list=[percentile_pickle_path],
-        #     dependent_task_list=[mask_raster_task],
-        #     task_name='calculating %s' % percentile_pickle_path)
+        _ = TASK_GRAPH.add_task(
+            func=calculate_percentile,
+            args=(feature_mask_path, [percentile], base_dir,
+                  percentile_pickle_path),
+            target_path_list=[percentile_pickle_path],
+            dependent_task_list=[mask_raster_task],
+            task_name='calculating %s' % percentile_pickle_path)
         fid_to_percentile_pickle_path[fid] = percentile_pickle_path
         feature = None
-
-    return
 
     local_vector_path = os.path.join(workspace_dir, 'local_vector.gpkg')
     gpkg_driver = ogr.GetDriverByName('GPKG')
