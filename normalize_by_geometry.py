@@ -20,6 +20,9 @@ import taskgraph
 import pygeoprocessing
 import raster_calculations_core
 
+# set a 1GB limit for the cache
+gdal.SetCacheMax(2**30)
+
 logging.basicConfig(
     level=logging.DEBUG,
     format=(
