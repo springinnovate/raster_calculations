@@ -137,8 +137,8 @@ def divide_op(
         (~numpy.isclose(raster_b, b_nodata)) &
         (raster_b != 0.0))
     result[valid_mask] = raster_a[valid_mask] / raster_b[valid_mask]
-    result[result[valid_mask] <= clamp_range[0]] = clamp_range[0]
-    result[result[valid_mask] >= clamp_range[1]] = clamp_range[1]
+    result[valid_mask & (result <= clamp_range[0])] = clamp_range[0]
+    result[valid_mask & (result >= clamp_range[1])] = clamp_range[1]
     return result
 
 
