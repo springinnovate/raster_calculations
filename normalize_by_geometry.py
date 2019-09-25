@@ -27,6 +27,7 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
+logging.getLogger(taskgraph).setLevel(logging.DEBUG)
 
 
 def normalize_by_polygon(
@@ -166,12 +167,12 @@ def clip_and_mask_raster(
         suffix='.tif', prefix='clipped', dir=base_dir)
     os.close(fh)
     LOGGER.debug('%s: %s', vector_path, str(geometry.bounds))
-    # pygeoprocessing.warp_raster(
-    #     raster_path, pixel_size, target_clipped_path,
-    #     'near', target_bb=geometry.bounds)
-    # pygeoprocessing.mask_raster(
-    #     (target_clipped_path, 1), vector_path, target_mask_path,
-    #     where_clause='FID=%d' % fid)
+    pygeoprocessing.warp_raster(
+        raster_path, pixel_size, target_clipped_path,
+        'near', target_bb=geometry.bounds)
+    pygeoprocessing.mask_raster(
+        (target_clipped_path, 1), vector_path, target_mask_path,
+        where_clause='FID=%d' % fid)
     os.remove(target_clipped_path)
 
 
@@ -253,6 +254,7 @@ if __name__ == '__main__':
     LOCAL_RASTER_PATH_LIST = []
     for URL in RASTERS_TO_MASK_AND_NORMALIZE_URL_LIST:
         LOCAL_RASTER_PATH = os.path.join(ECOSHARD_DIR, os.path.basename(URL))
+        LOGGER.debug('downloading %s', LOCAL_RASTER_PATH)
         DOWNLOAD_TASK = TASK_GRAPH.add_task(
             func=ecoshard.download_url,
             args=(URL, LOCAL_RASTER_PATH),
@@ -265,6 +267,7 @@ if __name__ == '__main__':
     for LOCAL_RASTER_PATH in LOCAL_RASTER_PATH_LIST:
         MASKED_LOCAL_RASTER_PATH = os.path.join(
             CHURN_DIR, 'masked_%s' % os.path.basename(LOCAL_RASTER_PATH))
+        LOGGER.debug('masking %s', MASKED_LOCAL_RASTER_PATH)
         REMASKING_EXPRESSION = {
             'expression': 'mask*service',
             'symbol_to_path_map': {
@@ -304,8 +307,9 @@ if __name__ == '__main__':
         target_path_list=[WORLD_BORDERS_PATH],
         task_name='download %s' % WORLD_BORDERS_PATH)
 
+    LOGGER.debug("waiting for everything to download")
     TASK_GRAPH.join()
-
+    LOGGER.debug("starting to normalize everything")
     for PATH in RASTERS_TO_NORMALIZE_PATH_LIST:
         BASE_NAME = os.path.splitext(os.path.basename(PATH))[0]
         NORMALIZE_WORKSPACE_DIR = os.path.join(WORKSPACE_DIR, BASE_NAME)
