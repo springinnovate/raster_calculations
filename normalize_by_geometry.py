@@ -106,7 +106,10 @@ def normalize_by_polygon(
         feature = local_layer.GetFeature(fid)
         with open(pickle_path, 'rb') as pickle_file:
             percentile_list = pickle.load(pickle_file)
-        feature.SetField('norm_val', percentile_list[0])
+        if len(percentile_list) > 0:
+            feature.SetField('norm_val', percentile_list[0])
+        else:
+            feature.SetField('norm_val', -1.0)
         local_layer.SetFeature(feature)
         feature = None
     local_layer = None
