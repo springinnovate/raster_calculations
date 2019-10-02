@@ -15,7 +15,8 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-WORKSPACE_DIR = 'CNC_workspace'
+RASTER_PATH = 'normalized_by_country.tif'
+WORKSPACE_DIR = 'cdf_by_country'
 NCPUS = -1
 try:
     os.makedirs(WORKSPACE_DIR)
@@ -31,10 +32,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
-
 WORLD_BORDERS_URL = 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/TM_WORLD_BORDERS-0.3_simplified_md5_47f2059be8d4016072aa6abe77762021.gpkg'
-RASTER_PATH = 'normalized_by_country.tif'
-WORKSPACE_DIR = 'cdf_by_country'
 COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 
 PERCENTILE_LIST = list(range(0, 101, 5))
@@ -66,7 +64,6 @@ def main():
 
     raster_info = pygeoprocessing.get_raster_info(RASTER_PATH)
 
-    count = 0
     for world_border_feature in world_borders_layer:
         country_name = world_border_feature.GetField('NAME')
         LOGGER.debug(country_name)
