@@ -7,6 +7,7 @@ import ecoshard
 
 import matplotlib.pyplot
 import numpy
+import scipy.interpolate
 import pygeoprocessing
 from osgeo import gdal
 from osgeo import osr
@@ -114,18 +115,22 @@ def main():
         LOGGER.debug(cdf_array)
         fig, ax = matplotlib.pyplot.subplots()
         ax.plot(list(reversed(PERCENTILE_LIST)), cdf_array)
+
+        f = scipy.interpolate.interp1d(cdf_array, list(reversed(PERCENTILE_LIST)))
+        cdf_threshold = f(threshold_limit)
         ax.plot([0, 100], [threshold_limit, threshold_limit], 'k:', linewidth=2)
-        ax.plot([90, 90], [cdf_array[0], cdf_array[-1]], 'k:', linewidth=2)
+        ax.plot([cdf_threshold, cdf_threshold], [cdf_array[0], cdf_array[-1]], 'k:', linewidth=2)
 
         ax.grid(True, linestyle='-.')
         ax.set_title(
-            '%s CDF. 90%% max at %.2f' % (country_name, threshold_limit))
+            '%s CDF. 90%% max at %.2f and %.2f%%' % (country_name, threshold_limit, cdf_threshold))
         ax.set_ylabel('Sum of %s up to 100-percentile' % os.path.basename(RASTER_PATH))
         ax.set_ylabel('100-percentile')
         ax.tick_params(labelcolor='r', labelsize='medium', width=3)
         matplotlib.pyplot.autoscale(enable=True, tight=True)
         matplotlib.pyplot.savefig(
             os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name))
+        break
 
 
 def extract_feature(
