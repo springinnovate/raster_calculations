@@ -37,6 +37,7 @@ COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 
 PERCENTILE_LIST = list(range(0, 101, 5))
 
+
 def main():
     """Entry point."""
     for dir_path in [WORKSPACE_DIR, COUNTRY_WORKSPACES]:
@@ -105,22 +106,22 @@ def main():
             nodata_mask = ~numpy.isclose(data_block, nodata)
             for index, percentile_value in enumerate(percentile_values):
                 cdf_array[index] += numpy.sum(data_block[
-                    nodata_mask & (data_block <= percentile_value)])
+                    nodata_mask & (data_block >= percentile_value)])
 
         # threshold is at 90% says Becky
-        threshold_limit = 0.9 * cdf_array[-1]
+        threshold_limit = 0.9 * cdf_array[2]
 
         LOGGER.debug(cdf_array)
         fig, ax = matplotlib.pyplot.subplots()
-        ax.plot(cdf_array, PERCENTILE_LIST)
-        ax.plot([threshold_limit, threshold_limit], [0, 100], 'k:', linewidth=2)
-        ax.plot([cdf_array[0], cdf_array[-1]], [90, 90], 'k:', linewidth=2)
+        ax.plot(list(reversed(PERCENTILE_LIST)), cdf_array)
+        ax.plot([0, 100], [threshold_limit, threshold_limit], 'k:', linewidth=2)
+        ax.plot([90, 90], [cdf_array[0], cdf_array[-1]], 'k:', linewidth=2)
 
         ax.grid(True, linestyle='-.')
         ax.set_title(
             '%s CDF. 90%% max at %.2f' % (country_name, threshold_limit))
-        ax.set_ylabel('Percentile')
-        ax.set_xlabel('Sum of %s up to percentile' % os.path.basename(RASTER_PATH))
+        ax.set_ylabel('Sum of %s up to 100-percentile' % os.path.basename(RASTER_PATH))
+        ax.set_ylabel('100-percentile')
         ax.tick_params(labelcolor='r', labelsize='medium', width=3)
         matplotlib.pyplot.autoscale(enable=True, tight=True)
         matplotlib.pyplot.savefig(
