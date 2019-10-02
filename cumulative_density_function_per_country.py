@@ -66,6 +66,10 @@ def main():
 
     raster_info = pygeoprocessing.get_raster_info(RASTER_PATH)
 
+    country_threshold_table_path = os.path.join(
+        WORKSPACE_DIR, 'country_threshold.csv')
+    country_threshold_table_file = open(country_threshold_table_path, 'w')
+    country_threshold_table_file.write('country,percentile at 90% max\n')
     for world_border_feature in world_borders_layer:
         country_name = world_border_feature.GetField('NAME')
         LOGGER.debug(country_name)
@@ -130,7 +134,9 @@ def main():
         matplotlib.pyplot.autoscale(enable=True, tight=True)
         matplotlib.pyplot.savefig(
             os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name))
-        break
+        country_threshold_table_file.write(
+            '%s, %f\n' % (country_name, cdf_threshold))
+    country_threshold_table_file.close()
 
 
 def extract_feature(
