@@ -101,6 +101,9 @@ def main():
         percentile_values = pygeoprocessing.raster_band_percentile(
             (country_raster_path, 1), country_workspace, PERCENTILE_LIST)
         LOGGER.debug(percentile_values)
+        LOGGER.debug(
+            "len percentile_values: %d len PERCENTILE_LIST: %d",
+            len(percentile_values, len(PERCENTILE_LIST)))
 
         cdf_array = [0.0] * len(percentile_values)
 
