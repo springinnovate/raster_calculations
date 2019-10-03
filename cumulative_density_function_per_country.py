@@ -17,6 +17,7 @@ import taskgraph
 gdal.SetCacheMax(2**30)
 
 RASTER_PATH = r"C:\Users\Becky\Documents\raster_calculations\normalized_realized_grazing_md5_d03b_resample_30x.tif"
+#RASTER_PATH = r"C:\Users\rpsharp\Downloads\normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif"
 WORKSPACE_DIR = 'cdf_by_country'
 NCPUS = -1
 try:
@@ -69,7 +70,7 @@ def main():
     country_threshold_table_path = os.path.join(
         WORKSPACE_DIR, 'country_threshold.csv')
     country_threshold_table_file = open(country_threshold_table_path, 'w')
-    country_threshold_table_file.write('country,percentile at 90% max\n')
+    country_threshold_table_file.write('country,percentile at 90% max,pixel count\n')
     for world_border_feature in world_borders_layer:
         country_name = world_border_feature.GetField('NAME')
         LOGGER.debug(country_name)
@@ -110,9 +111,11 @@ def main():
 
         nodata = pygeoprocessing.get_raster_info(
             country_raster_path)['nodata'][0]
+        pixel_count = 0
         for _, data_block in pygeoprocessing.iterblocks(
                 (country_raster_path, 1)):
             nodata_mask = ~numpy.isclose(data_block, nodata)
+            pixel_count += numpy.count_nonzero(nodata_mask)
             for index, percentile_value in enumerate(percentile_values):
                 cdf_array[index] += numpy.sum(data_block[
                     nodata_mask & (data_block >= percentile_value)])
@@ -123,17 +126,22 @@ def main():
         LOGGER.debug(cdf_array)
         fig, ax = matplotlib.pyplot.subplots()
         ax.plot(list(reversed(PERCENTILE_LIST)), cdf_array)
+        f = scipy.interpolate.interp1d(
+            cdf_array, list(reversed(PERCENTILE_LIST)))
+        try:
+            cdf_threshold = f(threshold_limit)
+        except ValueError:
+            LOGGER.exception(
+                "error when passing threshold_limit: %s\ncdf_array: %s" % (
+                    threshold_limit, cdf_array))
+            cdf_threshold = cdf_array[2]
 
-        f = scipy.interpolate.interp1d(cdf_array, list(reversed(PERCENTILE_LIST)))
-        LOGGER.debug(
-            'threshold_limit: %s\ncdf_array: %s', threshold_limit, cdf_array)
-        cdf_threshold = f(threshold_limit)
         ax.plot([0, 100], [threshold_limit, threshold_limit], 'k:', linewidth=2)
         ax.plot([cdf_threshold, cdf_threshold], [cdf_array[0], cdf_array[-1]], 'k:', linewidth=2)
 
         ax.grid(True, linestyle='-.')
         ax.set_title(
-            '%s CDF. 90%% max at %.2f and %.2f%%' % (country_name, threshold_limit, cdf_threshold))
+            '%s CDF. 90%% max at %.2f and %.2f%%\nn=%d' % (country_name, threshold_limit, cdf_threshold, pixel_count))
         ax.set_ylabel('Sum of %s up to 100-percentile' % os.path.basename(RASTER_PATH))
         ax.set_ylabel('100-percentile')
         ax.tick_params(labelcolor='r', labelsize='medium', width=3)
@@ -141,7 +149,7 @@ def main():
         matplotlib.pyplot.savefig(
             os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name))
         country_threshold_table_file.write(
-            '%s, %f\n' % (country_name, cdf_threshold))
+            '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
         country_threshold_table_file.flush()
     country_threshold_table_file.close()
 
