@@ -125,6 +125,8 @@ def main():
         ax.plot(list(reversed(PERCENTILE_LIST)), cdf_array)
 
         f = scipy.interpolate.interp1d(cdf_array, list(reversed(PERCENTILE_LIST)))
+        LOGGER.debug(
+            'threshold_limit: %s\ncdf_array: %s', threshold_limit, cdf_array)
         cdf_threshold = f(threshold_limit)
         ax.plot([0, 100], [threshold_limit, threshold_limit], 'k:', linewidth=2)
         ax.plot([cdf_threshold, cdf_threshold], [cdf_array[0], cdf_array[-1]], 'k:', linewidth=2)
