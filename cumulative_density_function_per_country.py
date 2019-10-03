@@ -140,6 +140,7 @@ def main():
             os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name))
         country_threshold_table_file.write(
             '%s, %f\n' % (country_name, cdf_threshold))
+        country_threshold_table_file.flush()
     country_threshold_table_file.close()
 
 
