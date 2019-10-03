@@ -16,7 +16,7 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-RASTER_PATH = r"C:\Users\Becky\Documents\raster_calculations\remaining\normalized_realized_grazing_md5_d03b_resample_30x.tif"
+RASTER_PATH = r"C:\Users\rpsharp\Downloads\normalized_realized_grazing_md5_d03b_resample_30x.tif"
 WORKSPACE_DIR = 'cdf_by_country'
 NCPUS = -1
 try:
@@ -100,10 +100,11 @@ def main():
 
         percentile_values = pygeoprocessing.raster_band_percentile(
             (country_raster_path, 1), country_workspace, PERCENTILE_LIST)
-        LOGGER.debug(percentile_values)
+        if len(percentile_values) != len(PERCENTILE_LIST):
+            continue
         LOGGER.debug(
             "len percentile_values: %d len PERCENTILE_LIST: %d",
-            len(percentile_values, len(PERCENTILE_LIST)))
+            len(percentile_values), len(PERCENTILE_LIST))
 
         cdf_array = [0.0] * len(percentile_values)
 
