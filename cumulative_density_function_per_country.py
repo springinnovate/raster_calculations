@@ -88,8 +88,8 @@ def main():
             wgs84_srs.ExportToWkt(), country_vector,
             country_vector_complete_token)
 
-        country_raster_path = os.path.join(
-            country_workspace, '%s_%s' % (country_name, RASTER_PATH))
+        country_raster_path = os.path.join(country_workspace, '%s_%s' % (
+            country_name, os.path.basename(RASTER_PATH)))
 
         country_vector_info = pygeoprocessing.get_vector_info(country_vector)
         pygeoprocessing.warp_raster(
