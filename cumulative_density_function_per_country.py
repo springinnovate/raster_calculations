@@ -16,7 +16,7 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-RASTER_PATH = r"C:\Users\rpsharp\Downloads\normalized_realized_grazing_md5_d03b_resample_30x.tif"
+RASTER_PATH = r"C:\Users\Becky\Documents\raster_calculations\normalized_realized_grazing_md5_d03b_resample_30x.tif"
 WORKSPACE_DIR = 'cdf_by_country'
 NCPUS = -1
 try:
