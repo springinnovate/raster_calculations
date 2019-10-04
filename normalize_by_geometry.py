@@ -135,13 +135,15 @@ def divide_op(
     """Divide a by b."""
     result = numpy.empty(raster_a.shape)
     result[:] = target_nodata
-    valid_mask = (
-        (~numpy.isclose(raster_a, a_nodata)) &
-        (~numpy.isclose(raster_b, b_nodata)) &
-        (raster_b != 0.0))
+    nodata_mask = (
+        (numpy.isclose(raster_a, a_nodata)) |
+        (numpy.isclose(raster_b, b_nodata)))
+    zero_mask = numpy.isclose(raster_b, 0.0)
+    valid_mask = ~nodata_mask & ~zero_mask
     result[valid_mask] = raster_a[valid_mask] / raster_b[valid_mask]
     result[valid_mask & (result <= clamp_range[0])] = clamp_range[0]
     result[valid_mask & (result >= clamp_range[1])] = clamp_range[1]
+    result[zero_mask] = 0.0
     return result
 
 
