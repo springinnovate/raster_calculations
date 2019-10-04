@@ -73,8 +73,12 @@ def main():
     country_threshold_table_file.write('country,percentile at 90% max,pixel count\n')
     for world_border_feature in world_borders_layer:
         country_name = world_border_feature.GetField('NAME')
+        if country_name != 'Åland Islands':
+            continue
         LOGGER.debug(country_name)
-        country_workspace = os.path.join(COUNTRY_WORKSPACES, country_name)
+
+        country_workspace = os.path.join(
+            COUNTRY_WORKSPACES, str(country_name.encode('ascii', 'ignore')))
         try:
             os.makedirs(country_workspace)
         except OSError:
@@ -90,7 +94,8 @@ def main():
             country_vector_complete_token)
 
         country_raster_path = os.path.join(country_workspace, '%s_%s' % (
-            country_name, os.path.basename(RASTER_PATH)))
+            country_name.encode('ascii', 'ignore'),
+            os.path.basename(RASTER_PATH)))
 
         country_vector_info = pygeoprocessing.get_vector_info(country_vector)
         pygeoprocessing.warp_raster(
@@ -146,8 +151,8 @@ def main():
         ax.set_ylabel('100-percentile')
         ax.tick_params(labelcolor='r', labelsize='medium', width=3)
         matplotlib.pyplot.autoscale(enable=True, tight=True)
-        matplotlib.pyplot.savefig(
-            os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name))
+        fig_path = os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name)
+        matplotlib.pyplot.savefig(fig_path)
         country_threshold_table_file.write(
             '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
         country_threshold_table_file.flush()
