@@ -320,7 +320,7 @@ if __name__ == '__main__':
         BASE_NAME = os.path.splitext(os.path.basename(PATH))[0]
         NORMALIZE_WORKSPACE_DIR = os.path.join(WORKSPACE_DIR, BASE_NAME)
         TARGET_PATH = os.path.join(
-            WORKSPACE_DIR, 'normalized_%s.tif' % BASE_NAME)
+            WORKSPACE_DIR, 'norm_by_country_%s.tif' % BASE_NAME)
         normalize_by_polygon(
             PATH, WORLD_BORDERS_PATH, 99, [0, 1], NORMALIZE_WORKSPACE_DIR,
             TARGET_PATH)
