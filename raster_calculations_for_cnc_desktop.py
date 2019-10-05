@@ -31,6 +31,30 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+    synthesis_index_expression = {
+            'expression': 'nitrogen + sediment + pollination + timber + nwfp + grazing ',
+            'symbol_to_path_map': {
+                'nitrogen': "CNC_workspace/norm_by_country_masked_realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501.tif",
+                'nwfp': "CNC_workspace/norm_by_country_masked_realized_nwfp_masked_md5_a907048c3cc62ec51640048bb710d8d8.tif",
+                'pollination': "CNC_workspace/norm_by_country_masked_realized_pollination_md5_443522f6688011fd561297e9a556629b.tif",
+                'sediment': "CNC_workspace/norm_by_country_masked_realized_sedimentdeposition_downstream_md5_1613b12643898c1475c5ec3180836770.tif",
+                'grazing': "CNC_workspace/norm_by_country_masked_realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif",
+                'timber': "CNC_workspace/norm_by_country_masked_realized_timber_md5_340467b17d0950d381f55cd355ae688a.tif",  
+            },
+            'target_nodata': -1,
+            'target_raster_path': "CNC_workspace/aggregate_normbycountry_realized_ES_score_nspwog.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        synthesis_index_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     for base_raster_path, threshold, target_raster_path in [
             #(r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\normalized_realized_pollination_md5_06f52f2854ae1c584742d587b1c31359.tif", 0.06, "top04_pollination.tif"),
             #(r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\normalized_realized_flood_md5_f1237e76a41039e22629abb85963ba16.tif", 0.05, "top30_flood.tif"),
