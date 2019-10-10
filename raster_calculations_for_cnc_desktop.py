@@ -31,6 +31,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+
     synthesis_index_expression = {
             'expression': 'nitrogen + sediment + pollination + timber + nwfp + grazing ',
             'symbol_to_path_map': {
