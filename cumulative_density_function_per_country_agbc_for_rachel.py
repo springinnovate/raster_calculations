@@ -74,6 +74,8 @@ def main():
     country_threshold_table_file.write('country,percentile at 90% max,pixel count\n')
     for world_border_feature in world_borders_layer:
         country_name = world_border_feature.GetField('NAME')
+        if country_name != 'Canada':
+            continue
         LOGGER.debug(country_name)
         country_workspace = os.path.join(COUNTRY_WORKSPACES, country_name)
         try:
