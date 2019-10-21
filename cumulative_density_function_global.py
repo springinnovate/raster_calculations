@@ -129,6 +129,9 @@ def main():
     for _, data_block in pygeoprocessing.iterblocks(
             (RASTER_PATH, 1)):
         nodata_mask = ~numpy.isclose(data_block, nodata)
+        nonzero_count = numpy.count_nonzero(nodata_mask)
+        if nonzero_count == 0:
+            continue
         valid_pixel_count += numpy.count_nonzero(nodata_mask)
         for index, percentile_value in enumerate(percentile_values):
             cdf_array[index] += numpy.sum(data_block[
