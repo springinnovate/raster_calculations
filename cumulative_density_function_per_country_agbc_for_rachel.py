@@ -16,7 +16,8 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-RASTER_PATH = 'agbc2010_MgCha_x10.tif'
+#RASTER_PATH = 'agbc2010_MgCha_x10.tif'
+RASTER_PATH = r"C:\Users\Rich\Downloads\agbc2010_MgCha_x10.tif"
 #RASTER_PATH = r"C:\Users\rpsharp\Downloads\normalized_realized_grazing_md5_d03b584dac965539a77bf96cba3f8096.tif"
 WORKSPACE_DIR = 'cdf_by_country_agbc_for_Rachel'
 NCPUS = -1

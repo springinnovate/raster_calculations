@@ -1,23 +1,27 @@
 """Count non-zero non-nodata pixels in raster, get percentile values, and sum above each percentile to build the CDF."""
 import datetime
-import sys
-import os
-import logging
 import ecoshard
+import logging
+import os
+import pickle
+import shutil
+import sys
+import tempfile
 
+from osgeo import gdal
+from osgeo import ogr
+from osgeo import osr
 import matplotlib.pyplot
 import numpy
-import scipy.interpolate
 import pygeoprocessing
-from osgeo import gdal
-from osgeo import osr
-from osgeo import ogr
+import scipy.interpolate
 import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-RASTER_PATH = 'agbc2010_MgCha_x10_masked.tif'
-WORKSPACE_DIR = 'cdf_global_agbc_for_rachel'
+#RASTER_PATH = 'agbc2010_MgCha_x10_masked.tif'
+RASTER_PATH = r"C:\Users\Rich\Downloads\agbc2010_MgCha_x10.tif"
+WORKSPACE_DIR = 'cdf_global_workspace'
 #WORKSPACE_DIR = 'cdf_by_country'
 NCPUS = -1
 try:
@@ -39,6 +43,30 @@ logging.getLogger('matplotlib').setLevel(logging.ERROR)
 COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 
 PERCENTILE_LIST = list(range(0, 101, 5))
+
+
+def calculate_percentiles(
+        raster_path, percentile_list, target_percentile_pickle_path):
+    """Calculate percentiles and save to a pickle file.
+
+    Parameters:
+        raster_path (str): path to raster.
+        percentile_list (list): list of increasing order percentile thresholds
+            between the ranges 0-100.
+        target_percentile_pickle_path (str): the result of the percentile
+            function will be saved in a list that is pickled in this file.
+
+    Returns:
+        None.
+
+    """
+    working_dir = os.path.dirname(target_percentile_pickle_path)
+    heapfile_dir = tempfile.mkdtemp(dir=working_dir)
+    percentile_values = pygeoprocessing.raster_band_percentile(
+        (raster_path, 1), heapfile_dir, percentile_list)
+    with open(target_percentile_pickle_path, 'wb') as pickle_file:
+        pickle.dump(percentile_values, pickle_file)
+    shutil.rmtree(heapfile_dir)
 
 
 def main():
@@ -74,26 +102,39 @@ def main():
     country_threshold_table_file = open(country_threshold_table_path, 'w')
     country_threshold_table_file.write('country,percentile at 90% max,pixel count\n')
 
-
-    percentile_values = pygeoprocessing.raster_band_percentile(
-        (RASTER_PATH, 1), COUNTRY_WORKSPACES, PERCENTILE_LIST)
+    target_percentile_pickle_path = os.path.join(
+        WORKSPACE_DIR, '%s.pkl' % (
+            os.path.basename(os.path.splitext(RASTER_PATH))[0]))
+    calculate_percentiles_task = task_graph.add_task(
+        func=calculate_percentiles,
+        args=(
+            RASTER_PATH, PERCENTILE_LIST, target_percentile_pickle_path),
+        target_path_list=[target_percentile_pickle_path],
+        task_name='calculate percentiles')
+    calculate_percentiles_task.join()
+    with open(target_percentile_pickle_path, 'rb') as pickle_file:
+        percentile_values = pickle.load(pickle_file)
     LOGGER.debug(
         "len percentile_values: %d len PERCENTILE_LIST: %d",
         len(percentile_values), len(PERCENTILE_LIST))
 
     cdf_array = [0.0] * len(percentile_values)
 
-    nodata = pygeoprocessing.get_raster_info(
-        RASTER_PATH)['nodata'][0]
-    pixel_count = 0
+    raster_info = pygeoprocessing.get_raster_info(RASTER_PATH)
+    nodata = raster_info['nodata'][0]
+    valid_pixel_count = 0
+    total_pixel_count = 0
+    total_pixels = (
+        raster_info['raster_size'][0] * raster_info['raster_size'][1])
     for _, data_block in pygeoprocessing.iterblocks(
             (RASTER_PATH, 1)):
         nodata_mask = ~numpy.isclose(data_block, nodata)
-        pixel_count += numpy.count_nonzero(nodata_mask)
+        valid_pixel_count += numpy.count_nonzero(nodata_mask)
         for index, percentile_value in enumerate(percentile_values):
             cdf_array[index] += numpy.sum(data_block[
                 nodata_mask & (data_block >= percentile_value)])
-
+        total_pixel_count += data_block.size
+        LOGGER.debug('%.2f%% complete', (100.0*total_pixel_count)/total_pixels)
         # threshold is at 90% says Becky
     threshold_limit = 0.9 * cdf_array[2]
 
@@ -115,7 +156,7 @@ def main():
 
     ax.grid(True, linestyle='-.')
     ax.set_title(
-        '%s CDF. 90%% max at %.2f and %.2f%%\nn=%d' % (country_name, threshold_limit, cdf_threshold, pixel_count))
+        '%s CDF. 90%% max at %.2f and %.2f%%\nn=%d' % (country_name, threshold_limit, cdf_threshold, valid_pixel_count))
     ax.set_ylabel('Sum of %s up to 100-percentile' % os.path.basename(RASTER_PATH))
     ax.set_ylabel('100-percentile')
     ax.tick_params(labelcolor='r', labelsize='medium', width=3)
@@ -123,7 +164,7 @@ def main():
     matplotlib.pyplot.savefig(
         os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name))
     country_threshold_table_file.write(
-        '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
+        '%s, %f, %d\n' % (country_name, cdf_threshold, valid_pixel_count))
     country_threshold_table_file.flush()
     country_threshold_table_file.close()
 
@@ -170,11 +211,11 @@ def main():
 
         nodata = pygeoprocessing.get_raster_info(
             country_raster_path)['nodata'][0]
-        pixel_count = 0
+        valid_pixel_count = 0
         for _, data_block in pygeoprocessing.iterblocks(
                 (country_raster_path, 1)):
             nodata_mask = ~numpy.isclose(data_block, nodata)
-            pixel_count += numpy.count_nonzero(nodata_mask)
+            valid_pixel_count += numpy.count_nonzero(nodata_mask)
             for index, percentile_value in enumerate(percentile_values):
                 cdf_array[index] += numpy.sum(data_block[
                     nodata_mask & (data_block >= percentile_value)])
@@ -200,7 +241,7 @@ def main():
 
         ax.grid(True, linestyle='-.')
         ax.set_title(
-            '%s CDF. 90%% max at %.2f and %.2f%%\nn=%d' % (country_name, threshold_limit, cdf_threshold, pixel_count))
+            '%s CDF. 90%% max at %.2f and %.2f%%\nn=%d' % (country_name, threshold_limit, cdf_threshold, valid_pixel_count))
         ax.set_ylabel('Sum of %s up to 100-percentile' % os.path.basename(RASTER_PATH))
         ax.set_ylabel('100-percentile')
         ax.tick_params(labelcolor='r', labelsize='medium', width=3)
@@ -208,7 +249,7 @@ def main():
         matplotlib.pyplot.savefig(
             os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name))
         country_threshold_table_file.write(
-            '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
+            '%s, %f, %d\n' % (country_name, cdf_threshold, valid_pixel_count))
         country_threshold_table_file.flush()
     country_threshold_table_file.close()
 
