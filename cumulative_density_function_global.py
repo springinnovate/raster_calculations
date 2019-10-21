@@ -104,7 +104,7 @@ def main():
 
     target_percentile_pickle_path = os.path.join(
         WORKSPACE_DIR, '%s.pkl' % (
-            os.path.basename(os.path.splitext(RASTER_PATH))[0]))
+            os.path.basename(os.path.splitext(RASTER_PATH)[0])))
     calculate_percentiles_task = task_graph.add_task(
         func=calculate_percentiles,
         args=(
