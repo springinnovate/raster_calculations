@@ -127,17 +127,19 @@ def main():
     total_pixels = (
         raster_info['raster_size'][0] * raster_info['raster_size'][1])
     for _, data_block in pygeoprocessing.iterblocks(
-            (RASTER_PATH, 1)):
+            (RASTER_PATH, 1), largest_block=2**28):
         nodata_mask = ~numpy.isclose(data_block, nodata)
         nonzero_count = numpy.count_nonzero(nodata_mask)
         if nonzero_count == 0:
             continue
         valid_pixel_count += numpy.count_nonzero(nodata_mask)
         for index, percentile_value in enumerate(percentile_values):
-            cdf_array[index] += numpy.sum(data_block[
-                nodata_mask & (data_block >= percentile_value)])
+            cdf_array[index] += numpy.sum((data_block[
+                nodata_mask & (data_block >= percentile_value)]).astype(
+                    numpy.float32))
         total_pixel_count += data_block.size
         LOGGER.debug('%.2f%% complete', (100.0*total_pixel_count)/total_pixels)
+        LOGGER.debug('current cdf array: %s', cdf_array)
         # threshold is at 90% says Becky
     threshold_limit = 0.9 * cdf_array[2]
 
