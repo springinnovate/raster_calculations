@@ -19,11 +19,8 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-#RASTER_PATH = 'agbc2010_MgCha_x10_masked.tif'
-#RASTER_PATH = r"C:\Users\Rich\Downloads\agbc2010_MgCha_x10.tif"
 RASTER_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/agbc2010_MgCha_x10_md5_7c945a8b05f65c3ac1e84e4a20e2f114.tif'
 WORKSPACE_DIR = 'cdf_global_workspace'
-#WORKSPACE_DIR = 'cdf_by_country'
 NCPUS = -1
 try:
     os.makedirs(WORKSPACE_DIR)
@@ -39,8 +36,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
-#WORLD_BORDERS_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/land_area_md5_067cd6de8987123cecfb36d7b49b8b40.gpkg'
-#WORLD_BORDERS_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'
+WORLD_BORDERS_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/land_area_md5_067cd6de8987123cecfb36d7b49b8b40.gpkg'
 COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 
 GTIFF_CREATION_TUPLE_OPTIONS = ('GTIFF', (
@@ -84,38 +80,43 @@ def main():
     task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1, 5.0)
     world_borders_path = os.path.join(
         WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
-    download_task = task_graph.add_task(
+    download_wb_task = task_graph.add_task(
         func=ecoshard.download_url,
         args=(WORLD_BORDERS_URL, world_borders_path),
         target_path_list=[world_borders_path],
         task_name='download world borders')
-
-    #download_task.join()
+    raster_path = os.path.join(WORKSPACE_DIR, os.path.basename(RASTER_URL))
+    download_raster_task = task_graph.add_task(
+        func=ecoshard.download_url,
+        args=(RASTER_URL, raster_path),
+        target_path_list=[raster_path],
+        task_name='download raster')
 
     #world_borders_vector = gdal.OpenEx(world_borders_path, gdal.OF_VECTOR)
     #world_borders_layer = world_borders_vector.GetLayer()
-
     #wgs84_srs = osr.SpatialReference()
     #wgs84_srs.ImportFromEPSG(4326)
 
     # mask out everything that's not a country
     masked_raster_path = os.path.join(
         WORKSPACE_DIR, '%s_masked.%s' % os.path.splitext(
-            os.path.basename(RASTER_PATH)))
+            os.path.basename(raster_path)))
     # we need to define this because otherwise no nodata value is defined
     mask_nodata = -1
     mask_task = task_graph.add_task(
         func=pygeoprocessing.mask_raster,
         args=(
-            (RASTER_PATH, 1), world_borders_path, masked_raster_path),
+            (raster_path, 1), world_borders_path, masked_raster_path),
         kwargs={
             'raster_driver_creation_tuple': GTIFF_CREATION_TUPLE_OPTIONS,
             'target_mask_value': mask_nodata,
         },
         target_path_list=[masked_raster_path],
+        dependent_task_list=[download_wb_task, download_raster_task],
         task_name='mask raster')
 
-    raster_info = pygeoprocessing.get_raster_info(RASTER_PATH)
+    download_raster_task.join()
+    raster_info = pygeoprocessing.get_raster_info(raster_path)
     country_name = "Global"
 
     country_threshold_table_path = os.path.join(
@@ -125,11 +126,11 @@ def main():
 
     target_percentile_pickle_path = os.path.join(
         WORKSPACE_DIR, '%s.pkl' % (
-            os.path.basename(os.path.splitext(RASTER_PATH)[0])))
+            os.path.basename(os.path.splitext(raster_path)[0])))
     calculate_percentiles_task = task_graph.add_task(
         func=calculate_percentiles,
         args=(
-            RASTER_PATH, PERCENTILE_LIST, target_percentile_pickle_path),
+            raster_path, PERCENTILE_LIST, target_percentile_pickle_path),
         target_path_list=[target_percentile_pickle_path],
         dependent_task_list=[mask_task],
         task_name='calculate percentiles')
@@ -142,14 +143,14 @@ def main():
 
     cdf_array = [0.0] * len(percentile_values)
 
-    raster_info = pygeoprocessing.get_raster_info(RASTER_PATH)
+    raster_info = pygeoprocessing.get_raster_info(raster_path)
     nodata = raster_info['nodata'][0]
     valid_pixel_count = 0
     total_pixel_count = 0
     total_pixels = (
         raster_info['raster_size'][0] * raster_info['raster_size'][1])
     for _, data_block in pygeoprocessing.iterblocks(
-            (RASTER_PATH, 1), largest_block=2**28):
+            (raster_path, 1), largest_block=2**28):
         nodata_mask = ~numpy.isclose(data_block, nodata)
         nonzero_count = numpy.count_nonzero(nodata_mask)
         if nonzero_count == 0:
@@ -184,7 +185,7 @@ def main():
     ax.grid(True, linestyle='-.')
     ax.set_title(
         '%s CDF. 90%% max at %.2f and %.2f%%\nn=%d' % (country_name, threshold_limit, cdf_threshold, valid_pixel_count))
-    ax.set_ylabel('Sum of %s up to 100-percentile' % os.path.basename(RASTER_PATH))
+    ax.set_ylabel('Sum of %s up to 100-percentile' % os.path.basename(raster_path))
     ax.set_ylabel('100-percentile')
     ax.tick_params(labelcolor='r', labelsize='medium', width=3)
     matplotlib.pyplot.autoscale(enable=True, tight=True)
