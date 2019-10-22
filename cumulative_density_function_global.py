@@ -42,6 +42,9 @@ logging.getLogger('matplotlib').setLevel(logging.ERROR)
 #WORLD_BORDERS_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'
 COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 
+GTIFF_CREATION_TUPLE_OPTIONS = ('GTIFF', (
+    'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=ZSTD',
+    'BLOCKXSIZE=256', 'BLOCKYSIZE=256'))
 PERCENTILE_LIST = list(range(0, 101, 5))
 
 
@@ -78,13 +81,13 @@ def main():
     #        pass
 
     task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1, 5.0)
-    #world_borders_path = os.path.join(
-    #    WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
-    #download_task = task_graph.add_task(
-    #    func=ecoshard.download_url,
-    #    args=(WORLD_BORDERS_URL, world_borders_path),
-    #    target_path_list=[world_borders_path],
-    #    task_name='download world borders')
+    world_borders_path = os.path.join(
+        WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
+    download_task = task_graph.add_task(
+        func=ecoshard.download_url,
+        args=(WORLD_BORDERS_URL, world_borders_path),
+        target_path_list=[world_borders_path],
+        task_name='download world borders')
 
     #download_task.join()
 
@@ -93,6 +96,23 @@ def main():
 
     #wgs84_srs = osr.SpatialReference()
     #wgs84_srs.ImportFromEPSG(4326)
+
+    # mask out everything that's not a country
+    masked_raster_path = os.path.join(
+        WORKSPACE_DIR, '%s_masked.%s' % os.path.splitext(
+            os.path.basename(RASTER_PATH)))
+    # we need to define this because otherwise no nodata value is defined
+    mask_nodata = -1
+    mask_task = task_graph.add_task(
+        func=pygeoprocessing.mask_raster,
+        args=(
+            (RASTER_PATH, 1), world_borders_path, masked_raster_path),
+        kwargs={
+            'raster_driver_creation_tuple': GTIFF_CREATION_TUPLE_OPTIONS,
+            'target_mask_value': mask_nodata,
+        },
+        target_path_list=[masked_raster_path],
+        task_name='mask raster')
 
     raster_info = pygeoprocessing.get_raster_info(RASTER_PATH)
     country_name = "Global"
@@ -110,6 +130,7 @@ def main():
         args=(
             RASTER_PATH, PERCENTILE_LIST, target_percentile_pickle_path),
         target_path_list=[target_percentile_pickle_path],
+        dependent_task_list=[mask_task],
         task_name='calculate percentiles')
     calculate_percentiles_task.join()
     with open(target_percentile_pickle_path, 'rb') as pickle_file:
