@@ -20,7 +20,8 @@ import taskgraph
 gdal.SetCacheMax(2**30)
 
 #RASTER_PATH = 'agbc2010_MgCha_x10_masked.tif'
-RASTER_PATH = r"C:\Users\Rich\Downloads\agbc2010_MgCha_x10.tif"
+#RASTER_PATH = r"C:\Users\Rich\Downloads\agbc2010_MgCha_x10.tif"
+RASTER_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/agbc2010_MgCha_x10_md5_7c945a8b05f65c3ac1e84e4a20e2f114.tif'
 WORKSPACE_DIR = 'cdf_global_workspace'
 #WORKSPACE_DIR = 'cdf_by_country'
 NCPUS = -1
