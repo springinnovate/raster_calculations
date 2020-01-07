@@ -2381,19 +2381,10 @@ if __name__ == '__main__':
     parser.add_argument(
         'landcover rasters', type=str, nargs='+',
         help=(
-            'Paths or patterns to landcover rasters that use ESA style '
-            'encoding.'))
+            'Paths, patterns, or ecoshards to landcover rasters that use ESA '
+            'ESA encoding.'))
     args = parser.parse_args()
     landcover_raster_list = []
-    for glob_pattern in vars(args)['landcover rasters']:
-        for raster_path in glob.glob(glob_pattern):
-            # just try to open it in case it's not a raster, we won't see
-            # anything otherwise
-            r = gdal.OpenEx(raster_path, gdal.OF_RASTER)
-            if r is None:
-                continue
-            r = None
-            landcover_raster_list.append(raster_path)
 
     task_graph = taskgraph.TaskGraph(
         WORKING_DIR, N_WORKERS, reporting_interval=5.0)
@@ -2405,6 +2396,34 @@ if __name__ == '__main__':
             os.makedirs(dir_path)
         except OSError:
             pass
+
+    for file_pattern in vars(args)['landcover rasters']:
+        # might be a url
+        if file_pattern.startswith('http'):
+            target_path = os.path.join(
+                ECOSHARD_DIR, os.path.basename(file_pattern))
+            fetch_task = task_graph.add_task(
+                func=ecoshard.download_url,
+                args=(
+                    file_pattern, target_path),
+                target_path_list=[target_path],
+                task_name=f'fetch {os.path.basename(target_path)}')
+            glob_pattern = target_path
+        else:
+            glob_pattern = file_pattern
+
+        # default is glob:
+        for raster_path in glob.glob(glob_pattern):
+            # just try to open it in case it's not a raster, we won't see
+            # anything otherwise
+            r = gdal.OpenEx(raster_path, gdal.OF_RASTER)
+            if r is None:
+                continue
+            r = None
+            landcover_raster_list.append(raster_path)
+
+    if not landcover_raster_list:
+        raise ValueError('no valid files were found')
 
     download_data(task_graph)
     valid_crop_set = calculate_valid_crop_set()
