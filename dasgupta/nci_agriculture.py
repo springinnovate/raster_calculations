@@ -2408,6 +2408,7 @@ if __name__ == '__main__':
                     file_pattern, target_path),
                 target_path_list=[target_path],
                 task_name=f'fetch {os.path.basename(target_path)}')
+            fetch_task.join()
             glob_pattern = target_path
         else:
             glob_pattern = file_pattern
