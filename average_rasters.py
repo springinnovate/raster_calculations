@@ -65,9 +65,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Global CV analysis')
     parser.add_argument(
         'raster_pattern', nargs='+', help='List of rasters to average.')
+    parser.add_argument(
+        '--prefix', default='', help='Prefix to add to output file.')
     args = parser.parse_args()
 
-    working_dir = tempfile.mkdtemp(prefix='avg_raster_workspace')
+    working_dir = tempfile.mkdtemp(dir='.', prefix='avg_raster_workspace')
 
     file_list = [
         path for pattern in args.raster_pattern for path in glob.glob(pattern)]
@@ -90,12 +92,12 @@ if __name__ == '__main__':
     # count valid pixels
     pygeoprocessing.raster_calculator(
         [(path, 1) for path in aligned_list] + nodata_list, count_op,
-        TARGET_VALID_COUNT_RASTER_PATH, gdal.GDT_Int32, COUNT_NODATA)
+        args.prefix+TARGET_VALID_COUNT_RASTER_PATH, gdal.GDT_Int32, COUNT_NODATA)
 
     # average valid pixels
     pygeoprocessing.raster_calculator(
         [(path, 1) for path in aligned_list] + nodata_list, average_op,
-        TARGET_AVERAGE_RASTER_PATH, gdal.GDT_Float32, AVERAGE_NODATA)
+        args.prefix+TARGET_AVERAGE_RASTER_PATH, gdal.GDT_Float32, AVERAGE_NODATA)
 
     ecoshard.build_overviews(
         TARGET_AVERAGE_RASTER_PATH)
