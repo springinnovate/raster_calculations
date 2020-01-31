@@ -28,7 +28,7 @@ COUNT_NODATA = -1
 
 def count_op(*value_nodata_list):
     """Calculate count of valid pixels over each pixel stack."""
-    result = numpy.zeros(value_nodata_list[0], dtype=numpy.int32)
+    result = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.int32)
     result[:] = COUNT_NODATA
     nodata_mask = numpy.ones(result.shape, dtype=numpy.bool)
     for array, nodata in zip(
@@ -42,8 +42,8 @@ def count_op(*value_nodata_list):
 
 def average_op(*value_nodata_list):
     """Calculate count of valid pixels over each pixel stack."""
-    result = numpy.zeros(value_nodata_list[0], dtype=numpy.float32)
-    count = numpy.zeros(value_nodata_list[0], dtype=numpy.int32)
+    result = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.float32)
+    count = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.int32)
 
     result[:] = COUNT_NODATA
     nodata_mask = numpy.ones(result.shape, dtype=numpy.bool)
