@@ -24,6 +24,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 COUNT_NODATA = -1
+AVERAGE_NODATA = -9999
 
 
 def count_op(*value_nodata_list):
