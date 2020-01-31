@@ -100,9 +100,9 @@ if __name__ == '__main__':
         args.prefix+TARGET_AVERAGE_RASTER_PATH, gdal.GDT_Float32, AVERAGE_NODATA)
 
     ecoshard.build_overviews(
-        TARGET_AVERAGE_RASTER_PATH)
+        args.prefix+TARGET_AVERAGE_RASTER_PATH)
 
     ecoshard.build_overviews(
-        TARGET_VALID_COUNT_RASTER_PATH)
+        args.prefix+TARGET_VALID_COUNT_RASTER_PATH)
 
     shutil.rmtree(working_dir)
