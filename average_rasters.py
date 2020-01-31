@@ -31,14 +31,13 @@ AVERAGE_NODATA = -9999
 def count_op(*value_nodata_list):
     """Calculate count of valid pixels over each pixel stack."""
     result = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.int32)
-    result[:] = COUNT_NODATA
-    nodata_mask = numpy.ones(result.shape, dtype=numpy.bool)
+    valid_mask = numpy.zeros(result.shape, dtype=numpy.bool)
     for array, nodata in zip(
             value_nodata_list[0::-1], value_nodata_list[1::-1]):
-        local_nodata_mask = numpy.isclose(array, nodata)
-        result[~local_nodata_mask] += 1
-        nodata_mask &= local_nodata_mask
-    result[nodata_mask] = COUNT_NODATA
+        local_valid_mask = ~numpy.isclose(array, nodata)
+        result[local_valid_mask] += 1
+        valid_mask |= local_valid_mask
+    result[~valid_mask] = COUNT_NODATA
     return result
 
 
@@ -46,17 +45,15 @@ def average_op(*value_nodata_list):
     """Calculate count of valid pixels over each pixel stack."""
     result = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.float32)
     count = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.int32)
-
-    result[:] = COUNT_NODATA
-    nodata_mask = numpy.ones(result.shape, dtype=numpy.bool)
+    valid_mask = numpy.zeros(result.shape, dtype=numpy.bool)
     for array, nodata in zip(
             value_nodata_list[0::-1], value_nodata_list[1::-1]):
-        local_nodata_mask = numpy.isclose(array, nodata)
-        count[~local_nodata_mask] += 1
-        result[~local_nodata_mask] += array[~local_nodata_mask]
-        nodata_mask &= local_nodata_mask
-    result[~nodata_mask] /= count[~nodata_mask]
-    result[nodata_mask] = AVERAGE_NODATA
+        local_valid_mask = ~numpy.isclose(array, nodata)
+        count[local_valid_mask] += 1
+        result[local_valid_mask] += array[local_valid_mask]
+        valid_mask |= local_valid_mask
+    result[valid_mask] /= count[valid_mask]
+    result[~valid_mask] = AVERAGE_NODATA
     return result
 
 
@@ -87,7 +84,7 @@ if __name__ == '__main__':
 
     nodata_list = [
         (pygeoprocessing.get_raster_info(path)['nodata'][0], 'raw')
-        for path in file_list]
+        for path in aligned_list]
 
     # count valid pixels
     pygeoprocessing.raster_calculator(
