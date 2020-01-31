@@ -7,6 +7,7 @@ import shutil
 import sys
 import tempfile
 
+import ecoshard
 from osgeo import gdal
 import numpy
 import pygeoprocessing
@@ -94,10 +95,10 @@ if __name__ == '__main__':
         [(path, 1) for path in aligned_list] + nodata_list, average_op,
         TARGET_AVERAGE_RASTER_PATH, gdal.GDT_Float32, COUNT_NODATA)
 
-    pygeoprocessing.build_overviews(
+    ecoshard.build_overviews(
         TARGET_AVERAGE_RASTER_PATH)
 
-    pygeoprocessing.build_overviews(
+    ecoshard.build_overviews(
         TARGET_VALID_COUNT_RASTER_PATH)
 
     shutil.rmtree(working_dir)
