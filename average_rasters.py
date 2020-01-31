@@ -72,7 +72,9 @@ if __name__ == '__main__':
     file_list = [
         path for pattern in args.raster_pattern for path in glob.glob(pattern)]
 
-    aligned_list = [os.path.join(working_dir, path) for path in file_list]
+    aligned_list = [
+        os.path.join(working_dir, os.path.basename(path))
+        for path in file_list]
 
     target_pixel_size = pygeoprocessing.get_raster_info(
         file_list[0])['pixel_size']
@@ -93,7 +95,7 @@ if __name__ == '__main__':
     # average valid pixels
     pygeoprocessing.raster_calculator(
         [(path, 1) for path in aligned_list] + nodata_list, average_op,
-        TARGET_AVERAGE_RASTER_PATH, gdal.GDT_Float32, COUNT_NODATA)
+        TARGET_AVERAGE_RASTER_PATH, gdal.GDT_Float32, AVERAGE_NODATA)
 
     ecoshard.build_overviews(
         TARGET_AVERAGE_RASTER_PATH)
