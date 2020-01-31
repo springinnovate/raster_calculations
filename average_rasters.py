@@ -47,6 +47,7 @@ def average_op(*value_nodata_list):
     result = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.float32)
     count = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.int32)
     valid_mask = numpy.zeros(result.shape, dtype=numpy.bool)
+    list_len = len(value_nodata_list)
     for array, nodata in zip(
             value_nodata_list[0:list_len], value_nodata_list[list_len::]):
         local_valid_mask = ~numpy.isclose(array, nodata)
@@ -60,7 +61,7 @@ def average_op(*value_nodata_list):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Global CV analysis')
+    parser = argparse.ArgumentParser(description='Raster averager')
     parser.add_argument(
         'raster_pattern', nargs='+', help='List of rasters to average.')
     parser.add_argument(
