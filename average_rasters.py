@@ -34,7 +34,7 @@ def count_op(*value_nodata_list):
     valid_mask = numpy.zeros(result.shape, dtype=numpy.bool)
     list_len = len(value_nodata_list)
     for array, nodata in zip(
-            value_nodata_list[0:list_len], value_nodata_list[list_len::]):
+            value_nodata_list[0:list_len//2], value_nodata_list[list_len//2::]):
         local_valid_mask = ~numpy.isclose(array, nodata)
         result[local_valid_mask] += 1
         valid_mask |= local_valid_mask
@@ -45,11 +45,11 @@ def count_op(*value_nodata_list):
 def average_op(*value_nodata_list):
     """Calculate count of valid pixels over each pixel stack."""
     result = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.float32)
-    count = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.int32)
+    count = numpy.zeros(value_nodata_list[0].shape, dtype=numpy.float32)
     valid_mask = numpy.zeros(result.shape, dtype=numpy.bool)
     list_len = len(value_nodata_list)
     for array, nodata in zip(
-            value_nodata_list[0:list_len], value_nodata_list[list_len::]):
+            value_nodata_list[0:list_len//2], value_nodata_list[list_len//2::]):
         local_valid_mask = ~numpy.isclose(array, nodata)
         count[local_valid_mask] += 1
         result[local_valid_mask] += array[local_valid_mask]
@@ -59,9 +59,8 @@ def average_op(*value_nodata_list):
     return result
 
 
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Raster averager')
+    parser = argparse.ArgumentParser(description='Raster averager.')
     parser.add_argument(
         'raster_pattern', nargs='+', help='List of rasters to average.')
     parser.add_argument(
