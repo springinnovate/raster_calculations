@@ -36,7 +36,7 @@ def count_op(*value_nodata_list):
     for array, nodata in zip(
             value_nodata_list[0:list_len//2],
             value_nodata_list[list_len//2::]):
-        local_valid_mask = array >= 0  # ~numpy.isclose(array, nodata)
+        local_valid_mask = ~numpy.isclose(array, nodata)
         result[local_valid_mask] += 1
         valid_mask |= local_valid_mask
     result[~valid_mask] = COUNT_NODATA
@@ -52,7 +52,7 @@ def average_op(*value_nodata_list):
     for array, nodata in zip(
             value_nodata_list[0:list_len//2],
             value_nodata_list[list_len//2::]):
-        local_valid_mask = array >= 0 # ~numpy.isclose(array, nodata)
+        local_valid_mask = ~numpy.isclose(array, nodata)
         count[local_valid_mask] += 1
         result[local_valid_mask] += array[local_valid_mask]
         valid_mask |= local_valid_mask
