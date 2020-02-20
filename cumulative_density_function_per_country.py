@@ -38,7 +38,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
-WORLD_BORDERS_URL = 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/TM_WORLD_BORDERS-0.3_simplified_md5_47f2059be8d4016072aa6abe77762021.gpkg'
+WORLD_BORDERS_URL = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'
 COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 
 PERCENTILE_LIST = list(range(0, 101, 5))
