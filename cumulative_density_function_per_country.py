@@ -69,7 +69,7 @@ def main():
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)
 
-    result = subprocess.run('gsutil ls %s' % BUCKET_PATTERN, capture_output=True, shell=True, check=True)
+    result = subprocess.run('gsutil ls -p ecoshard %s' % BUCKET_PATTERN, capture_output=True, shell=True, check=True)
     for gs_path in [x.decode('utf-8') for x in result.stdout.splitlines()]:
         print(gs_path)
         raster_id = os.path.basename(os.path.splitext(gs_path)[0])
