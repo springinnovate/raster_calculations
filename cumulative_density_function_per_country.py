@@ -72,16 +72,20 @@ def main():
     result = subprocess.run('gsutil ls %s' % BUCKET_PATTERN, capture_output=True, shell=True, check=True)
     for gs_path in [x.decode('utf-8') for x in result.stdout.splitlines()]:
         print(gs_path)
+        raster_id = os.path.basename(os.path.splitext(gs_path)[0])
         raster_path = os.path.join(CHURN_DIR, os.path.basename(gs_path))
         print('copying %s to %s' % (gs_path, raster_path))
         subprocess.run('gsutil cp %s %s' % (gs_path, raster_path), shell=True, check=True)
         raster_info = pygeoprocessing.get_raster_info(raster_path)
-        break
 
         country_threshold_table_path = os.path.join(
-            WORKSPACE_DIR, 'country_threshold.csv')
+            WORKSPACE_DIR, 'country_threshold_%s.csv' % raster_id)
         country_threshold_table_file = open(country_threshold_table_path, 'w')
         country_threshold_table_file.write('country,percentile at 90% max,pixel count\n')
+
+        percentile_per_country_file = open('%s_percentile.csv' % raster_id, 'w')
+        percentile_per_country_file.write('country name,' + ','.join([str(x) for x in PERCENTILE_LIST]) + '\n')
+
         for world_border_feature in world_borders_layer:
             country_name = world_border_feature.GetField('NAME')
             LOGGER.debug(country_name)
@@ -112,6 +116,9 @@ def main():
 
             percentile_values = pygeoprocessing.raster_band_percentile(
                 (country_raster_path, 1), country_workspace, PERCENTILE_LIST)
+            percentile_per_country_file.write.write(
+                '%s,' % country_name + ''.join([str(x) for x in percentile_values]) + '\n')
+            percentile_per_country_file.flush()
             if len(percentile_values) != len(PERCENTILE_LIST):
                 continue
             LOGGER.debug(
@@ -158,11 +165,12 @@ def main():
             ax.tick_params(labelcolor='r', labelsize='medium', width=3)
             matplotlib.pyplot.autoscale(enable=True, tight=True)
             matplotlib.pyplot.savefig(
-                os.path.join(COUNTRY_WORKSPACES, '%s_cdf.png' % country_name))
+                os.path.join(COUNTRY_WORKSPACES, '%s_%s_cdf.png' % (country_name, raster_id)))
             country_threshold_table_file.write(
                 '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
             country_threshold_table_file.flush()
         country_threshold_table_file.close()
+    percentile_per_country_file.close()
 
 
 def extract_feature(
