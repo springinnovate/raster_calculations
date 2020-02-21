@@ -167,6 +167,7 @@ def main():
             matplotlib.pyplot.autoscale(enable=True, tight=True)
             matplotlib.pyplot.savefig(
                 os.path.join(COUNTRY_WORKSPACES, '%s_%s_cdf.png' % (country_name, raster_id)))
+            matplotlib.pyplot.close(fig)
             country_threshold_table_file.write(
                 '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
             country_threshold_table_file.flush()
