@@ -87,7 +87,7 @@ def main():
         percentile_per_country_file.write('country name,' + ','.join([str(x) for x in PERCENTILE_LIST]) + '\n')
 
         for world_border_feature in world_borders_layer:
-            country_name = world_border_feature.GetField('NAME')
+            country_name = world_border_feature.GetField('nev_name')
             LOGGER.debug(country_name)
             country_workspace = os.path.join(COUNTRY_WORKSPACES, country_name)
             try:
