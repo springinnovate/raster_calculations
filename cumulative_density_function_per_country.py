@@ -55,7 +55,8 @@ def main():
         except OSError:
             pass
 
-    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1, 5.0)
+    task_graph = taskgraph.TaskGraph(
+        WORKSPACE_DIR, multiprocessing.cpu_count(), 5.0)
     world_borders_path = os.path.join(
         WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
     download_task = task_graph.add_task(
@@ -111,33 +112,48 @@ def main():
                 country_workspace, '%s.gpkg' % country_name)
             country_vector_complete_token = os.path.join(
                 country_workspace, '%s.COMPLETE' % country_name)
-            extract_feature(
-                world_borders_path, world_border_feature.GetFID(),
-                wgs84_srs.ExportToWkt(), country_vector,
-                country_vector_complete_token)
+            extract_task = task_graph.add_task(
+                func=extract_feature,
+                args=(
+                    world_borders_path, world_border_feature.GetFID(),
+                    wgs84_srs.ExportToWkt(), country_vector,
+                    country_vector_complete_token),
+                target_path_list=[country_vector_complete_token],
+                task_name='exctract %s' % country_name)
 
             country_raster_path = os.path.join(country_workspace, '%s_%s' % (
                 country_name, os.path.basename(raster_path)))
 
             country_vector_info = pygeoprocessing.get_vector_info(
                 country_vector)
-            pygeoprocessing.warp_raster(
-                raster_path, raster_info['pixel_size'], country_raster_path,
-                'near', target_bb=country_vector_info['bounding_box'],
-                vector_mask_options={'mask_vector_path': country_vector},
-                working_dir=country_workspace)
+            task_graph.add_task(
+                func=pygeoprocessing.warp_raster,
+                args=(
+                    raster_path, raster_info['pixel_size'],
+                    country_raster_path, 'near'),
+                kwargs={
+                    'target_bb': country_vector_info['bounding_box'],
+                    'vector_mask_options': {
+                        'mask_vector_path': country_vector},
+                    'working_dir': country_workspace},
+                target_path_list=[country_raster_path],
+                dependent_task_list=[extract_task],
+                task_name='warp %s' % country_name)
             country_raster_path_list.append(
                 (country_name, country_threshold_table_path,
                  percentile_per_country_filename, raster_id,
                  country_raster_path))
+    task_graph.join()
+    task_graph.close()
+    del task_graph
 
     work_queue = multiprocessing.Queue()
-
+    global_lock = multiprocessing.Lock()
     worker_list = []
     for _ in range(multiprocessing.cpu_count()):
         country_worker_process = multiprocessing.Process(
             func=process_country_worker,
-            args=(work_queue,))
+            args=(work_queue, global_lock))
         country_worker_process.start()
         worker_list.append(country_worker_process)
 
@@ -154,27 +170,27 @@ def main():
         process.join()
 
 
-def process_country_worker(work_queue):
+def process_country_worker(work_queue, global_lock):
     """Process work queue."""
     while True:
         payload = work_queue.get()
         if payload == 'STOP':
             work_queue.put('STOP')
             break
-        process_country_percentile(*payload)
+        process_country_percentile(global_lock, *payload)
 
 
 def process_country_percentile(
-        country_name, country_threshold_table_path,
+        file_lock, country_name, country_threshold_table_path,
         percentile_per_country_filename, raster_id, country_raster_path):
     """Calculate a single country/scenario percentile along with figure."""
     country_workspace = os.path.join(COUNTRY_WORKSPACES, country_name)
     percentile_values = pygeoprocessing.raster_band_percentile(
         (country_raster_path, 1), country_workspace, PERCENTILE_LIST)
-
-    percentile_per_country_file = open(
-        percentile_per_country_filename, 'a')
-    percentile_per_country_file.close()
+    with file_lock:
+        percentile_per_country_file = open(
+            percentile_per_country_filename, 'a')
+        percentile_per_country_file.close()
 
     percentile_per_country_file.write(
         '%s,' % country_name + ','.join(
@@ -234,12 +250,13 @@ def process_country_percentile(
             country_name, raster_id)))
     matplotlib.pyplot.close(fig)
 
-    country_threshold_table_file = open(
-        country_threshold_table_path, 'a')
-    country_threshold_table_file.write(
-        '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
-    country_threshold_table_file.flush()
-    country_threshold_table_file.close()
+    with file_lock:
+        country_threshold_table_file = open(
+            country_threshold_table_path, 'a')
+        country_threshold_table_file.write(
+            '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
+        country_threshold_table_file.flush()
+        country_threshold_table_file.close()
 
 
 def extract_feature(
