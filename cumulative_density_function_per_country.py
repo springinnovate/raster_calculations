@@ -116,7 +116,7 @@ def main():
 
             percentile_values = pygeoprocessing.raster_band_percentile(
                 (country_raster_path, 1), country_workspace, PERCENTILE_LIST)
-            percentile_per_country_file.write.write(
+            percentile_per_country_file.write(
                 '%s,' % country_name + ''.join([str(x) for x in percentile_values]) + '\n')
             percentile_per_country_file.flush()
             if len(percentile_values) != len(PERCENTILE_LIST):
