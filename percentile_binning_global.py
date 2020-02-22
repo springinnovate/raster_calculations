@@ -16,7 +16,7 @@ TENTH_INDEXES = [PERCENTILES.index(x) for x in range(10, 101, 10)]
 
 BIN_INTEGERS = [1 + int(x) // 10 for x in PERCENTILES]
 
-BIN_WORKSPACE = 'bin_rasters'
+BIN_WORKSPACE = 'bin_raster_paths'
 try:
     os.makedirs(BIN_WORKSPACE)
 except OSError:
@@ -53,11 +53,13 @@ if __name__ == '__main__':
                 cutoff_percentile_values.append(frame.iloc[0, 2+tenth_index])
             break
         print(cutoff_percentile_values)
-        bin_raster = os.path.join(
+        bin_raster_path = os.path.join(
             BIN_WORKSPACE, '%s_bins.tif' % os.path.splitext(
                 os.path.basename(raster_path))[0])
         nodata = pygeoprocessing.get_raster_info(raster_path)['nodata'][0]
+        print(bin_raster_path)
         pygeoprocessing.raster_calculator(
             [(raster_path, 1), (nodata, 'raw'), (11, 'raw'),
              (cutoff_percentile_values, 'raw')], mask_to_percentile,
-            bin_raster, gdal.GDT_Byte, 11)
+            bin_raster_path, gdal.GDT_Byte, 11)
+    print('all done!')
