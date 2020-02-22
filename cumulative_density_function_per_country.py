@@ -152,7 +152,7 @@ def main():
     worker_list = []
     for _ in range(multiprocessing.cpu_count()):
         country_worker_process = multiprocessing.Process(
-            func=process_country_worker,
+            target=process_country_worker,
             args=(work_queue, global_lock))
         country_worker_process.start()
         worker_list.append(country_worker_process)
