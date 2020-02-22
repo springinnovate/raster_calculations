@@ -3,6 +3,8 @@ import glob
 import os
 import re
 
+import pandas
+
 if __name__ == '__main__':
     for raster_path in glob.glob('realized_service/*.tif'):
         dirname = os.path.dirname(raster_path)
@@ -12,4 +14,5 @@ if __name__ == '__main__':
         for table_path in glob.glob(os.path.join(
             dirname, 'tables', '%s*.csv' % os.path.splitext(
                 base_without_hash)[0])):
-            print('********* %s' % table_path)
+            frame = pandas.read_csv(table_path.iloc[0])
+            print(frame)
