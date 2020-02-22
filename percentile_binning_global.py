@@ -14,5 +14,5 @@ if __name__ == '__main__':
         for table_path in glob.glob(os.path.join(
             dirname, 'tables', '%s*.csv' % os.path.splitext(
                 base_without_hash)[0])):
-            frame = pandas.read_csv(table_path.iloc[0])
+            frame = pandas.read_csv(table_path).iloc[0]
             print(frame)

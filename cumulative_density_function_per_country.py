@@ -190,12 +190,11 @@ def process_country_percentile(
     with file_lock:
         percentile_per_country_file = open(
             percentile_per_country_filename, 'a')
+        percentile_per_country_file.write(
+            '%s,' % country_name + ','.join(
+                [str(x) for x in percentile_values]) + '\n')
+        percentile_per_country_file.flush()
         percentile_per_country_file.close()
-
-    percentile_per_country_file.write(
-        '%s,' % country_name + ','.join(
-            [str(x) for x in percentile_values]) + '\n')
-    percentile_per_country_file.flush()
 
     if len(percentile_values) != len(PERCENTILE_LIST):
         return
