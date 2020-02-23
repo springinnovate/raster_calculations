@@ -1,7 +1,9 @@
 """Mask global rasters to have integer bins rather than values."""
 import glob
+import logging
 import os
 import re
+import sys
 
 from osgeo import gdal
 import pandas
@@ -21,6 +23,14 @@ try:
     os.makedirs(BIN_WORKSPACE)
 except OSError:
     pass
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
+        ' [%(funcName)s:%(lineno)d] %(message)s'),
+    stream=sys.stdout)
+LOGGER = logging.getLogger(__name__)
 
 
 def mask_to_percentile(
