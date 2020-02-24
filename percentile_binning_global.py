@@ -36,7 +36,7 @@ LOGGER = logging.getLogger(__name__)
 def mask_to_percentile(
         base_array, base_nodata, target_nodata, cutoff_percentile_values):
     result = numpy.zeros(base_array.shape, dtype=numpy.int8)
-    zero_mask = numpy.isclose(base_array, 0.0)
+    zero_mask = base_array == 0.0
     nodata_mask = numpy.isclose(base_array, base_nodata)
     result[nodata_mask] = target_nodata
     for cutoff_index in range(len(cutoff_percentile_values)-1):
