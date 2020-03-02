@@ -1,6 +1,7 @@
 """Count non-zero non-nodata pixels in raster, get percentile values, and sum above each percentile to build the CDF."""
 import datetime
 import ecoshard
+import itertools
 import logging
 import logging.handlers
 import multiprocessing
@@ -57,7 +58,6 @@ def main(work_queue):
             further processing.
 
     """
-    LOGGER.info('starting `main`')
     for dir_path in [WORKSPACE_DIR, CHURN_DIR, COUNTRY_WORKSPACES]:
         try:
             os.makedirs(dir_path)
@@ -65,6 +65,7 @@ def main(work_queue):
             pass
 
     task_graph = taskgraph.TaskGraph(CHURN_DIR, 0, 5.0)
+    LOGGER.info('starting `main`')
     world_borders_path = os.path.join(
         WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
     download_world_borders_task = task_graph.add_task(
@@ -72,13 +73,6 @@ def main(work_queue):
         args=(WORLD_BORDERS_URL, world_borders_path),
         target_path_list=[world_borders_path],
         task_name='download world borders')
-
-    download_world_borders_task.join()
-    country_id_list = get_value_list(world_borders_path, COUNTRY_ID_FIELDNAME)
-
-    LOGGER.debug(country_id_list)
-    work_queue.put('STOP')
-    sys.exit(0)
 
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)
@@ -92,28 +86,44 @@ def main(work_queue):
         os.path.basename(os.path.splitext(gs_path)[0])
         for gs_path in gs_path_list]
 
+    country_id_task = task_graph.add_task(
+        func=get_value_list,
+        args=(world_borders_path, COUNTRY_ID_FIELDNAME),
+        ignore_path_list=[world_borders_path],
+        dependent_task_list=[download_world_borders_task],
+        task_name='fetch country ids')
+
+    country_id_task.join()
+    country_id_list = country_id_task.get()
+    LOGGER.debug('country id list: %s', country_id_list)
+
     create_status_database_task = task_graph.add_task(
         func=create_status_database,
-        args=(WORK_DATABASE_PATH, raster_id_list, WORK_DATABSE_INIT_TOKEN_PATH),
+        args=(WORK_DATABASE_PATH, raster_id_list, country_id_list,
+              WORK_DATABSE_INIT_TOKEN_PATH),
         target_path_list=[WORK_DATABSE_INIT_TOKEN_PATH],
         ignore_path_list=[WORK_DATABASE_PATH],
         task_name='initalize work database')
     create_status_database_task.join()
-    download_world_borders_task.join()
 
+    raster_id_to_path_map = {}
     for gs_path in gs_path_list:
-        print(gs_path)
         raster_id = os.path.basename(os.path.splitext(gs_path)[0])
-        raster_path = os.path.join(CHURN_DIR, os.path.basename(gs_path))
-        print('copying %s to %s' % (gs_path, raster_path))
-        subprocess.run(
-            'gsutil cp %s %s' % (gs_path, raster_path), shell=True, check=True)
-
-        work_queue.put((raster_id, raster_path))
+        target_raster_path = os.path.join(CHURN_DIR, os.path.basename(gs_path))
+        raster_id_to_path_map[raster_id] = target_raster_path
+        _ = task_graph.add_task(
+            func=gs_copy,
+            args=(gs_path, target_raster_path),
+            target_path_list=[target_raster_path],
+            task_name='gs copy %s' % gs_path)
 
     task_graph.join()
+
+    task_graph.join()
+    sys.exit(0)
     task_graph.close()
     del task_graph
+    work_queue.put((raster_id, raster_path))
 
     work_queue = multiprocessing.Queue()
     global_lock = multiprocessing.Lock()
@@ -139,13 +149,15 @@ def main(work_queue):
         process.join()
 
 
-def create_status_database(database_path, raster_id_list, complete_token_path):
+def create_status_database(
+        database_path, raster_id_list, country_id_list, complete_token_path):
     """Create a runtime status database if it doesn't exist.
 
     Parameters:
         database_path (str): path to database to create.
         raster_id_list (list): list of raster id strings that will be monitored
             for completion.
+        country_id_list (list): list of country ids to pair with the rasters.
         complete_token_path (str): path to a text file that will be created
             by this function written with the timestamp when it finishes.
 
@@ -158,22 +170,36 @@ def create_status_database(database_path, raster_id_list, complete_token_path):
         """
         CREATE TABLE job_status (
             raster_id TEXT NOT NULL,
-            complete INT NOT NULL);
+            country_id TEXT,
+            is_country INT NOT NULL,
+            percentile_list BLOB,
+            percentile0_list BLOB,
+            histogram BLOB,
+            histogram0 BLOB,
+            path_to_percentile_raster TEXT,
+            path_to_percentile0_raster TEXT,
+            path_to_histogram_raster TEXT,
+            path_to_histogram0_raster);
         """)
     if os.path.exists(database_path):
         os.remove(database_path)
     connection = sqlite3.connect(database_path)
-    cursor = connection.cursor()
-    cursor.executescript(create_database_sql)
+    connection.executescript(create_database_sql)
 
-    insert_query = (
-        'INSERT INTO job_status(raster_id, complete) '
-        'VALUES (?, 0)')
+    LOGGER.debug(raster_id_list)
+    LOGGER.debug(country_id_list)
 
-    cursor.executemany(insert_query, raster_id_list)
-    with open(complete_token_path, 'w') as complete_token_file:
-        complete_token_file.write(str(datetime.datetime.now()))
+    # insert countries
+    connection.executemany(
+        'INSERT INTO job_status(raster_id, country_id, is_country) '
+        'VALUES (?, ?, 1)',
+        itertools.product(raster_id_list, country_id_list))
+    # insert global
+    connection.executemany(
+        'INSERT INTO job_status(raster_id, is_country) VALUES (?, 0)',
+        [(x,) for x in raster_id_list])
     connection.commit()
+    connection.close()
 
     with open(complete_token_path, 'w') as token_file:
         token_file.write(str(datetime.datetime.now()))
@@ -449,6 +475,13 @@ def get_value_list(vector_path, fieldname):
     layer = None
     vector = None
     return value_list
+
+
+def gs_copy(gs_path, target_path):
+    """Copy gs_path to target_path."""
+    LOGGER.debug('about to gs copy %s to %s', gs_path, target_path)
+    subprocess.run(
+        'gsutil cp %s %s' % (gs_path, target_path), shell=True, check=True)
 
 
 if __name__ == '__main__':
