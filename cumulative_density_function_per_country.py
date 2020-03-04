@@ -6,6 +6,7 @@ import logging
 import logging.handlers
 import multiprocessing
 import os
+import pathlib
 import sqlite3
 import subprocess
 import sys
@@ -13,11 +14,13 @@ import threading
 
 import matplotlib.pyplot
 import numpy
+import retrying
 import scipy.interpolate
 import pygeoprocessing
 from osgeo import gdal
 from osgeo import osr
 from osgeo import ogr
+from taskgraph.Task import _execute_sqlite
 import taskgraph
 
 gdal.SetCacheMax(2**30)
@@ -46,8 +49,6 @@ COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 PERCENTILE_LIST = list(range(0, 101, 5))
 
 WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.sqlite3')
-WORK_DATABSE_INIT_TOKEN_PATH = os.path.join(
-    CHURN_DIR, '%s.INITALIZED' % os.path.basename(WORK_DATABASE_PATH))
 
 
 def main(work_queue):
@@ -64,7 +65,7 @@ def main(work_queue):
         except OSError:
             pass
 
-    task_graph = taskgraph.TaskGraph(CHURN_DIR, 0, 5.0)
+    task_graph = taskgraph.TaskGraph(CHURN_DIR, 4, 5.0)
     LOGGER.info('starting `main`')
     world_borders_path = os.path.join(
         WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
@@ -99,10 +100,9 @@ def main(work_queue):
 
     create_status_database_task = task_graph.add_task(
         func=create_status_database,
-        args=(WORK_DATABASE_PATH, raster_id_list, country_id_list,
-              WORK_DATABSE_INIT_TOKEN_PATH),
-        target_path_list=[WORK_DATABSE_INIT_TOKEN_PATH],
-        ignore_path_list=[WORK_DATABASE_PATH],
+        args=(WORK_DATABASE_PATH, raster_id_list, country_id_list),
+        target_path_list=[WORK_DATABASE_PATH],
+        hash_target_files=False,
         task_name='initalize work database')
     create_status_database_task.join()
 
@@ -117,24 +117,31 @@ def main(work_queue):
             target_path_list=[target_raster_path],
             task_name='gs copy %s' % gs_path)
 
-    task_graph.join()
-
-    task_graph.join()
-    sys.exit(0)
-    task_graph.close()
-    del task_graph
-    work_queue.put((raster_id, raster_path))
+    result = _execute_sqlite(
+        'SELECT raster_id, country_id FROM job_status''',
+        WORK_DATABASE_PATH, execute='execute', argument_list=[], fetch='all')
 
     work_queue = multiprocessing.Queue()
-    global_lock = multiprocessing.Lock()
+    for raster_id, country_id in result:
+        work_queue.put((raster_id, country_id))
+    work_queue.put(None)
+
     worker_list = []
     for worker_id in range(multiprocessing.cpu_count()):
         country_worker_process = multiprocessing.Process(
             target=process_country_worker,
-            args=(work_queue, global_lock),
+            args=(work_queue,),
             name='%d' % worker_id)
         country_worker_process.start()
         worker_list.append(country_worker_process)
+
+    work_queue.put('STOP')
+    for process in worker_list:
+        process.join()
+
+    task_graph.close()
+    task_graph.join()
+    sys.exit(0)
 
     for (country_name, country_threshold_table_path,
             percentile_per_country_filename, raster_id,
@@ -144,13 +151,9 @@ def main(work_queue):
              percentile_per_country_filename, raster_id,
              country_raster_path))
 
-    work_queue.put('STOP')
-    for process in country_worker_process:
-        process.join()
-
 
 def create_status_database(
-        database_path, raster_id_list, country_id_list, complete_token_path):
+        database_path, raster_id_list, country_id_list):
     """Create a runtime status database if it doesn't exist.
 
     Parameters:
@@ -158,8 +161,6 @@ def create_status_database(
         raster_id_list (list): list of raster id strings that will be monitored
             for completion.
         country_id_list (list): list of country ids to pair with the rasters.
-        complete_token_path (str): path to a text file that will be created
-            by this function written with the timestamp when it finishes.
 
     Returns:
         None.
@@ -186,9 +187,6 @@ def create_status_database(
     connection = sqlite3.connect(database_path)
     connection.executescript(create_database_sql)
 
-    LOGGER.debug(raster_id_list)
-    LOGGER.debug(country_id_list)
-
     # insert countries
     connection.executemany(
         'INSERT INTO job_status(raster_id, country_id, is_country) '
@@ -201,18 +199,17 @@ def create_status_database(
     connection.commit()
     connection.close()
 
-    with open(complete_token_path, 'w') as token_file:
-        token_file.write(str(datetime.datetime.now()))
 
-
-def process_country_worker(work_queue, global_lock):
+def process_country_worker(work_queue):
     """Process work queue."""
     while True:
         payload = work_queue.get()
         if payload == 'STOP':
             work_queue.put('STOP')
+            LOGGER.debug('stopping')
             break
-        process_country_percentile(global_lock, *payload)
+        LOGGER.debug(payload)
+        # process_country_percentile(*payload)
 
 
 def process_country_percentile(
