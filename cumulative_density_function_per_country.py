@@ -47,7 +47,7 @@ COUNTRY_ID_FIELDNAME = 'iso3 '
 
 PERCENTILE_LIST = list(range(0, 101, 5))
 
-WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.sqlite3')
+WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.db')
 
 
 def create_status_database(
@@ -135,18 +135,23 @@ def process_country_worker(
             country_vector_path = os.path.join(
                 worker_dir, '%s.gpkg' % country_id)
             LOGGER.debug('making country vector %s', country_vector_path)
-            task_graph.add_task(
-                func=extract_feature,
+            base_raster_info = pygeoprocessing.get_raster_info(
+                raster_id_to_path_map[raster_id])
+            country_raster_path = '%s.tif' % os.path.splitext(
+                country_vector_path)[0]
+
+            extract_feature_checked_task = task_graph.add_task(
+                func=extract_feature_checked,
                 args=(
                     world_border_vector_path, 'iso3', country_id,
-                    country_vector_path),
-                target_path_list=[country_vector_path],
+                    raster_id_to_path_map[raster_id],
+                    country_vector_path, country_raster_path),
+                target_path_list=[country_raster_path],
                 task_name='extract vector %s' % country_id)
-            task_graph.join()
-        continue
 
-        # TODO: clip out the country -> country.tif
-
+            if not extract_feature_checked_task.get():
+                LOGGER.error(
+                    'extraction not work %s:%s', country_id, base_raster_info)
 
         # TODO: make all 0s nodata -> country_0nodata.tif
         # TODO: percentile country.tif
@@ -244,60 +249,84 @@ def process_country_percentile(
         country_threshold_table_file.close()
 
 
-def extract_feature(
-        vector_path, field_name, field_value, target_vector_path):
-    """Extract single feature into separate vector.
+def extract_feature_checked(
+        vector_path, field_name, field_value, base_raster_path,
+        target_vector_path, target_raster_path):
+    """Extract single feature into separate vector and check for no error.
 
     Parameters:
         vector_path (str): base vector in WGS84 coordinates.
         field_name (str): field to search for
         field_value (str): field value to isolate
-        target_gpkg_vector_path (str): path to new GPKG vector that will
+        base_raster_path (str): path to raster to clip out.
+        target_vector_path (str): path to new GPKG vector that will
             contain only that feature.
+        target_raster_path (str): path to clipped out raster
 
     Returns:
-        None.
+        True if no error, False otherwise.
 
     """
-    LOGGER.debug('opening vector: %s', vector_path)
-    base_vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
-    LOGGER.debug('getting layer')
-    base_layer = base_vector.GetLayer()
-    feature = None
-    LOGGER.debug('iterating over features')
-    for base_feature in base_layer:
-        LOGGER.debug(base_feature.GetField(field_name))
-        if base_feature.GetField(field_name) == field_value:
-            feature = base_feature
-            break
-    LOGGER.debug('extracting feature %s', feature.GetField(field_name))
+    try:
+        LOGGER.debug('opening vector: %s', vector_path)
+        base_vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
+        LOGGER.debug('getting layer')
+        base_layer = base_vector.GetLayer()
+        feature = None
+        LOGGER.debug('iterating over features')
+        for base_feature in base_layer:
+            if base_feature.GetField(field_name) == field_value:
+                feature = base_feature
+                break
+        LOGGER.debug('extracting feature %s', feature.GetField(field_name))
 
-    geom = feature.GetGeometryRef()
-    base_srs = base_layer.GetSpatialRef()
+        geom = feature.GetGeometryRef()
+        base_srs = base_layer.GetSpatialRef()
 
-    base_layer = None
-    base_vector = None
+        base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
 
-    # create a new shapefile
-    if os.path.exists(target_vector_path):
-        os.remove(target_vector_path)
-    driver = ogr.GetDriverByName('GPKG')
-    target_vector = driver.CreateDataSource(
-        target_vector_path)
-    target_layer = target_vector.CreateLayer(
-        os.path.splitext(os.path.basename(target_vector_path))[0],
-        base_srs, ogr.wkbMultiPolygon)
-    layer_defn = target_layer.GetLayerDefn()
-    feature_geometry = geom.Clone()
-    base_feature = ogr.Feature(layer_defn)
-    base_feature.SetGeometry(feature_geometry)
-    target_layer.CreateFeature(base_feature)
-    target_layer.SyncToDisk()
-    geom = None
-    feature_geometry = None
-    base_feature = None
-    target_layer = None
-    target_vector = None
+        target_srs = osr.SpatialReference()
+        target_srs.ImportFromWkt(base_raster_info['projection'])
+
+        base_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+        target_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
+        base_to_target_transform = osr.CoordinateTransformation(
+            base_srs, target_srs)
+
+        base_layer = None
+        base_vector = None
+
+        # create a new shapefile
+        if os.path.exists(target_vector_path):
+            os.remove(target_vector_path)
+        driver = ogr.GetDriverByName('GPKG')
+        target_vector = driver.CreateDataSource(
+            target_vector_path)
+        target_layer = target_vector.CreateLayer(
+            os.path.splitext(os.path.basename(target_vector_path))[0],
+            target_srs, ogr.wkbMultiPolygon)
+        layer_defn = target_layer.GetLayerDefn()
+        feature_geometry = geom.Clone()
+        base_feature = ogr.Feature(layer_defn)
+        feature_geometry.Transform(base_to_target_transform)
+        base_feature.SetGeometry(feature_geometry)
+        target_layer.CreateFeature(base_feature)
+        target_layer.SyncToDisk()
+        geom = None
+        feature_geometry = None
+        base_feature = None
+        target_layer = None
+        target_vector = None
+
+        pygeoprocessing.align_and_resize_raster_stack(
+            [base_raster_path], [target_raster_path], ['near'],
+            base_raster_info['pixel_size'], 'intersection',
+            base_vector_path_list=[target_vector_path])
+        return True
+    except Exception:
+        LOGGER.exception('exception on extract vector')
+        return False
 
 
 # def raster_worker(work_queue, churn_dir):
@@ -466,10 +495,14 @@ def main():
         'gsutil ls -p ecoshard %s' % BUCKET_PATTERN, capture_output=True,
         shell=True, check=True)
     country_raster_path_list = []
-    gs_path_list = [x.decode('utf-8') for x in result.stdout.splitlines()]
+    gs_path_list = [
+        x.decode('utf-8') for x in result.stdout.splitlines()
+        if 'reef' not in x.decode('utf-8').lower()]
     raster_id_list = [
         os.path.basename(os.path.splitext(gs_path)[0])
         for gs_path in gs_path_list]
+
+    LOGGER.debug(raster_id_list)
 
     country_id_task = task_graph.add_task(
         func=get_value_list,
