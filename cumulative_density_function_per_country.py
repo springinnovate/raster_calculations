@@ -50,6 +50,13 @@ PERCENTILE_LIST = list(range(0, 101, 5))
 WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.db')
 
 
+def country_nodata0_op(base_array, nodata):
+    """Convert base_array 0s to nodata."""
+    result = base_array.copy()
+    result[base_array == 0] = nodata
+    return result
+
+
 def create_status_database(
         database_path, raster_id_list, country_id_list):
     """Create a runtime status database if it doesn't exist.
@@ -150,20 +157,52 @@ def process_country_worker(
                 task_name='extract vector %s' % country_id)
 
             if not extract_feature_checked_task.get():
-                LOGGER.error(
-                    'extraction not work %s:%s', country_id, base_raster_info)
+                with open(os.path.join(worker_dir, 'error.txt')) as error_file:
+                    error_file.write(
+                        'extraction not work %s:%s',
+                        country_id, base_raster_info)
+                continue
+        else:
+            country_raster_path = raster_id_to_path_map[raster_id]
 
-        # TODO: make all 0s nodata -> country_0nodata.tif
         # TODO: percentile country.tif
-        # TODO: percentile country_0nodata.tif
-        # TODO: bin
+        working_sort_directory = os.path.join(worker_dir, 'percentile_reg')
+        percentile_task = task_graph.add_task(
+            func=pygeoprocessing.raster_band_percentile,
+            args=(
+                (country_raster_path, 1), working_sort_directory,
+                PERCENTILE_LIST),
+            task_name='percentile for %s' % working_sort_directory)
+        LOGGER.debug('percentile_task: %s', percentile_task.get())
 
-        # percentile_base_task = task_graph.add_task(
-        #     func=pygeoprocessing.raster_band_percentile,
-        #     args=(
-        #         base_raster_path_band, working_sort_directory,
-        #         percentile_list),
-        #     task_name='percentile for %s %s' % (raster_id, country_id))
+        # TODO: make all 0s nodata -> country_nodata0.tif
+        country_nodata0_raster_path = '%s_nodata0.tif' % os.path.splitext(
+            country_raster_path)[0]
+        country_raster_info = pygeoprocessing.get_raster_info(
+            country_raster_path)
+        country_nodata = country_raster_info['nodata'][0]
+        nodata0_raster_task = task_graph.add_task(
+            func=pygeoprocessing.raster_calculator,
+            args=(
+                [(country_raster_path, 1), (country_nodata, 'raw')],
+                country_nodata0_op, country_nodata0_raster_path,
+                country_raster_info['datatype'], country_nodata),
+            target_path_list=[country_nodata0_raster_path],
+            task_name='set zero to nodata for %s' % country_raster_path)
+
+        # TODO: percentile country_nodata0.tif
+        working_sort_nodata0_directory = os.path.join(
+            worker_dir, 'percentile_nodata0')
+        percentile_nodata0_task = task_graph.add_task(
+            func=pygeoprocessing.raster_band_percentile,
+            args=(
+                (country_nodata0_raster_path, 1),
+                working_sort_nodata0_directory, PERCENTILE_LIST),
+            dependent_task_list=[nodata0_raster_task],
+            task_name='percentile for %s' % working_sort_directory)
+
+        LOGGER.debug('percentile_nodata0_task: %s', percentile_nodata0_task.get())
+        # TODO: bin
 
         # process_country_percentile(*payload)
 
