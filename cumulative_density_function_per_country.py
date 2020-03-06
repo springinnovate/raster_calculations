@@ -6,7 +6,6 @@ import logging
 import logging.handlers
 import multiprocessing
 import os
-import pathlib
 import sqlite3
 import subprocess
 import sys
@@ -14,7 +13,6 @@ import threading
 
 import matplotlib.pyplot
 import numpy
-import retrying
 import scipy.interpolate
 import pygeoprocessing
 from osgeo import gdal
@@ -27,7 +25,9 @@ gdal.SetCacheMax(2**30)
 
 BUCKET_PATTERN = 'gs://shared-with-users/realized_services/*.tif'
 WORKSPACE_DIR = 'cdf_by_country'
+ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshard')
 CHURN_DIR = os.path.join(WORKSPACE_DIR, 'churn')
+COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 NCPUS = -1
 
 logging.basicConfig(
@@ -43,113 +43,11 @@ logging.getLogger('taskgraph').setLevel(logging.INFO)
 WORLD_BORDERS_URL = (
     'https://storage.googleapis.com/critical-natural-capital-ecoshards/'
     'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg')
-COUNTRY_ID_FIELDNAME = 'iso3'
-COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
+COUNTRY_ID_FIELDNAME = 'iso3 '
 
 PERCENTILE_LIST = list(range(0, 101, 5))
 
 WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.sqlite3')
-
-
-def main(work_queue):
-    """Entry point.
-
-    Parameters:
-        work_queue (queue): Country gs:// paths should be pushed here for
-            further processing.
-
-    """
-    for dir_path in [WORKSPACE_DIR, CHURN_DIR, COUNTRY_WORKSPACES]:
-        try:
-            os.makedirs(dir_path)
-        except OSError:
-            pass
-
-    task_graph = taskgraph.TaskGraph(CHURN_DIR, 4, 5.0)
-    LOGGER.info('starting `main`')
-    world_borders_path = os.path.join(
-        WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
-    download_world_borders_task = task_graph.add_task(
-        func=ecoshard.download_url,
-        args=(WORLD_BORDERS_URL, world_borders_path),
-        target_path_list=[world_borders_path],
-        task_name='download world borders')
-
-    wgs84_srs = osr.SpatialReference()
-    wgs84_srs.ImportFromEPSG(4326)
-
-    result = subprocess.run(
-        'gsutil ls -p ecoshard %s' % BUCKET_PATTERN, capture_output=True,
-        shell=True, check=True)
-    country_raster_path_list = []
-    gs_path_list = [x.decode('utf-8') for x in result.stdout.splitlines()]
-    raster_id_list = [
-        os.path.basename(os.path.splitext(gs_path)[0])
-        for gs_path in gs_path_list]
-
-    country_id_task = task_graph.add_task(
-        func=get_value_list,
-        args=(world_borders_path, COUNTRY_ID_FIELDNAME),
-        ignore_path_list=[world_borders_path],
-        dependent_task_list=[download_world_borders_task],
-        task_name='fetch country ids')
-
-    country_id_task.join()
-    country_id_list = country_id_task.get()
-    LOGGER.debug('country id list: %s', country_id_list)
-
-    create_status_database_task = task_graph.add_task(
-        func=create_status_database,
-        args=(WORK_DATABASE_PATH, raster_id_list, country_id_list),
-        target_path_list=[WORK_DATABASE_PATH],
-        hash_target_files=False,
-        task_name='initalize work database')
-    create_status_database_task.join()
-
-    raster_id_to_path_map = {}
-    for gs_path in gs_path_list:
-        raster_id = os.path.basename(os.path.splitext(gs_path)[0])
-        target_raster_path = os.path.join(CHURN_DIR, os.path.basename(gs_path))
-        raster_id_to_path_map[raster_id] = target_raster_path
-        _ = task_graph.add_task(
-            func=gs_copy,
-            args=(gs_path, target_raster_path),
-            target_path_list=[target_raster_path],
-            task_name='gs copy %s' % gs_path)
-
-    result = _execute_sqlite(
-        'SELECT raster_id, country_id FROM job_status''',
-        WORK_DATABASE_PATH, execute='execute', argument_list=[], fetch='all')
-
-    work_queue = multiprocessing.Queue()
-    for raster_id, country_id in result:
-        work_queue.put((raster_id, country_id))
-    work_queue.put(None)
-
-    worker_list = []
-    for worker_id in range(multiprocessing.cpu_count()):
-        country_worker_process = multiprocessing.Process(
-            target=process_country_worker,
-            args=(work_queue,),
-            name='%d' % worker_id)
-        country_worker_process.start()
-        worker_list.append(country_worker_process)
-
-    work_queue.put('STOP')
-    for process in worker_list:
-        process.join()
-
-    task_graph.close()
-    task_graph.join()
-    sys.exit(0)
-
-    for (country_name, country_threshold_table_path,
-            percentile_per_country_filename, raster_id,
-            country_raster_path) in country_raster_path_list:
-        work_queue.put(
-            (country_name, country_threshold_table_path,
-             percentile_per_country_filename, raster_id,
-             country_raster_path))
 
 
 def create_status_database(
@@ -200,16 +98,72 @@ def create_status_database(
     connection.close()
 
 
-def process_country_worker(work_queue):
-    """Process work queue."""
+def process_country_worker(
+        work_queue, world_border_vector_path, raster_id_to_path_map):
+    """Process work queue.
+
+    Parameters:
+        work_queue (queue): expect ('raster_id', 'country_id') tuples.
+            'country_id' can be None which means do the whole raster.
+            If None, shut down.
+        world_border_vector_path (str): path to a world border vector file
+            whose features can be indexed by `country_id`.
+        raster_id_to_path_map (dict): maps 'raster_id' to paths to rasters on
+            disk.
+
+    """
+    LOGGER.debug('starting process_country_worker')
+    task_graph = taskgraph.TaskGraph(CHURN_DIR, -1)
     while True:
         payload = work_queue.get()
         if payload == 'STOP':
             work_queue.put('STOP')
             LOGGER.debug('stopping')
             break
-        LOGGER.debug(payload)
+        raster_id, country_id = payload
+        if raster_id not in raster_id_to_path_map:
+            continue
+        LOGGER.debug('got %s:%s', raster_id, country_id)
+        worker_dir = os.path.join(
+            COUNTRY_WORKSPACES, '%s_%s' % (raster_id, country_id))
+        try:
+            os.makedirs(worker_dir)
+        except OSError:
+            pass
+
+        if country_id:
+            country_vector_path = os.path.join(
+                worker_dir, '%s.gpkg' % country_id)
+            LOGGER.debug('making country vector %s', country_vector_path)
+            task_graph.add_task(
+                func=extract_feature,
+                args=(
+                    world_border_vector_path, 'iso3', country_id,
+                    country_vector_path),
+                target_path_list=[country_vector_path],
+                task_name='extract vector %s' % country_id)
+            task_graph.join()
+        continue
+
+        # TODO: clip out the country -> country.tif
+
+
+        # TODO: make all 0s nodata -> country_0nodata.tif
+        # TODO: percentile country.tif
+        # TODO: percentile country_0nodata.tif
+        # TODO: bin
+
+        # percentile_base_task = task_graph.add_task(
+        #     func=pygeoprocessing.raster_band_percentile,
+        #     args=(
+        #         base_raster_path_band, working_sort_directory,
+        #         percentile_list),
+        #     task_name='percentile for %s %s' % (raster_id, country_id))
+
         # process_country_percentile(*payload)
+
+    task_graph.close()
+    task_graph.join()
 
 
 def process_country_percentile(
@@ -291,35 +245,39 @@ def process_country_percentile(
 
 
 def extract_feature(
-        vector_path, feature_id, projection_wkt, target_vector_path,
-        target_complete_token_path):
-    """Make a local projection of a single feature in a vector.
+        vector_path, field_name, field_value, target_vector_path):
+    """Extract single feature into separate vector.
 
     Parameters:
         vector_path (str): base vector in WGS84 coordinates.
-        feature_id (int): FID for the feature to extract.
-        projection_wkt (str): projection wkt code to project feature to.
+        field_name (str): field to search for
+        field_value (str): field value to isolate
         target_gpkg_vector_path (str): path to new GPKG vector that will
             contain only that feature.
-        target_complete_token_path (str): path to a file that is created if
-             the function successfully completes.
 
     Returns:
         None.
 
     """
+    LOGGER.debug('opening vector: %s', vector_path)
     base_vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
+    LOGGER.debug('getting layer')
     base_layer = base_vector.GetLayer()
-    feature = base_layer.GetFeature(feature_id)
+    feature = None
+    LOGGER.debug('iterating over features')
+    for base_feature in base_layer:
+        LOGGER.debug(base_feature.GetField(field_name))
+        if base_feature.GetField(field_name) == field_value:
+            feature = base_feature
+            break
+    LOGGER.debug('extracting feature %s', feature.GetField(field_name))
+
     geom = feature.GetGeometryRef()
-
-    epsg_srs = osr.SpatialReference()
-    epsg_srs.ImportFromWkt(projection_wkt)
-
     base_srs = base_layer.GetSpatialRef()
-    base_to_utm = osr.CoordinateTransformation(base_srs, epsg_srs)
 
-    # clip out watershed to its own file
+    base_layer = None
+    base_vector = None
+
     # create a new shapefile
     if os.path.exists(target_vector_path):
         os.remove(target_vector_path)
@@ -328,11 +286,10 @@ def extract_feature(
         target_vector_path)
     target_layer = target_vector.CreateLayer(
         os.path.splitext(os.path.basename(target_vector_path))[0],
-        epsg_srs, ogr.wkbMultiPolygon)
+        base_srs, ogr.wkbMultiPolygon)
     layer_defn = target_layer.GetLayerDefn()
     feature_geometry = geom.Clone()
     base_feature = ogr.Feature(layer_defn)
-    feature_geometry.Transform(base_to_utm)
     base_feature.SetGeometry(feature_geometry)
     target_layer.CreateFeature(base_feature)
     target_layer.SyncToDisk()
@@ -341,114 +298,110 @@ def extract_feature(
     base_feature = None
     target_layer = None
     target_vector = None
-    base_layer = None
-    base_vector = None
-    with open(target_complete_token_path, 'w') as token_file:
-        token_file.write(str(datetime.datetime.now()))
 
 
-def raster_worker(work_queue, churn_dir):
-    """Process `work_queue` for gs:// paths or 'STOP'.
+# def raster_worker(work_queue, churn_dir):
+#     """Process `work_queue` for gs:// paths or 'STOP'.
 
-    Parameters:
-        work_queue (queue): contains (raster_id, raster_uri) pairs or 'STOP'
-            sentinel. `raster_uri` can be in the format of `gs://`, `http`, or
-            a local file path. It must not be a pattern. If a cloud path it
-            will attempt to download that file first.
+#     Parameters:
+#         work_queue (queue): contains (raster_id, raster_uri) pairs or 'STOP'
+#             sentinel. `raster_uri` can be in the format of `gs://`, `http`, or
+#             a local file path. It must not be a pattern. If a cloud path it
+#             will attempt to download that file first.
 
-    Returns:
-        None when reciving a 'STOP' in the work_queue.
+#     Returns:
+#         None when reciving a 'STOP' in the work_queue.
 
-    """
-    LOGGER.debug(
-        'starting raster worker %s', threading.current_thread())
+#     """
+#     LOGGER.debug(
+#         'starting raster worker %s', threading.current_thread())
 
-    world_borders_path = os.path.join(
-        WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
-    world_borders_vector = gdal.OpenEx(world_borders_path, gdal.OF_VECTOR)
-    world_borders_layer = world_borders_vector.GetLayer()
+#     world_borders_vector_path = os.path.join(
+#         WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
+#     world_borders_vector = gdal.OpenEx(world_borders_vector_path, gdal.OF_VECTOR)
+#     world_borders_layer = world_borders_vector.GetLayer()
 
-    while True:
-        payload = work_queue.get()
-        if payload == 'STOP':
-            LOGGER.info('stopping %s', threading.current_thread())
-            work_queue.put('STOP')
-            return
-        raster_id, raster_uri = payload
-        if not os.path.exists(raster_uri):
-            raster_path = os.path.join(churn_dir, os.path.basename(raster_uri))
-            # note this will only re-download a file if it doesn't exist on disk
-            # this does not mean the file has not changed!
-            if not os.path.exists(raster_path):
-                if raster_uri.startswith('gs://'):
-                    copy_from_gs(raster_uri, raster_path)
-                elif raster_uri.startswith('http'):
-                    ecoshard.download_url(raster_uri, raster_path)
-                else:
-                    raise ValueError(
-                        '%s is not a valid URI or filepath found on disk' %
-                        raster_uri)
+#     while True:
+#         payload = work_queue.get()
+#         if payload == 'STOP':
+#             LOGGER.info('stopping %s', threading.current_thread())
+#             work_queue.put('STOP')
+#             return
+#         raster_id, raster_uri = payload
+#         if not os.path.exists(raster_uri):
+#             raster_path = os.path.join(churn_dir, os.path.basename(raster_uri))
+#             # note this will only re-download a file if it doesn't exist on disk
+#             # this does not mean the file has not changed!
+#             if not os.path.exists(raster_path):
+#                 if raster_uri.startswith('gs://'):
+#                     copy_from_gs(raster_uri, raster_path)
+#                 elif raster_uri.startswith('http'):
+#                     ecoshard.download_url(raster_uri, raster_path)
+#                 else:
+#                     raise ValueError(
+#                         '%s is not a valid URI or filepath found on disk' %
+#                         raster_uri)
 
-        # make a zeros removed raster
+#         # make a zeros removed raster
 
-        raster_info = pygeoprocessing.get_raster_info(raster_path)
-        country_threshold_table_path = os.path.join(
-            WORKSPACE_DIR, 'country_threshold_%s.csv' % raster_id)
-        country_threshold_table_file = open(country_threshold_table_path, 'w')
-        country_threshold_table_file.write(
-            'country,percentile at 90% max,pixel count\n')
-        country_threshold_table_file.close()
-        percentile_per_country_filename = '%s_percentile.csv' % raster_id
-        percentile_per_country_file = open(
-            percentile_per_country_filename, 'w')
-        percentile_per_country_file.write('country name,' + ','.join(
-            [str(x) for x in PERCENTILE_LIST]) + '\n')
-        percentile_per_country_file.close()
+#         raster_info = pygeoprocessing.get_raster_info(raster_path)
+#         country_threshold_table_path = os.path.join(
+#             WORKSPACE_DIR, 'country_threshold_%s.csv' % raster_id)
+#         country_threshold_table_file = open(country_threshold_table_path, 'w')
+#         country_threshold_table_file.write(
+#             'country,percentile at 90% max,pixel count\n')
+#         country_threshold_table_file.close()
+#         percentile_per_country_filename = '%s_percentile.csv' % raster_id
+#         percentile_per_country_file = open(
+#             percentile_per_country_filename, 'w')
+#         percentile_per_country_file.write('country name,' + ','.join(
+#             [str(x) for x in PERCENTILE_LIST]) + '\n')
+#         percentile_per_country_file.close()
 
-        for world_border_feature in world_borders_layer:
-            country_name = world_border_feature.GetField('nev_name')
-            LOGGER.debug(country_name)
-            country_workspace = os.path.join(COUNTRY_WORKSPACES, country_name)
-            try:
-                os.makedirs(country_workspace)
-            except OSError:
-                pass
+#         for world_border_feature in world_borders_layer:
+#             country_name = world_border_feature.GetField('nev_name')
+#             LOGGER.debug(country_name)
+#             country_workspace = os.path.join(COUNTRY_WORKSPACES, country_name)
+#             try:
+#                 os.makedirs(country_workspace)
+#             except OSError:
+#                 pass
 
-            country_vector = os.path.join(
-                country_workspace, '%s.gpkg' % country_name)
-            country_vector_complete_token = os.path.join(
-                country_workspace, '%s.COMPLETE' % country_name)
-            extract_task = task_graph.add_task(
-                func=extract_feature,
-                args=(
-                    world_borders_path, world_border_feature.GetFID(),
-                    wgs84_srs.ExportToWkt(), country_vector,
-                    country_vector_complete_token),
-                target_path_list=[country_vector_complete_token],
-                task_name='exctract %s' % country_name)
+#             country_vector = os.path.join(
+#                 country_workspace, '%s.gpkg' % country_name)
+#             country_vector_complete_token = os.path.join(
+#                 country_workspace, '%s.COMPLETE' % country_name)
+#             extract_task = task_graph.add_task(
+#                 func=extract_feature,
+#                 args=(
+#                     world_borders_vector_path, world_border_feature.GetFID(),
+#                     wgs84_srs.ExportToWkt(), country_vector,
+#                     country_vector_complete_token),
+#                 target_path_list=[country_vector_complete_token],
+#                 task_name='exctract %s' % country_name)
 
-            country_raster_path = os.path.join(country_workspace, '%s_%s' % (
-                country_name, os.path.basename(raster_path)))
+#             country_raster_path = os.path.join(country_workspace, '%s_%s' % (
+#                 country_name, os.path.basename(raster_path)))
 
-            country_vector_info = pygeoprocessing.get_vector_info(
-                country_vector)
-            task_graph.add_task(
-                func=pygeoprocessing.warp_raster,
-                args=(
-                    raster_path, raster_info['pixel_size'],
-                    country_raster_path, 'near'),
-                kwargs={
-                    'target_bb': country_vector_info['bounding_box'],
-                    'vector_mask_options': {
-                        'mask_vector_path': country_vector},
-                    'working_dir': country_workspace},
-                target_path_list=[country_raster_path],
-                dependent_task_list=[extract_task],
-                task_name='warp %s' % country_name)
-            country_raster_path_list.append(
-                (country_name, country_threshold_table_path,
-                 percentile_per_country_filename, raster_id,
-                 country_raster_path))
+#             country_vector_info = pygeoprocessing.get_vector_info(
+#                 country_vector)
+#             task_graph.add_task(
+#                 func=pygeoprocessing.warp_raster,
+#                 args=(
+#                     raster_path, raster_info['pixel_size'],
+#                     country_raster_path, 'near'),
+#                 kwargs={
+#                     'target_bb': country_vector_info['bounding_box'],
+#                     'vector_mask_options': {
+#                         'mask_vector_path': country_vector},
+#                     'working_dir': country_workspace},
+#                 target_path_list=[country_raster_path],
+#                 dependent_task_list=[extract_task],
+#                 task_name='warp %s' % country_name)
+#             country_raster_path_list.append(
+#                 (country_name, country_threshold_table_path,
+#                  percentile_per_country_filename, raster_id,
+#                  country_raster_path))
 
 
 def copy_from_gs(gs_uri, target_path):
@@ -481,14 +434,114 @@ def gs_copy(gs_path, target_path):
         'gsutil cp %s %s' % (gs_path, target_path), shell=True, check=True)
 
 
-if __name__ == '__main__':
-    LOGGER.info('Initalizing Workers')
-    N_WORKERS = multiprocessing.cpu_count()
+def main():
+    """Entry point.
+
+    Returns:
+        None.
+
+    """
+    for dir_path in [
+            WORKSPACE_DIR, ECOSHARD_DIR, CHURN_DIR, COUNTRY_WORKSPACES]:
+        try:
+            os.makedirs(dir_path)
+        except OSError:
+            pass
+
+    task_graph = taskgraph.TaskGraph(CHURN_DIR, -1)
+    LOGGER.info('starting `main`')
+    world_borders_vector_path = os.path.join(
+        ECOSHARD_DIR, os.path.basename(WORLD_BORDERS_URL))
+    download_world_borders_task = task_graph.add_task(
+        func=ecoshard.download_url,
+        args=(WORLD_BORDERS_URL, world_borders_vector_path),
+        hash_target_files=False,
+        target_path_list=[world_borders_vector_path],
+        task_name='download world borders')
+
+    wgs84_srs = osr.SpatialReference()
+    wgs84_srs.ImportFromEPSG(4326)
+
+    result = subprocess.run(
+        'gsutil ls -p ecoshard %s' % BUCKET_PATTERN, capture_output=True,
+        shell=True, check=True)
+    country_raster_path_list = []
+    gs_path_list = [x.decode('utf-8') for x in result.stdout.splitlines()]
+    raster_id_list = [
+        os.path.basename(os.path.splitext(gs_path)[0])
+        for gs_path in gs_path_list]
+
+    country_id_task = task_graph.add_task(
+        func=get_value_list,
+        args=(world_borders_vector_path, COUNTRY_ID_FIELDNAME),
+        ignore_path_list=[world_borders_vector_path],
+        dependent_task_list=[download_world_borders_task],
+        task_name='fetch country ids')
+
+    country_id_task.join()
+    country_id_list = country_id_task.get()
+    LOGGER.debug('country id list: %s', country_id_list)
+
+    create_status_database_task = task_graph.add_task(
+        func=create_status_database,
+        args=(WORK_DATABASE_PATH, raster_id_list,
+              country_id_list),
+        target_path_list=[WORK_DATABASE_PATH],
+        hash_target_files=False,
+        task_name='initalize work database')
+    LOGGER.debug('create work database')
+    create_status_database_task.join()
+
+    raster_id_to_path_map = {}
+    LOGGER.debug('copy gs files')
+    for gs_path in gs_path_list:
+        LOGGER.debug('copy %s', gs_path)
+        raster_id = os.path.basename(os.path.splitext(gs_path)[0])
+        target_raster_path = os.path.join(CHURN_DIR, os.path.basename(gs_path))
+        raster_id_to_path_map[raster_id] = target_raster_path
+        _ = task_graph.add_task(
+            func=gs_copy,
+            args=(gs_path, target_raster_path),
+            target_path_list=[target_raster_path],
+            task_name='gs copy %s' % gs_path)
+        break
+
+    result = _execute_sqlite(
+        'SELECT raster_id, country_id FROM job_status''',
+        WORK_DATABASE_PATH, execute='execute', argument_list=[], fetch='all')
+
     work_queue = multiprocessing.Queue()
-    for worker_id in range(N_WORKERS):
-        raster_worker_process = threading.Thread(
-            target=raster_worker,
-            args=(work_queue, CHURN_DIR),
-            name='worker-%d' % worker_id)
-        #raster_worker_process.start()
-    main(work_queue)
+    for raster_id, country_id in result:
+        work_queue.put((raster_id, country_id))
+    work_queue.put(None)
+
+    worker_list = []
+    for worker_id in range(min(1, multiprocessing.cpu_count())):
+        country_worker_process = multiprocessing.Process(
+            target=process_country_worker,
+            args=(
+                work_queue, world_borders_vector_path, raster_id_to_path_map),
+            name='%d' % worker_id)
+        country_worker_process.start()
+        worker_list.append(country_worker_process)
+
+    work_queue.put('STOP')
+    for process in worker_list:
+        process.join()
+
+    task_graph.close()
+    task_graph.join()
+    sys.exit(0)
+
+    # TODO: iterate by country size from largest to smallest, including no country first
+    for (country_name, country_threshold_table_path,
+            percentile_per_country_filename, raster_id,
+            country_raster_path) in country_raster_path_list:
+        work_queue.put(
+            (country_name, country_threshold_table_path,
+             percentile_per_country_filename, raster_id,
+             country_raster_path))
+
+
+if __name__ == '__main__':
+    main()
