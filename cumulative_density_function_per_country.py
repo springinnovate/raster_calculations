@@ -580,6 +580,7 @@ def main():
         hash_target_files=False,
         target_path_list=[world_borders_vector_path],
         task_name='download world borders')
+    download_world_borders_task.join()
 
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)
