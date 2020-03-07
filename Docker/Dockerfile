@@ -17,6 +17,7 @@ RUN conda run -v -n py38 pip install --no-cache-dir \
     ecoshard==0.3.3 \
     pytest \
     pytest-cov \
+    matplotlib \
     mock \
     numpy \
     retrying \
