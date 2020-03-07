@@ -49,6 +49,7 @@ PERCENTILE_LIST = list(range(0, 101, 5))
 PERCENTILE_RECLASS_LIST = [
     i/(len(PERCENTILE_LIST)-1) * 10
     for i in range(len(PERCENTILE_LIST))]
+BIN_NODATA = -1
 WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.db')
 
 
@@ -205,8 +206,22 @@ def process_country_worker(
 
         LOGGER.debug('percentile_nodata0_task: %s', percentile_nodata0_task.get())
         # TODO: bin
+        bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
+        pygeoprocessing.raster_calculator(
+            [(country_raster_path, 1), (country_nodata, 'raw'),
+             (percentile_task.get(), 'raw'), (PERCENTILE_RECLASS_LIST, 'raw'),
+             (BIN_NODATA, 'raw')], bin_raster_op, bin_raster_path,
+            gdal.GDT_Float32, BIN_NODATA)
 
-        # process_country_percentile(*payload)
+        # TODO: bin 0 to nodata
+        bin_nodata0_raster_path = os.path.join(
+            worker_dir, 'bin_nodata0_raster.tif')
+        pygeoprocessing.raster_calculator(
+            [(country_raster_path, 1), (country_nodata, 'raw'),
+             (percentile_nodata0_task.get(), 'raw'),
+             (PERCENTILE_RECLASS_LIST, 'raw'),
+             (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
+            gdal.GDT_Float32, BIN_NODATA)
 
     task_graph.close()
     task_graph.join()
@@ -360,6 +375,7 @@ def extract_feature_checked(
         target_layer = None
         target_vector = None
 
+        # TODO: mask by vector too
         pygeoprocessing.align_and_resize_raster_stack(
             [base_raster_path], [target_raster_path], ['near'],
             base_raster_info['pixel_size'], 'intersection',
