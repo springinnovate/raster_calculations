@@ -391,7 +391,10 @@ def bin_raster_op(
         percentile_reclass_list, target_nodata):
     result = numpy.empty(base_array.shape, dtype=numpy.float32)
     result[:] = target_nodata
-    set_so_far_mask = numpy.zeros(base_array.shape, dtype=numpy.bool)
+    # nodata is already "set"
+    zero_mask = base_array == 0
+    result[zero_mask] = 0
+    set_so_far_mask = numpy.isclose(base_array, base_nodata) | zero_mask
     for value, reclass_value in zip(
             percentile_value_list[:-1],
             percentile_reclass_list[1:]):
