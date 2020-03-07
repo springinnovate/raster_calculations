@@ -210,7 +210,7 @@ def process_country_worker(
              (percentile_task.get(), 'raw'), (PERCENTILE_RECLASS_LIST, 'raw'),
              (BIN_NODATA, 'raw')], bin_raster_op, bin_raster_path,
             gdal.GDT_Float32, BIN_NODATA)
-        stitch_queue.put((bin_raster_path, raster_id, None))
+        stitch_queue.put((bin_raster_path, raster_id, ''))
 
         bin_nodata0_raster_path = os.path.join(
             worker_dir, 'bin_nodata0_raster.tif')
@@ -227,7 +227,6 @@ def process_country_worker(
         stitch_queue.put((bin_raster_path, raster_id, 'nodata0'))
 
         #TODO: save all those percentiles
-        #TODO: implement the stitch
 
     task_graph.close()
     task_graph.join()
@@ -630,10 +629,9 @@ def main():
     raster_id_to_global_stitch_path_map = {}
     for raster_id, raster_path in raster_id_to_path_map.items():
         for nodata_id in ['', 'nodata0']:
-            global_id = '%s%s' % (raster_id, nodata_id)
             global_stitch_raster_path = os.path.join(
-                WORKSPACE_DIR, '%s_by_country.tif' % global_id)
-            raster_id_to_global_stitch_path_map[global_id] = (
+                WORKSPACE_DIR, '%s%s_by_country.tif' % (raster_id, nodata_id))
+            raster_id_to_global_stitch_path_map[(raster_id, nodata_id)] = (
                 global_stitch_raster_path)
             raster_info = pygeoprocessing.get_raster_info(
                 raster_path)
@@ -644,7 +642,8 @@ def main():
                     raster_info['datatype'], [raster_info['nodata'][0]]),
                 kwargs={'fill_value_list': [raster_info['nodata'][0]]},
                 ignore_path_list=[global_stitch_raster_path],
-                task_name='make empty stitch raster for %s' % global_id)
+                task_name='make empty stitch raster for %s%s' % (
+                    raster_id, nodata_id))
     task_graph.join()
 
     work_queue = multiprocessing.Queue()
@@ -665,15 +664,80 @@ def main():
         country_worker_process.start()
         worker_list.append(country_worker_process)
 
+    stitch_worker_process = multiprocessing.Process(
+        target=stitch_worker,
+        args=(stitch_queue, raster_id_to_global_stitch_path_map),
+        name='stitch worker')
+    stitch_worker_process.start()
+
     work_queue.put('STOP')
     for process in worker_list:
         process.join()
 
+    stitch_queue.put('STOP')
+
     # TODO: do a stitch
+    stitch_worker_process.join()
 
     task_graph.close()
     task_graph.join()
     sys.exit(0)
+
+
+def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
+    """Stitch incoming country rasters into global raster.
+
+    Parameters:
+        stitch_queue (queue): payloads come in as an alert that a sub raster
+            is ready for stitching into the global raster. Payloads are of the
+            form `base_raster_path, raster_id, nodata_flag` where the
+            `raster_id` is indexed into `raster_id_to_global_stitch_path_map`
+            and the `nodata_flag` is indexed into
+            `raster_id_to_global_stitch_path_map[(raster_id, nodata_flag)]`.
+        raster_id_to_global_stitch_path_map (dict): dictionary indexed by
+            raster id and nodata flag tuple to the global raster.
+
+    """
+    try:
+        while True:
+            payload = stitch_queue.get()
+            if payload == 'STOP':
+                stitch_queue.put('STOP')
+                break
+            local_tile_raster_path, raster_id, nodata_flag = payload
+            global_stitch_raster_path = \
+                raster_id_to_global_stitch_path_map[(raster_id, nodata_flag)]
+
+            # get ul of tile and figure out where it goes in global
+            local_tile_info = pygeoprocessing.get_raster_info(
+                local_tile_raster_path)
+            global_stitch_info = pygeoprocessing.get_raster_info(
+                global_stitch_raster_path)
+            global_inv_gt = gdal.InvGeoTransform(
+                global_stitch_info['geotransform'])
+            local_gt = local_tile_info['geotransform']
+            global_i, global_j = gdal.ApplyGeoTransform(
+                global_inv_gt, local_gt[0], local_gt[3])
+
+            local_tile_raster = gdal.OpenEx(
+                local_tile_raster_path, gdal.OF_RASTER)
+            local_array = local_tile_raster.ReadAsArray()
+            local_tile_raster = None
+            global_raster = gdal.OpenEx(
+                global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
+            global_band = global_raster.GetRasterBand(1)
+            global_array = global_band.ReadAsArray(
+                xoff=global_i, yoff=global_j,
+                win_xsize=local_array.shape[1], win_ysize=local_array.shape[0])
+            valid_mask = ~numpy.isclose(
+                local_array, local_tile_info['nodata'][0])
+            global_array[valid_mask] = local_array[valid_mask]
+            global_band.WriteArray(global_array, xoff=global_i, yoff=global_j)
+            global_band.FlushCache()
+            global_band = None
+            global_raster = None
+    except Exception:
+        LOGGER.exception('exception on stitch worker')
 
 
 if __name__ == '__main__':
