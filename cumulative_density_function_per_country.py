@@ -619,6 +619,7 @@ def main():
         WORK_DATABASE_PATH, execute='execute', argument_list=[], fetch='all')
 
     work_queue = multiprocessing.Queue()
+    # TODO: iterate by country size from largest to smallest, including no country first
     for raster_id, country_id in result:
         work_queue.put((raster_id, country_id))
     work_queue.put(None)
@@ -640,15 +641,6 @@ def main():
     task_graph.close()
     task_graph.join()
     sys.exit(0)
-
-    # TODO: iterate by country size from largest to smallest, including no country first
-    for (country_name, country_threshold_table_path,
-            percentile_per_country_filename, raster_id,
-            country_raster_path) in country_raster_path_list:
-        work_queue.put(
-            (country_name, country_threshold_table_path,
-             percentile_per_country_filename, raster_id,
-             country_raster_path))
 
 
 if __name__ == '__main__':
