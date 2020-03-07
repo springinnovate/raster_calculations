@@ -640,8 +640,7 @@ def main():
             args=(gs_path, target_raster_path),
             target_path_list=[target_raster_path],
             task_name='gs copy %s' % gs_path)
-        break
-
+    task_graph.join()
     result = _execute_sqlite(
         'SELECT raster_id, country_id FROM job_status''',
         WORK_DATABASE_PATH, execute='execute', argument_list=[], fetch='all')
