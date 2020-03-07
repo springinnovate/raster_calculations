@@ -84,6 +84,7 @@ def create_status_database(
             percentile0_list BLOB,
             cdf BLOB,
             cdfnodata0 BLOB,
+            path_to_nodata0_raster
             path_to_percentile_raster TEXT,
             path_to_percentile0_raster TEXT,
             path_to_histogram_raster TEXT,
@@ -219,8 +220,7 @@ def process_country_worker(
                 UPDATE job_status
                 SET
                   percentile_list=?, percentile0_list=?,
-                  cdf=?, cdfnodata0=?,
-                  path_to_raster=?, path_to_nodata0_raster=?
+                  cdf=?, cdfnodata0=?
                 WHERE raster_id=? and country_id=?
             ''',
             WORK_DATABASE_PATH, execute='execute', mode='modify',
@@ -229,8 +229,6 @@ def process_country_worker(
                 pickle.dumps(percentile_nodata0_task.get()),
                 pickle.dumps(cdf_task.get()),
                 pickle.dumps(cdf_nodata0_task.get()),
-                country_raster_path,
-                country_nodata0_raster_path,
                 raster_id, country_id])
 
         LOGGER.debug(
@@ -269,84 +267,6 @@ def process_country_worker(
 
     task_graph.close()
     task_graph.join()
-
-
-def process_country_percentile(
-        file_lock, country_name, country_threshold_table_path,
-        percentile_per_country_filename, raster_id, country_raster_path):
-    """Calculate a single country/scenario percentile along with figure."""
-    country_workspace = os.path.join(COUNTRY_WORKSPACES, country_name)
-    percentile_values = pygeoprocessing.raster_band_percentile(
-        (country_raster_path, 1), country_workspace, PERCENTILE_LIST)
-    with file_lock:
-        percentile_per_country_file = open(
-            percentile_per_country_filename, 'a')
-        percentile_per_country_file.write(
-            '%s,' % country_name + ','.join(
-                [str(x) for x in percentile_values]) + '\n')
-        percentile_per_country_file.flush()
-        percentile_per_country_file.close()
-
-    if len(percentile_values) != len(PERCENTILE_LIST):
-        return
-    LOGGER.debug(
-        "len percentile_values: %d len PERCENTILE_LIST: %d",
-        len(percentile_values), len(PERCENTILE_LIST))
-
-    cdf_array = [0.0] * len(percentile_values)
-
-    nodata = pygeoprocessing.get_raster_info(
-        country_raster_path)['nodata'][0]
-    pixel_count = 0
-    for _, data_block in pygeoprocessing.iterblocks(
-            (country_raster_path, 1)):
-        nodata_mask = ~numpy.isclose(data_block, nodata)
-        pixel_count += numpy.count_nonzero(nodata_mask)
-        for index, percentile_value in enumerate(percentile_values):
-            cdf_array[index] += numpy.sum(data_block[
-                nodata_mask & (data_block >= percentile_value)])
-
-    # threshold is at 90% says Becky
-    threshold_limit = 0.9 * cdf_array[2]
-
-    LOGGER.debug(cdf_array)
-    fig, ax = matplotlib.pyplot.subplots()
-    ax.plot(list(reversed(PERCENTILE_LIST)), cdf_array)
-    f = scipy.interpolate.interp1d(
-        cdf_array, list(reversed(PERCENTILE_LIST)))
-    try:
-        cdf_threshold = f(threshold_limit)
-    except ValueError:
-        LOGGER.exception(
-            "error when passing threshold_limit: %s\ncdf_array: %s" % (
-                threshold_limit, cdf_array))
-        cdf_threshold = cdf_array[2]
-
-    ax.plot(
-        [0, 100], [threshold_limit, threshold_limit], 'k:', linewidth=2)
-    ax.plot([cdf_threshold, cdf_threshold],
-            [cdf_array[0], cdf_array[-1]], 'k:', linewidth=2)
-
-    ax.grid(True, linestyle='-.')
-    ax.set_title(
-        '%s CDF. 90%% max at %.2f and %.2f%%\nn=%d' % (
-            country_name, threshold_limit, cdf_threshold, pixel_count))
-    ax.set_ylabel('Sum of %s up to 100-percentile' % raster_id)
-    ax.set_ylabel('100-percentile')
-    ax.tick_params(labelcolor='r', labelsize='medium', width=3)
-    matplotlib.pyplot.autoscale(enable=True, tight=True)
-    matplotlib.pyplot.savefig(
-        os.path.join(COUNTRY_WORKSPACES, '%s_%s_cdf.png' % (
-            country_name, raster_id)))
-    matplotlib.pyplot.close(fig)
-
-    with file_lock:
-        country_threshold_table_file = open(
-            country_threshold_table_path, 'a')
-        country_threshold_table_file.write(
-            '%s, %f, %d\n' % (country_name, cdf_threshold, pixel_count))
-        country_threshold_table_file.flush()
-        country_threshold_table_file.close()
 
 
 def extract_feature_checked(
