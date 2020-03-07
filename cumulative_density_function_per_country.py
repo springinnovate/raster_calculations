@@ -82,12 +82,13 @@ def create_status_database(
             is_country INT NOT NULL,
             percentile_list BLOB,
             percentile0_list BLOB,
-            histogram BLOB,
-            histogram0 BLOB,
+            cdf BLOB,
+            cdfnodata0 BLOB,
             path_to_percentile_raster TEXT,
             path_to_percentile0_raster TEXT,
             path_to_histogram_raster TEXT,
-            path_to_histogram0_raster);
+            path_to_histogram0_raster TEXT,
+            path_to_raster TEXT);
         """)
     if os.path.exists(database_path):
         os.remove(database_path)
@@ -203,16 +204,33 @@ def process_country_worker(
             dependent_task_list=[nodata0_raster_task],
             task_name='percentile for %s' % working_sort_directory)
 
+        cdf_task = task_graph.add_task(
+            func=calculate_cdf,
+            args=(country_raster_path, percentile_task.get()),
+            task_name='calculate cdf for %s' % country_raster_path)
+
+        cdf_nodata0_task = task_graph.add_task(
+            func=calculate_cdf,
+            args=(country_nodata0_raster_path, percentile_nodata0_task.get()),
+            task_name='calculate cdf for %s' % country_nodata0_raster_path)
+
         _execute_sqlite(
             '''
                 UPDATE job_status
-                SET percentile_list=?, percentile0_list=?
+                SET
+                  percentile_list=?, percentile0_list=?,
+                  cdf=?, cdfnodata0=?,
+                  path_to_raster=?, path_to_nodata0_raster=?
                 WHERE raster_id=? and country_id=?
             ''',
             WORK_DATABASE_PATH, execute='execute', mode='modify',
             argument_list=[
                 pickle.dumps(percentile_task.get()),
                 pickle.dumps(percentile_nodata0_task.get()),
+                pickle.dumps(cdf_task.get()),
+                pickle.dumps(cdf_nodata0_task.get()),
+                country_raster_path,
+                country_nodata0_raster_path,
                 raster_id, country_id])
 
         LOGGER.debug(
@@ -432,110 +450,6 @@ def bin_raster_op(
     return result
 
 
-# def raster_worker(work_queue, churn_dir):
-#     """Process `work_queue` for gs:// paths or 'STOP'.
-
-#     Parameters:
-#         work_queue (queue): contains (raster_id, raster_uri) pairs or 'STOP'
-#             sentinel. `raster_uri` can be in the format of `gs://`, `http`, or
-#             a local file path. It must not be a pattern. If a cloud path it
-#             will attempt to download that file first.
-
-#     Returns:
-#         None when reciving a 'STOP' in the work_queue.
-
-#     """
-#     LOGGER.debug(
-#         'starting raster worker %s', threading.current_thread())
-
-#     world_borders_vector_path = os.path.join(
-#         WORKSPACE_DIR, os.path.basename(WORLD_BORDERS_URL))
-#     world_borders_vector = gdal.OpenEx(world_borders_vector_path, gdal.OF_VECTOR)
-#     world_borders_layer = world_borders_vector.GetLayer()
-
-#     while True:
-#         payload = work_queue.get()
-#         if payload == 'STOP':
-#             LOGGER.info('stopping %s', threading.current_thread())
-#             work_queue.put('STOP')
-#             return
-#         raster_id, raster_uri = payload
-#         if not os.path.exists(raster_uri):
-#             raster_path = os.path.join(churn_dir, os.path.basename(raster_uri))
-#             # note this will only re-download a file if it doesn't exist on disk
-#             # this does not mean the file has not changed!
-#             if not os.path.exists(raster_path):
-#                 if raster_uri.startswith('gs://'):
-#                     copy_from_gs(raster_uri, raster_path)
-#                 elif raster_uri.startswith('http'):
-#                     ecoshard.download_url(raster_uri, raster_path)
-#                 else:
-#                     raise ValueError(
-#                         '%s is not a valid URI or filepath found on disk' %
-#                         raster_uri)
-
-#         # make a zeros removed raster
-
-#         raster_info = pygeoprocessing.get_raster_info(raster_path)
-#         country_threshold_table_path = os.path.join(
-#             WORKSPACE_DIR, 'country_threshold_%s.csv' % raster_id)
-#         country_threshold_table_file = open(country_threshold_table_path, 'w')
-#         country_threshold_table_file.write(
-#             'country,percentile at 90% max,pixel count\n')
-#         country_threshold_table_file.close()
-#         percentile_per_country_filename = '%s_percentile.csv' % raster_id
-#         percentile_per_country_file = open(
-#             percentile_per_country_filename, 'w')
-#         percentile_per_country_file.write('country name,' + ','.join(
-#             [str(x) for x in PERCENTILE_LIST]) + '\n')
-#         percentile_per_country_file.close()
-
-#         for world_border_feature in world_borders_layer:
-#             country_name = world_border_feature.GetField('nev_name')
-#             LOGGER.debug(country_name)
-#             country_workspace = os.path.join(COUNTRY_WORKSPACES, country_name)
-#             try:
-#                 os.makedirs(country_workspace)
-#             except OSError:
-#                 pass
-
-#             country_vector = os.path.join(
-#                 country_workspace, '%s.gpkg' % country_name)
-#             country_vector_complete_token = os.path.join(
-#                 country_workspace, '%s.COMPLETE' % country_name)
-#             extract_task = task_graph.add_task(
-#                 func=extract_feature,
-#                 args=(
-#                     world_borders_vector_path, world_border_feature.GetFID(),
-#                     wgs84_srs.ExportToWkt(), country_vector,
-#                     country_vector_complete_token),
-#                 target_path_list=[country_vector_complete_token],
-#                 task_name='exctract %s' % country_name)
-
-#             country_raster_path = os.path.join(country_workspace, '%s_%s' % (
-#                 country_name, os.path.basename(raster_path)))
-
-#             country_vector_info = pygeoprocessing.get_vector_info(
-#                 country_vector)
-#             task_graph.add_task(
-#                 func=pygeoprocessing.warp_raster,
-#                 args=(
-#                     raster_path, raster_info['pixel_size'],
-#                     country_raster_path, 'near'),
-#                 kwargs={
-#                     'target_bb': country_vector_info['bounding_box'],
-#                     'vector_mask_options': {
-#                         'mask_vector_path': country_vector},
-#                     'working_dir': country_workspace},
-#                 target_path_list=[country_raster_path],
-#                 dependent_task_list=[extract_task],
-#                 task_name='warp %s' % country_name)
-#             country_raster_path_list.append(
-#                 (country_name, country_threshold_table_path,
-#                  percentile_per_country_filename, raster_id,
-#                  country_raster_path))
-
-
 def copy_from_gs(gs_uri, target_path):
     """Copy a GS objec to `target_path."""
     dirpath = os.path.dirname(target_path)
@@ -702,7 +616,8 @@ def main():
     for raster_id, raster_path in raster_id_to_path_map.items():
         result = _execute_sqlite(
             '''
-            SELECT percentile_list, percentile0_list, country_id
+            SELECT
+              percentile_list, percentile0_list, cdf, cdfnodata0, country_id
             FROM job_status
             WHERE raster_id=?;
             ''',
@@ -710,17 +625,55 @@ def main():
             fetch='all')
 
         percentile_map = {
-            (country_id, (percentile_list, percentile0_list))
-            for (country_id, percentile_list, percentile0_list) in result
+            (country_id, (percentile_list, percentile0_list, cdf, cdfnodata0))
+            for (country_id, percentile_list, percentile0_list,
+                 cdf, cdfnodata0) in result
         }
         world_percentile_list = percentile_map[None][0]
         world_nodata0_percentile_list = percentile_map[None][1]
+        cdf = percentile_map[None][2]
+        cdfnodata0 = percentile_map[None][3]
         del percentile_map[None]
 
         csv_percentile_path = os.path.join(
             WORKSPACE_DIR, '%s_percentile.csv' % raster_id)
         csv_nodata0_percentile_path = os.path.join(
             WORKSPACE_DIR, '%s_nodata0_percentile.csv' % raster_id)
+
+        csv_cdf_path = os.path.join(
+            WORKSPACE_DIR, '%s_cdf.csv' % raster_id)
+        csv_nodata0_cdf_path = os.path.join(
+            WORKSPACE_DIR, '%s_nodata0_cdf.csv' % raster_id)
+
+        with open(csv_cdf_path, 'w') as csv_cdf_file:
+            csv_cdf_file.write('%s cdfs\n' % raster_id)
+            csv_cdf_file.write(
+                'country,' +
+                ','.join([str(x) for x in PERCENTILE_LIST]))
+            # first do the whole world
+            csv_cdf_file.write(
+                'world,' +
+                ','.join([str(x[1]) for x in cdf]))
+            for country_id in sorted(percentile_map):
+                csv_cdf_file.write(
+                    '%s,' % country_id +
+                    ','.join([
+                        str(x[1]) for x in percentile_map[country_id][2]]))
+
+        with open(csv_nodata0_cdf_path, 'w') as csv_cdf_nodata0_file:
+            csv_cdf_nodata0_file.write('%s cdfs\n' % raster_id)
+            csv_cdf_nodata0_file.write(
+                'country,' +
+                ','.join([str(x) for x in PERCENTILE_LIST]))
+            # first do the whole world
+            csv_cdf_nodata0_file.write(
+                'world,' +
+                ','.join([str(x[1]) for x in cdfnodata0]))
+            for country_id in sorted(percentile_map):
+                csv_cdf_nodata0_file.write(
+                    '%s,' % country_id +
+                    ','.join([
+                        str(x[1]) for x in percentile_map[country_id][3]]))
 
         with open(csv_percentile_path, 'w') as csv_percentile_file:
             csv_percentile_file.write('%s percentiles\n' % raster_id)
@@ -755,6 +708,25 @@ def main():
     task_graph.join()
 
     # TODO: global binning (already do country binning)
+
+
+def calculate_cdf(raster_path, percentile_list):
+    """Calculate the CDF and threshold limit of a raster given its percentile list."""
+    cdf_array = [0.0] * len(percentile_list)
+    nodata = pygeoprocessing.get_raster_info(
+        raster_path)['nodata'][0]
+    pixel_count = 0
+    for _, data_block in pygeoprocessing.iterblocks(
+            (raster_path, 1)):
+        nodata_mask = ~numpy.isclose(data_block, nodata)
+        pixel_count += numpy.count_nonzero(nodata_mask)
+        for index, percentile_value in enumerate(percentile_list):
+            cdf_array[index] += numpy.sum(data_block[
+                nodata_mask & (data_block >= percentile_value)])
+
+    # threshold is at 90% says Becky
+    threshold_limit = 0.9 * cdf_array[2]
+    return cdf_array, threshold_limit
 
 
 def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
