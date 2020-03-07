@@ -5,6 +5,7 @@ import logging
 import logging.handlers
 import multiprocessing
 import os
+import pickle
 import sqlite3
 import subprocess
 import sys
@@ -202,6 +203,18 @@ def process_country_worker(
             dependent_task_list=[nodata0_raster_task],
             task_name='percentile for %s' % working_sort_directory)
 
+        _execute_sqlite(
+            '''
+                UPDATE job_status
+                SET percentile_list=?, percentile0_list=?
+                WHERE raster_id=? and country_id=?
+            ''',
+            WORK_DATABASE_PATH, execute='execute',
+            argument_list=[
+                pickle.dumps(percentile_task.get()),
+                pickle.dumps(percentile_nodata0_task.get()),
+                raster_id, country_id])
+
         LOGGER.debug(
             'percentile_nodata0_task: %s', percentile_nodata0_task.get())
         bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
@@ -225,8 +238,6 @@ def process_country_worker(
              (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
             gdal.GDT_Float32, BIN_NODATA)
         stitch_queue.put((bin_raster_path, raster_id, 'nodata0'))
-
-        #TODO: save all those percentiles
 
     task_graph.close()
     task_graph.join()
