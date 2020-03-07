@@ -545,7 +545,7 @@ def main():
             fetch='all')
 
         percentile_map = {
-            (country_id, (percentile_list, percentile0_list, cdf, cdfnodata0))
+            country_id: (percentile_list, percentile0_list, cdf, cdfnodata0)
             for (country_id, percentile_list, percentile0_list,
                  cdf, cdfnodata0) in result
         }
