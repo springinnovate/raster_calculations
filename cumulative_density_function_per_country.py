@@ -42,7 +42,7 @@ logging.getLogger('taskgraph').setLevel(logging.INFO)
 WORLD_BORDERS_URL = (
     'https://storage.googleapis.com/critical-natural-capital-ecoshards/'
     'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg')
-COUNTRY_ID_FIELDNAME = 'iso3 '
+COUNTRY_ID_FIELDNAME = 'iso3'
 
 PERCENTILE_LIST = list(range(0, 101, 5))
 PERCENTILE_RECLASS_LIST = [
