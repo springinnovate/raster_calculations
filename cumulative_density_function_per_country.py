@@ -573,12 +573,12 @@ def main():
             # first do the whole world
             csv_cdf_file.write(
                 'world,' +
-                ','.join([str(x[1]) for x in cdf]))
+                ','.join([str(x) for x in cdf]))
             for country_id in sorted(percentile_map):
                 csv_cdf_file.write(
                     '%s,' % country_id +
                     ','.join([
-                        str(x[1]) for x in percentile_map[country_id][2]]))
+                        str(x) for x in percentile_map[country_id][2]]))
 
         with open(csv_nodata0_cdf_path, 'w') as csv_cdf_nodata0_file:
             csv_cdf_nodata0_file.write('%s cdfs\n' % raster_id)
@@ -588,12 +588,12 @@ def main():
             # first do the whole world
             csv_cdf_nodata0_file.write(
                 'world,' +
-                ','.join([str(x[1]) for x in cdfnodata0]))
+                ','.join([str(x) for x in cdfnodata0]))
             for country_id in sorted(percentile_map):
                 csv_cdf_nodata0_file.write(
                     '%s,' % country_id +
                     ','.join([
-                        str(x[1]) for x in percentile_map[country_id][3]]))
+                        str(x) for x in percentile_map[country_id][3]]))
 
         with open(csv_percentile_path, 'w') as csv_percentile_file:
             csv_percentile_file.write('%s percentiles\n' % raster_id)
@@ -644,9 +644,7 @@ def calculate_cdf(raster_path, percentile_list):
             cdf_array[index] += numpy.sum(data_block[
                 nodata_mask & (data_block >= percentile_value)])
 
-    # threshold is at 90% says Becky
-    threshold_limit = 0.9 * cdf_array[2]
-    return cdf_array, threshold_limit
+    return cdf_array
 
 
 def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
