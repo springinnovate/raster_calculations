@@ -675,7 +675,7 @@ def main():
 
     stitch_queue = multiprocessing.Queue()
     worker_list = []
-    for worker_id in range(min(1, multiprocessing.cpu_count())):
+    for worker_id in range(max(1, multiprocessing.cpu_count())):
         country_worker_process = multiprocessing.Process(
             target=process_country_worker,
             args=(
