@@ -209,7 +209,7 @@ def process_country_worker(
                 SET percentile_list=?, percentile0_list=?
                 WHERE raster_id=? and country_id=?
             ''',
-            WORK_DATABASE_PATH, execute='execute',
+            WORK_DATABASE_PATH, execute='execute', mode='modify'
             argument_list=[
                 pickle.dumps(percentile_task.get()),
                 pickle.dumps(percentile_nodata0_task.get()),
@@ -686,13 +686,66 @@ def main():
         process.join()
 
     stitch_queue.put('STOP')
-
-    # TODO: do a stitch
     stitch_worker_process.join()
+
+    # TODO: percentile csv tables for
+    #   - regular, nodata set to 0
+    for raster_id, raster_path in raster_id_to_path_map.items():
+        result = _execute_sqlite(
+            '''
+            SELECT percentile_list, percentile0_list, country_id
+            FROM job_status
+            WHERE raster_id=?;
+            ''',
+            WORK_DATABASE_PATH, execute='execute', argument_list=['raster_id'],
+            fetch='all')
+
+        percentile_map = {
+            (country_id, (percentile_list, percentile0_list))
+            for (country_id, percentile_list, percentile0_list) in result
+        }
+        world_percentile_list = percentile_map[None][0]
+        world_nodata0_percentile_list = percentile_map[None][1]
+        del percentile_map[None]
+
+        csv_percentile_path = os.path.join(
+            WORKSPACE_DIR, '%s_percentile.csv' % raster_id)
+        csv_nodata0_percentile_path = os.path.join(
+            WORKSPACE_DIR, '%s_nodata0_percentile.csv' % raster_id)
+
+        with open(csv_percentile_path, 'w') as csv_percentile_file:
+            csv_percentile_file.write('%s percentiles\n' % raster_id)
+            csv_percentile_file.write(
+                'country,' +
+                ','.join([str(x) for x in PERCENTILE_LIST]))
+            # first do the whole world
+            csv_percentile_file.write(
+                'world,' +
+                ','.join([str(x) for x in world_percentile_list]))
+            for country_id in sorted(percentile_map):
+                csv_percentile_file.write(
+                    '%s,' % country_id +
+                    ','.join([str(x) for x in percentile_map[country_id][0]]))
+
+        with open(csv_nodata0_percentile_path, 'w') as \
+                csv_nodata0_percentile_file:
+            csv_nodata0_percentile_file.write('%s percentiles\n' % raster_id)
+            csv_nodata0_percentile_file.write(
+                'country,' +
+                ','.join([str(x) for x in PERCENTILE_LIST]))
+            # first do the whole world
+            csv_nodata0_percentile_file.write(
+                'world,' +
+                ','.join([str(x) for x in world_nodata0_percentile_list]))
+            for country_id in sorted(percentile_map):
+                csv_nodata0_percentile_file.write(
+                    '%s,' % country_id +
+                    ','.join([str(x) for x in percentile_map[country_id][1]]))
 
     task_graph.close()
     task_graph.join()
-    sys.exit(0)
+
+    # TODO: global binning (already do country binning)
 
 
 def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
