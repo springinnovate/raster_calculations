@@ -217,7 +217,7 @@ def process_country_worker(
         bin_nodata0_raster_path = os.path.join(
             worker_dir, 'bin_nodata0_raster.tif')
         pygeoprocessing.raster_calculator(
-            [(country_raster_path, 1), (country_nodata, 'raw'),
+            [(country_nodata0_raster_path, 1), (country_nodata, 'raw'),
              (percentile_nodata0_task.get(), 'raw'),
              (PERCENTILE_RECLASS_LIST, 'raw'),
              (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
