@@ -209,7 +209,7 @@ def process_country_worker(
                 SET percentile_list=?, percentile0_list=?
                 WHERE raster_id=? and country_id=?
             ''',
-            WORK_DATABASE_PATH, execute='execute', mode='modify'
+            WORK_DATABASE_PATH, execute='execute', mode='modify',
             argument_list=[
                 pickle.dumps(percentile_task.get()),
                 pickle.dumps(percentile_nodata0_task.get()),
