@@ -168,7 +168,6 @@ def process_country_worker(
         else:
             country_raster_path = raster_id_to_path_map[raster_id]
 
-        # TODO: percentile country.tif
         working_sort_directory = os.path.join(worker_dir, 'percentile_reg')
         percentile_task = task_graph.add_task(
             func=pygeoprocessing.raster_band_percentile,
@@ -178,7 +177,6 @@ def process_country_worker(
             task_name='percentile for %s' % working_sort_directory)
         LOGGER.debug('percentile_task: %s', percentile_task.get())
 
-        # TODO: make all 0s nodata -> country_nodata0.tif
         country_nodata0_raster_path = '%s_nodata0.tif' % os.path.splitext(
             country_raster_path)[0]
         country_raster_info = pygeoprocessing.get_raster_info(
@@ -193,7 +191,6 @@ def process_country_worker(
             target_path_list=[country_nodata0_raster_path],
             task_name='set zero to nodata for %s' % country_raster_path)
 
-        # TODO: percentile country_nodata0.tif
         working_sort_nodata0_directory = os.path.join(
             worker_dir, 'percentile_nodata0')
         percentile_nodata0_task = task_graph.add_task(
@@ -205,7 +202,6 @@ def process_country_worker(
             task_name='percentile for %s' % working_sort_directory)
 
         LOGGER.debug('percentile_nodata0_task: %s', percentile_nodata0_task.get())
-        # TODO: bin
         bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
         pygeoprocessing.raster_calculator(
             [(country_raster_path, 1), (country_nodata, 'raw'),
@@ -213,11 +209,13 @@ def process_country_worker(
              (BIN_NODATA, 'raw')], bin_raster_op, bin_raster_path,
             gdal.GDT_Float32, BIN_NODATA)
 
-        # TODO: bin 0 to nodata
         bin_nodata0_raster_path = os.path.join(
             worker_dir, 'bin_nodata0_raster.tif')
+        # the first argument is supposed to be `country_raster_path` because
+        # we want to leave the 0s in there even though the percentiles are
+        # different
         pygeoprocessing.raster_calculator(
-            [(country_nodata0_raster_path, 1), (country_nodata, 'raw'),
+            [(country_raster_path, 1), (country_nodata, 'raw'),
              (percentile_nodata0_task.get(), 'raw'),
              (PERCENTILE_RECLASS_LIST, 'raw'),
              (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
@@ -375,7 +373,6 @@ def extract_feature_checked(
         target_layer = None
         target_vector = None
 
-        # TODO: mask by vector too
         pygeoprocessing.align_and_resize_raster_stack(
             [base_raster_path], [target_raster_path], ['near'],
             base_raster_info['pixel_size'], 'intersection',
