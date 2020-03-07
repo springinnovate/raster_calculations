@@ -559,7 +559,7 @@ def main():
         except OSError:
             pass
 
-    task_graph = taskgraph.TaskGraph(CHURN_DIR, -1)
+    task_graph = taskgraph.TaskGraph(CHURN_DIR, 4)
     LOGGER.info('starting `main`')
     world_borders_vector_path = os.path.join(
         ECOSHARD_DIR, os.path.basename(WORLD_BORDERS_URL))
@@ -576,7 +576,6 @@ def main():
     result = subprocess.run(
         'gsutil ls -p ecoshard %s' % BUCKET_PATTERN, capture_output=True,
         shell=True, check=True)
-    country_raster_path_list = []
     gs_path_list = [
         x.decode('utf-8') for x in result.stdout.splitlines()
         if 'reef' not in x.decode('utf-8').lower()]
