@@ -46,7 +46,9 @@ WORLD_BORDERS_URL = (
 COUNTRY_ID_FIELDNAME = 'iso3 '
 
 PERCENTILE_LIST = list(range(0, 101, 5))
-
+PERCENTILE_RECLASS_LIST = [
+    i/(len(PERCENTILE_LIST)-1) * 10
+    for i in range(len(PERCENTILE_LIST))]
 WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.db')
 
 
@@ -366,6 +368,22 @@ def extract_feature_checked(
     except Exception:
         LOGGER.exception('exception on extract vector')
         return False
+
+
+def bin_raster_op(
+        base_array, base_nodata, percentile_value_list,
+        percentile_reclass_list, target_nodata):
+    result = numpy.empty(base_array.shape, dtype=numpy.float32)
+    result[:] = target_nodata
+    set_so_far_mask = numpy.zeros(base_array.shape, dtype=numpy.bool)
+    for value, reclass_value in zip(
+            percentile_value_list[:-1],
+            percentile_reclass_list[1:]):
+        mask = (base_array < value) & ~set_so_far_mask
+        result[mask] = reclass_value
+        set_so_far_mask |= mask
+    return result
+
 
 
 # def raster_worker(work_queue, churn_dir):
