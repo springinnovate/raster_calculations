@@ -31,7 +31,7 @@ RUN conda run -v -n py38 pip install --no-cache-dir \
     && conda clean -a -y
 RUN conda run -v -n py38 pip install --no-cache-dir \
     gsutil \
-    git+https://github.com/richpsharp/ecoshard.git/feature/ECOSHARD-3-download-and-unzip \
+    git+https://github.com/richpsharp/ecoshard.git@feature/ECOSHARD-3-download-and-unzip \
     && conda clean -a -y
 RUN conda init bash && echo "source activate py38" > ~/.bashrc
 
