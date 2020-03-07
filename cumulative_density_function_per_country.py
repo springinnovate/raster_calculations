@@ -1,5 +1,4 @@
 """Count non-zero non-nodata pixels in raster, get percentile values, and sum above each percentile to build the CDF."""
-import datetime
 import ecoshard
 import itertools
 import logging
@@ -9,7 +8,6 @@ import os
 import sqlite3
 import subprocess
 import sys
-import threading
 
 import matplotlib.pyplot
 import numpy
@@ -109,7 +107,8 @@ def create_status_database(
 
 
 def process_country_worker(
-        work_queue, world_border_vector_path, raster_id_to_path_map):
+        work_queue, world_border_vector_path, raster_id_to_path_map,
+        stitch_queue):
     """Process work queue.
 
     Parameters:
@@ -120,6 +119,8 @@ def process_country_worker(
             whose features can be indexed by `country_id`.
         raster_id_to_path_map (dict): maps 'raster_id' to paths to rasters on
             disk.
+        stitch_queue (queue): when a country tuple is complete push a
+            (bin_path, raster_id, nodata0) tuple down it.
 
     """
     LOGGER.debug('starting process_country_worker')
@@ -201,16 +202,19 @@ def process_country_worker(
             dependent_task_list=[nodata0_raster_task],
             task_name='percentile for %s' % working_sort_directory)
 
-        LOGGER.debug('percentile_nodata0_task: %s', percentile_nodata0_task.get())
+        LOGGER.debug(
+            'percentile_nodata0_task: %s', percentile_nodata0_task.get())
         bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
         pygeoprocessing.raster_calculator(
             [(country_raster_path, 1), (country_nodata, 'raw'),
              (percentile_task.get(), 'raw'), (PERCENTILE_RECLASS_LIST, 'raw'),
              (BIN_NODATA, 'raw')], bin_raster_op, bin_raster_path,
             gdal.GDT_Float32, BIN_NODATA)
+        stitch_queue.put((bin_raster_path, raster_id, None))
 
         bin_nodata0_raster_path = os.path.join(
             worker_dir, 'bin_nodata0_raster.tif')
+
         # the first argument is supposed to be `country_raster_path` because
         # we want to leave the 0s in there even though the percentiles are
         # different
@@ -220,6 +224,10 @@ def process_country_worker(
              (PERCENTILE_RECLASS_LIST, 'raw'),
              (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
             gdal.GDT_Float32, BIN_NODATA)
+        stitch_queue.put((bin_raster_path, raster_id, 'nodata0'))
+
+        #TODO: save all those percentiles
+        #TODO: implement the stitch
 
     task_graph.close()
     task_graph.join()
@@ -618,18 +626,41 @@ def main():
         'SELECT raster_id, country_id FROM job_status''',
         WORK_DATABASE_PATH, execute='execute', argument_list=[], fetch='all')
 
+    task_graph.join()
+    raster_id_to_global_stitch_path_map = {}
+    for raster_id, raster_path in raster_id_to_path_map.items():
+        for nodata_id in ['', 'nodata0']:
+            global_id = '%s%s' % (raster_id, nodata_id)
+            global_stitch_raster_path = os.path.join(
+                WORKSPACE_DIR, '%s_by_country.tif' % global_id)
+            raster_id_to_global_stitch_path_map[global_id] = (
+                global_stitch_raster_path)
+            raster_info = pygeoprocessing.get_raster_info(
+                raster_path)
+            task_graph.add_task(
+                func=pygeoprocessing.new_raster_from_base,
+                args=(
+                    raster_path, global_stitch_raster_path,
+                    raster_info['datatype'], [raster_info['nodata'][0]]),
+                kwargs={'fill_value_list': [raster_info['nodata'][0]]},
+                ignore_path_list=[global_stitch_raster_path],
+                task_name='make empty stitch raster for %s' % global_id)
+    task_graph.join()
+
     work_queue = multiprocessing.Queue()
     # TODO: iterate by country size from largest to smallest, including no country first
     for raster_id, country_id in result:
         work_queue.put((raster_id, country_id))
     work_queue.put(None)
 
+    stitch_queue = multiprocessing.Queue()
     worker_list = []
     for worker_id in range(min(1, multiprocessing.cpu_count())):
         country_worker_process = multiprocessing.Process(
             target=process_country_worker,
             args=(
-                work_queue, world_borders_vector_path, raster_id_to_path_map),
+                work_queue, world_borders_vector_path, raster_id_to_path_map,
+                stitch_queue),
             name='%d' % worker_id)
         country_worker_process.start()
         worker_list.append(country_worker_process)
@@ -637,6 +668,8 @@ def main():
     work_queue.put('STOP')
     for process in worker_list:
         process.join()
+
+    # TODO: do a stitch
 
     task_graph.close()
     task_graph.join()
