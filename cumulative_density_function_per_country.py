@@ -379,7 +379,10 @@ def extract_feature_checked(
         pygeoprocessing.align_and_resize_raster_stack(
             [base_raster_path], [target_raster_path], ['near'],
             base_raster_info['pixel_size'], 'intersection',
-            base_vector_path_list=[target_vector_path])
+            base_vector_path_list=[target_vector_path],
+            vector_mask_options={
+                'mask_vector_path': target_vector_path,
+            })
         return True
     except Exception:
         LOGGER.exception('exception on extract vector')
@@ -402,7 +405,6 @@ def bin_raster_op(
         result[mask] = reclass_value
         set_so_far_mask |= mask
     return result
-
 
 
 # def raster_worker(work_queue, churn_dir):
