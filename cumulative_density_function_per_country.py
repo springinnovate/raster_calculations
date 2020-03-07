@@ -217,7 +217,12 @@ def process_country_worker(
 
         LOGGER.debug(
             'percentile_nodata0_task: %s', percentile_nodata0_task.get())
-        bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
+        if country_id:
+            bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
+        else:
+            # it's global
+            bin_raster_path = os.path.join(
+                WORKSPACE_DIR, '%s_bin_raster.tif' % raster_id)
         pygeoprocessing.raster_calculator(
             [(country_raster_path, 1), (country_nodata, 'raw'),
              (percentile_task.get(), 'raw'), (PERCENTILE_RECLASS_LIST, 'raw'),
@@ -225,8 +230,13 @@ def process_country_worker(
             gdal.GDT_Float32, BIN_NODATA)
         stitch_queue.put((bin_raster_path, raster_id, ''))
 
-        bin_nodata0_raster_path = os.path.join(
-            worker_dir, 'bin_nodata0_raster.tif')
+        if country_id:
+            bin_nodata0_raster_path = os.path.join(
+                worker_dir, 'bin_nodata0_raster.tif')
+        else:
+            # it's global
+            bin_nodata0_raster_path = os.path.join(
+                WORKSPACE_DIR, '%s_bin_nodata0_raster.tif' % raster_id)
 
         # the first argument is supposed to be `country_raster_path` because
         # we want to leave the 0s in there even though the percentiles are
