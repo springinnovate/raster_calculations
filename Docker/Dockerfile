@@ -1,4 +1,4 @@
-# Docker image spring/computational-env:2
+# Docker image spring/computational-env:3
 FROM conda/miniconda3
 USER root
 RUN apt-get update \
@@ -29,6 +29,7 @@ RUN conda run -v -n py38 pip install --no-cache-dir \
     taskgraph==0.9.0 \
     pygeoprocessing==1.9.2 \
     && conda clean -a -y
+RUN conda run -v -n py38 pip install --no-cache-dir gsutil
 RUN conda init bash && echo "source activate py38" > ~/.bashrc
 
 WORKDIR /var/workspace
