@@ -725,8 +725,9 @@ def new_raster_from_base(
     """
     target_raster_path = os.path.join(target_dir, '%s.tif' % target_base_id)
     pygeoprocessing.new_raster_from_base(
-            base_raster, target_raster_path,
-            target_datatype, [target_nodata]),
+        base_raster, target_raster_path,
+        target_datatype, [target_nodata])
+
 
 if __name__ == '__main__':
     main()
