@@ -487,7 +487,7 @@ def main():
                 func=new_raster_from_base,
                 args=(
                     raster_path, WORKSPACE_DIR, global_stitch_raster_id,
-                    raster_info['datatype'], [raster_info['nodata'][0]]),
+                    raster_info['datatype'], raster_info['nodata'][0]),
                 hash_target_files=False,
                 target_path_list=[global_stitch_raster_path],
                 task_name='make empty stitch raster for %s%s' % (
