@@ -673,10 +673,10 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
                 LOGGER.info('stopping stitch_worker')
                 stitch_queue.put('STOP')
                 break
-            LOGGER.debug('stitching this: %s', payload)
             local_tile_raster_path, raster_id, nodata_flag = payload
             global_stitch_raster_path = \
                 raster_id_to_global_stitch_path_map[(raster_id, nodata_flag)]
+
 
             # get ul of tile and figure out where it goes in global
             local_tile_info = pygeoprocessing.get_raster_info(
@@ -695,6 +695,7 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
             local_tile_raster = None
             global_raster = gdal.OpenEx(
                 global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
+            LOGGER.debug('stitching this %s into this %s', global_stitch_raster_path, payload)
             global_band = global_raster.GetRasterBand(1)
             global_array = global_band.ReadAsArray(
                 xoff=global_i, yoff=global_j,
