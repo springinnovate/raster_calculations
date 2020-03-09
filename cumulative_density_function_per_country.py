@@ -164,7 +164,8 @@ def process_country_worker(
                 task_name='extract vector %s' % country_id)
 
             if not extract_feature_checked_task.get():
-                with open(os.path.join(worker_dir, 'error.txt')) as error_file:
+                with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
+                        error_file:
                     error_file.write(
                         'extraction not work %s:%s',
                         country_id, base_raster_info)
@@ -274,6 +275,8 @@ def extract_feature_checked(
         target_vector_path, target_raster_path):
     """Extract single feature into separate vector and check for no error.
 
+    Do not do a transform since it's all wgs84.
+
     Parameters:
         vector_path (str): base vector in WGS84 coordinates.
         field_name (str): field to search for
@@ -305,15 +308,6 @@ def extract_feature_checked(
 
         base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
 
-        target_srs = osr.SpatialReference()
-        target_srs.ImportFromWkt(base_raster_info['projection'])
-
-        base_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-        target_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-
-        base_to_target_transform = osr.CoordinateTransformation(
-            base_srs, target_srs)
-
         base_layer = None
         base_vector = None
 
@@ -325,11 +319,10 @@ def extract_feature_checked(
             target_vector_path)
         target_layer = target_vector.CreateLayer(
             os.path.splitext(os.path.basename(target_vector_path))[0],
-            target_srs, ogr.wkbMultiPolygon)
+            base_srs, ogr.wkbMultiPolygon)
         layer_defn = target_layer.GetLayerDefn()
         feature_geometry = geom.Clone()
         base_feature = ogr.Feature(layer_defn)
-        feature_geometry.Transform(base_to_target_transform)
         base_feature.SetGeometry(feature_geometry)
         target_layer.CreateFeature(base_feature)
         target_layer.SyncToDisk()
@@ -503,7 +496,10 @@ def main():
     work_queue = multiprocessing.Queue()
     # TODO: iterate by country size from largest to smallest, including no country first
     for raster_id, country_id in result:
-        work_queue.put((raster_id, country_id))
+        if country_id == 'AFG':
+            work_queue.put((raster_id, country_id))
+            break
+
     work_queue.put(None)
 
     stitch_queue = multiprocessing.Queue()
@@ -525,12 +521,14 @@ def main():
     stitch_worker_process.start()
 
     work_queue.put('STOP')
+    LOGGER.debug('wait for workers to stop')
     for process in worker_list:
         process.join()
-
+    LOGGER.debug('workers stopped')
     stitch_queue.put('STOP')
+    LOGGER.debug('wait for stitch to stop')
     stitch_worker_process.join()
-
+    LOGGER.debug('stitch stopped')
     # TODO: percentile csv tables for
     #   - regular, nodata set to 0
     for raster_id, raster_path in raster_id_to_path_map.items():
