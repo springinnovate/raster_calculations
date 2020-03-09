@@ -10,9 +10,7 @@ import sqlite3
 import subprocess
 import sys
 
-import matplotlib.pyplot
 import numpy
-import scipy.interpolate
 import pygeoprocessing
 from osgeo import gdal
 from osgeo import osr
@@ -407,7 +405,8 @@ def main():
         except OSError:
             pass
 
-    task_graph = taskgraph.TaskGraph(CHURN_DIR, 4)
+    task_graph = taskgraph.TaskGraph(
+            CHURN_DIR, multiprocessing.cpu_count(), -1)
     LOGGER.info('starting `main`')
     world_borders_vector_path = os.path.join(
         ECOSHARD_DIR, os.path.basename(WORLD_BORDERS_URL))
