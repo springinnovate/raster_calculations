@@ -503,7 +503,7 @@ def main():
             work_queue.put((raster_id, country_id))
             break
 
-    work_queue.put(None)
+    work_queue.put('STOP')
 
     stitch_queue = multiprocessing.Queue()
     worker_list = []
