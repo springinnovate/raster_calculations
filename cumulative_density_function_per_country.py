@@ -548,11 +548,14 @@ def main():
             for (country_id, percentile_list, percentile0_list,
                  cdf, cdfnodata0) in result
         }
-        world_percentile_list = percentile_map[None][0]
-        world_nodata0_percentile_list = percentile_map[None][1]
-        cdf = percentile_map[None][2]
-        cdfnodata0 = percentile_map[None][3]
-        del percentile_map[None]
+        global_available = False
+        if None in percentile_map:
+            global_available = True
+            world_percentile_list = percentile_map[None][0]
+            world_nodata0_percentile_list = percentile_map[None][1]
+            cdf = percentile_map[None][2]
+            cdfnodata0 = percentile_map[None][3]
+            del percentile_map[None]
 
         csv_percentile_path = os.path.join(
             WORKSPACE_DIR, '%s_percentile.csv' % raster_id)
@@ -570,9 +573,10 @@ def main():
                 'country,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            csv_cdf_file.write(
-                'world,' +
-                ','.join([str(x) for x in cdf]))
+            if global_available:
+                csv_cdf_file.write(
+                    'world,' +
+                    ','.join([str(x) for x in cdf]))
             for country_id in sorted(percentile_map):
                 csv_cdf_file.write(
                     '%s,' % country_id +
@@ -585,9 +589,10 @@ def main():
                 'country,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            csv_cdf_nodata0_file.write(
-                'world,' +
-                ','.join([str(x) for x in cdfnodata0]))
+            if global_available:
+                csv_cdf_nodata0_file.write(
+                    'world,' +
+                    ','.join([str(x) for x in cdfnodata0]))
             for country_id in sorted(percentile_map):
                 csv_cdf_nodata0_file.write(
                     '%s,' % country_id +
@@ -600,9 +605,10 @@ def main():
                 'country,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            csv_percentile_file.write(
-                'world,' +
-                ','.join([str(x) for x in world_percentile_list]))
+            if global_available:
+                csv_percentile_file.write(
+                    'world,' +
+                    ','.join([str(x) for x in world_percentile_list]))
             for country_id in sorted(percentile_map):
                 csv_percentile_file.write(
                     '%s,' % country_id +
@@ -615,9 +621,10 @@ def main():
                 'country,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            csv_nodata0_percentile_file.write(
-                'world,' +
-                ','.join([str(x) for x in world_nodata0_percentile_list]))
+            if global_available:
+                csv_nodata0_percentile_file.write(
+                    'world,' +
+                    ','.join([str(x) for x in world_nodata0_percentile_list]))
             for country_id in sorted(percentile_map):
                 csv_nodata0_percentile_file.write(
                     '%s,' % country_id +
