@@ -475,22 +475,24 @@ def main():
     raster_id_to_global_stitch_path_map = {}
     for raster_id, raster_path in raster_id_to_path_map.items():
         for nodata_id in ['', 'nodata0']:
+            global_stitch_raster_id = (
+                '%s%s_by_country' % (raster_id, nodata_id))
             global_stitch_raster_path = os.path.join(
-                WORKSPACE_DIR, '%s%s_by_country.tif' % (raster_id, nodata_id))
+                WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
             raster_id_to_global_stitch_path_map[(raster_id, nodata_id)] = (
                 global_stitch_raster_path)
             raster_info = pygeoprocessing.get_raster_info(
                 raster_path)
             task_graph.add_task(
-                func=pygeoprocessing.new_raster_from_base,
+                func=new_raster_from_base,
                 args=(
-                    raster_path, global_stitch_raster_path,
+                    raster_path, WORKSPACE_DIR, global_stitch_raster_id,
                     raster_info['datatype'], [raster_info['nodata'][0]]),
-                kwargs={'fill_value_list': [raster_info['nodata'][0]]},
                 hash_target_files=False,
                 target_path_list=[global_stitch_raster_path],
                 task_name='make empty stitch raster for %s%s' % (
                     raster_id, nodata_id))
+
     task_graph.close()
     task_graph.join()
 
@@ -704,6 +706,27 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
     except Exception:
         LOGGER.exception('exception on stitch worker')
 
+
+def new_raster_from_base(
+        base_raster, target_base_id, target_dir, target_datatype,
+        target_nodata):
+    """Create a new raster from base given the base id.
+
+    This function is to make the function signature look different for each
+    run.
+
+    Parameters:
+        base_raster, target_base_id, target_dir, target_datatype,
+        target_nodata are the same as pygeoprocessing.new_raster_from_base.
+
+    Returns:
+        None.
+
+    """
+    target_raster_path = os.path.join(target_dir, '%s.tif' % target_base_id)
+    pygeoprocessing.new_raster_from_base(
+            base_raster, target_raster_path,
+            target_datatype, [target_nodata]),
 
 if __name__ == '__main__':
     main()
