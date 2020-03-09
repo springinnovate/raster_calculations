@@ -488,7 +488,8 @@ def main():
                     raster_path, global_stitch_raster_path,
                     raster_info['datatype'], [raster_info['nodata'][0]]),
                 kwargs={'fill_value_list': [raster_info['nodata'][0]]},
-                ignore_path_list=[global_stitch_raster_path],
+                hash_target_files=False,
+                target_path_list=[global_stitch_raster_path],
                 task_name='make empty stitch raster for %s%s' % (
                     raster_id, nodata_id))
     task_graph.join()
