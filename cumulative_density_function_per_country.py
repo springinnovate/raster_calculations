@@ -243,6 +243,7 @@ def process_country_worker(
              (percentile_task.get(), 'raw'), (PERCENTILE_RECLASS_LIST, 'raw'),
              (BIN_NODATA, 'raw')], bin_raster_op, bin_raster_path,
             gdal.GDT_Float32, BIN_NODATA)
+        LOGGER.debug('stitch this: %s', str((bin_raster_path, raster_id, '')))
         stitch_queue.put((bin_raster_path, raster_id, ''))
 
         if country_id:
@@ -262,6 +263,7 @@ def process_country_worker(
              (PERCENTILE_RECLASS_LIST, 'raw'),
              (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
             gdal.GDT_Float32, BIN_NODATA)
+        LOGGER.debug('stitch this: %s', str((bin_raster_path, raster_id, 'nodata0')))
         stitch_queue.put((bin_raster_path, raster_id, 'nodata0'))
 
     task_graph.close()
@@ -671,6 +673,7 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
                 LOGGER.info('stopping stitch_worker')
                 stitch_queue.put('STOP')
                 break
+            LOGGER.debug('stitching this: %s', payload)
             local_tile_raster_path, raster_id, nodata_flag = payload
             global_stitch_raster_path = \
                 raster_id_to_global_stitch_path_map[(raster_id, nodata_flag)]
