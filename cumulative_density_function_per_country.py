@@ -492,6 +492,7 @@ def main():
                 target_path_list=[global_stitch_raster_path],
                 task_name='make empty stitch raster for %s%s' % (
                     raster_id, nodata_id))
+    task_graph.close()
     task_graph.join()
 
     work_queue = multiprocessing.Queue()
@@ -630,11 +631,6 @@ def main():
                     '%s,' % country_id +
                     ','.join([str(x) for x in percentile_map[country_id][1]]))
 
-    task_graph.close()
-    task_graph.join()
-
-    # TODO: global binning (already do country binning)
-
 
 def calculate_cdf(raster_path, percentile_list):
     """Calculate the CDF and threshold limit of a raster given its percentile list."""
@@ -671,6 +667,7 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
         while True:
             payload = stitch_queue.get()
             if payload == 'STOP':
+                LOGGER.info('stopping stitch_worker')
                 stitch_queue.put('STOP')
                 break
             local_tile_raster_path, raster_id, nodata_flag = payload
