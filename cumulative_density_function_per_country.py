@@ -406,7 +406,7 @@ def main():
             pass
 
     task_graph = taskgraph.TaskGraph(
-            CHURN_DIR, multiprocessing.cpu_count(), -1)
+            CHURN_DIR, multiprocessing.cpu_count(), 5.0)
     LOGGER.info('starting `main`')
     world_borders_vector_path = os.path.join(
         ECOSHARD_DIR, os.path.basename(WORLD_BORDERS_URL))
