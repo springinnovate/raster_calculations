@@ -158,6 +158,8 @@ def process_country_worker(
                     world_border_vector_path, 'iso3', country_id,
                     raster_id_to_path_map[raster_id],
                     country_vector_path, country_raster_path),
+                ignore_path_list=[
+                    world_border_vector_path, country_vector_path],
                 target_path_list=[country_raster_path],
                 task_name='extract vector %s' % country_id)
 
