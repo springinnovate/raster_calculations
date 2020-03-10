@@ -281,8 +281,8 @@ def process_country_worker(
 
 
 @retrying.retry(
-    stop_max_attempt_number=10, wait_exponential_multiplier=100,
-    wait_exponential_max=1000)
+    stop_max_attempt_number=1000, wait_exponential_multiplier=100,
+    wait_exponential_max=5000)
 def extract_feature_checked(
         vector_path, field_name, field_value, base_raster_path,
         target_vector_path, target_raster_path):
@@ -354,8 +354,6 @@ def extract_feature_checked(
             })
         return True
     except Exception:
-        LOGGER.exception(
-            'exception on extract vector to %s' % target_raster_path)
         raise
 
 
