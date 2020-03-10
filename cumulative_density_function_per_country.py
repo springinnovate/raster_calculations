@@ -720,7 +720,15 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
             valid_mask = ~numpy.isclose(
                 local_array, local_tile_info['nodata'][0])
             global_array[valid_mask] = local_array[valid_mask]
-            global_band.WriteArray(global_array, xoff=global_i, yoff=global_j)
+            win_ysize_write, win_xsize_write = global_array.shape
+            if global_i + win_xsize_write >= global_band.XSize:
+                win_xsize_write = global_band.XSize - global_i
+            if global_j + win_ysize_write >= global_band.YSize:
+                win_ysize_write = global_band.YSize - global_j
+
+            global_band.WriteArray(
+                global_array, xoff=global_i, yoff=global_j,
+                win_xsize=win_xsize_write, win_ysize=win_ysize_write)
             global_band.FlushCache()
             global_band = None
             global_raster = None
