@@ -553,10 +553,10 @@ def main():
 
         percentile_map = {
             country_id: (
-                pickle.loads(percentile_list),
-                pickle.loads(percentile0_list),
-                pickle.loads(cdf),
-                pickle.loads(cdfnodata0))
+                pickle.loads(bytes(percentile_list)),
+                pickle.loads(bytes(percentile0_list)),
+                pickle.loads(bytes(cdf)),
+                pickle.loads(bytes(cdfnodata0)))
             for (country_id, percentile_list, percentile0_list,
                  cdf, cdfnodata0) in result
         }
