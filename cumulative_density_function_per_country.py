@@ -34,6 +34,7 @@ logging.basicConfig(
         format=(
             '%(asctime)s (%(relativeCreated)d) %(processName)s %(levelname)s '
             '%(name)s [%(funcName)s:%(lineno)d] %(message)s'),
+        filename='log.txt',
         stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
