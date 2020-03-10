@@ -167,7 +167,6 @@ def process_country_worker(
                         world_border_vector_path, country_vector_path],
                     target_path_list=[country_raster_path],
                     task_name='extract vector %s' % country_id)
-                extract_feature_checked.join()
 
                 if not extract_feature_checked_task.get():
                     with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
