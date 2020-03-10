@@ -152,17 +152,18 @@ def process_country_worker(
             country_raster_path = '%s.tif' % os.path.splitext(
                 country_vector_path)[0]
 
-            extract_feature_checked_task = task_graph.add_task(
-                func=extract_feature_checked,
-                args=(
-                    feature_lock,
-                    world_border_vector_path, 'iso3', country_id,
-                    raster_id_to_path_map[raster_id],
-                    country_vector_path, country_raster_path),
-                ignore_path_list=[
-                    world_border_vector_path, country_vector_path],
-                target_path_list=[country_raster_path],
-                task_name='extract vector %s' % country_id)
+            with feature_lock:
+                extract_feature_checked_task = task_graph.add_task(
+                    func=extract_feature_checked,
+                    args=(
+                        world_border_vector_path, 'iso3', country_id,
+                        raster_id_to_path_map[raster_id],
+                        country_vector_path, country_raster_path),
+                    ignore_path_list=[
+                        world_border_vector_path, country_vector_path],
+                    target_path_list=[country_raster_path],
+                    task_name='extract vector %s' % country_id)
+                extract_feature_checked_task.join()
 
             if not extract_feature_checked_task.get():
                 with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
@@ -274,7 +275,7 @@ def process_country_worker(
 
 
 def extract_feature_checked(
-        feature_lock, vector_path, field_name, field_value, base_raster_path,
+        vector_path, field_name, field_value, base_raster_path,
         target_vector_path, target_raster_path):
     """Extract single feature into separate vector and check for no error.
 
@@ -293,60 +294,59 @@ def extract_feature_checked(
         True if no error, False otherwise.
 
     """
-    with feature_lock:
-        try:
-            LOGGER.debug('opening vector: %s', vector_path)
-            base_vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
-            LOGGER.debug('getting layer')
-            base_layer = base_vector.GetLayer()
-            feature = None
-            LOGGER.debug('iterating over features')
-            for base_feature in base_layer:
-                if base_feature.GetField(field_name) == field_value:
-                    feature = base_feature
-                    break
-            LOGGER.debug('extracting feature %s', feature.GetField(field_name))
+    try:
+        LOGGER.debug('opening vector: %s', vector_path)
+        base_vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
+        LOGGER.debug('getting layer')
+        base_layer = base_vector.GetLayer()
+        feature = None
+        LOGGER.debug('iterating over features')
+        for base_feature in base_layer:
+            if base_feature.GetField(field_name) == field_value:
+                feature = base_feature
+                break
+        LOGGER.debug('extracting feature %s', feature.GetField(field_name))
 
-            geom = feature.GetGeometryRef()
-            base_srs = base_layer.GetSpatialRef()
+        geom = feature.GetGeometryRef()
+        base_srs = base_layer.GetSpatialRef()
 
-            base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
+        base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
 
-            base_layer = None
-            base_vector = None
+        base_layer = None
+        base_vector = None
 
-            # create a new shapefile
-            if os.path.exists(target_vector_path):
-                os.remove(target_vector_path)
-            driver = ogr.GetDriverByName('GPKG')
-            target_vector = driver.CreateDataSource(
-                target_vector_path)
-            target_layer = target_vector.CreateLayer(
-                os.path.splitext(os.path.basename(target_vector_path))[0],
-                base_srs, ogr.wkbMultiPolygon)
-            layer_defn = target_layer.GetLayerDefn()
-            feature_geometry = geom.Clone()
-            base_feature = ogr.Feature(layer_defn)
-            base_feature.SetGeometry(feature_geometry)
-            target_layer.CreateFeature(base_feature)
-            target_layer.SyncToDisk()
-            geom = None
-            feature_geometry = None
-            base_feature = None
-            target_layer = None
-            target_vector = None
+        # create a new shapefile
+        if os.path.exists(target_vector_path):
+            os.remove(target_vector_path)
+        driver = ogr.GetDriverByName('GPKG')
+        target_vector = driver.CreateDataSource(
+            target_vector_path)
+        target_layer = target_vector.CreateLayer(
+            os.path.splitext(os.path.basename(target_vector_path))[0],
+            base_srs, ogr.wkbMultiPolygon)
+        layer_defn = target_layer.GetLayerDefn()
+        feature_geometry = geom.Clone()
+        base_feature = ogr.Feature(layer_defn)
+        base_feature.SetGeometry(feature_geometry)
+        target_layer.CreateFeature(base_feature)
+        target_layer.SyncToDisk()
+        geom = None
+        feature_geometry = None
+        base_feature = None
+        target_layer = None
+        target_vector = None
 
-            pygeoprocessing.align_and_resize_raster_stack(
-                [base_raster_path], [target_raster_path], ['near'],
-                base_raster_info['pixel_size'], 'intersection',
-                base_vector_path_list=[target_vector_path],
-                vector_mask_options={
-                    'mask_vector_path': target_vector_path,
-                })
-            return True
-        except Exception:
-            LOGGER.exception('exception on extract vector')
-            return False
+        pygeoprocessing.align_and_resize_raster_stack(
+            [base_raster_path], [target_raster_path], ['near'],
+            base_raster_info['pixel_size'], 'intersection',
+            base_vector_path_list=[target_vector_path],
+            vector_mask_options={
+                'mask_vector_path': target_vector_path,
+            })
+        return True
+    except Exception:
+        LOGGER.exception('exception on extract vector')
+        return False
 
 
 def bin_raster_op(
