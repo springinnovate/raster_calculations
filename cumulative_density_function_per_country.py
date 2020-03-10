@@ -553,12 +553,13 @@ def main():
 
         percentile_map = {
             country_id: (
-                pickle.loads(bytes(percentile_list)),
-                pickle.loads(bytes(percentile0_list)),
-                pickle.loads(bytes(cdf)),
-                pickle.loads(bytes(cdfnodata0)))
+                pickle.loads(percentile_list),
+                pickle.loads(percentile0_list),
+                pickle.loads(cdf),
+                pickle.loads(cdfnodata0))
             for (country_id, percentile_list, percentile0_list,
                  cdf, cdfnodata0) in result
+            if None not in [percentile_list, percentile0_list, cdf, cdfnodata0]
         }
         LOGGER.debug('percentile map: %s', percentile_map)
         global_available = False
