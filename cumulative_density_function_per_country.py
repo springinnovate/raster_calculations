@@ -562,7 +562,6 @@ def main():
             if None not in (
                 country_id, percentile_list, percentile0_list, cdf, cdfnodata0)
         }
-        LOGGER.debug('percentile map: %s', percentile_map)
         global_available = False
         if None in percentile_map:
             global_available = True
