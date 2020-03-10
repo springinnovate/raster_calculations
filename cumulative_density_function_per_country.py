@@ -9,6 +9,7 @@ import pickle
 import sqlite3
 import subprocess
 import sys
+import time
 
 import numpy
 import pygeoprocessing
@@ -51,6 +52,7 @@ BIN_NODATA = -1
 WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.db')
 
 SKIP_THESE_COUNTRIES = ['ATA']
+
 
 def country_nodata0_op(base_array, nodata):
     """Convert base_array 0s to nodata."""
@@ -155,22 +157,17 @@ def process_country_worker(
                 country_raster_path = '%s.tif' % os.path.splitext(
                     country_vector_path)[0]
 
-                try:
-                    extract_feature_checked_task = task_graph.add_task(
-                        func=extract_feature_checked,
-                        args=(
-                            world_border_vector_path, 'iso3', country_id,
-                            raster_id_to_path_map[raster_id],
-                            country_vector_path, country_raster_path),
-                        ignore_path_list=[
-                            world_border_vector_path, country_vector_path],
-                        target_path_list=[country_raster_path],
-                        task_name='extract vector %s' % country_id)
-                    extract_feature_checked.join()
-                except Exception:
-                    LOGGER.exception(
-                        'extract error: skipping %s, %s', raster_id, country_id)
-                    continue
+                extract_feature_checked_task = task_graph.add_task(
+                    func=extract_feature_checked,
+                    args=(
+                        world_border_vector_path, 'iso3', country_id,
+                        raster_id_to_path_map[raster_id],
+                        country_vector_path, country_raster_path),
+                    ignore_path_list=[
+                        world_border_vector_path, country_vector_path],
+                    target_path_list=[country_raster_path],
+                    task_name='extract vector %s' % country_id)
+                extract_feature_checked.join()
 
                 if not extract_feature_checked_task.get():
                     with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
@@ -287,9 +284,6 @@ def process_country_worker(
         task_graph.join()
 
 
-@retrying.retry(
-    stop_max_attempt_number=20, wait_exponential_multiplier=10,
-    wait_exponential_max=100)
 def extract_feature_checked(
         vector_path, field_name, field_value, base_raster_path,
         target_vector_path, target_raster_path):
@@ -310,58 +304,63 @@ def extract_feature_checked(
         True if no error, False otherwise.
 
     """
-    try:
-        LOGGER.debug('opening vector: %s', vector_path)
-        base_vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
-        LOGGER.debug('getting layer')
-        base_layer = base_vector.GetLayer()
-        feature = None
-        LOGGER.debug('iterating over features')
-        for base_feature in base_layer:
-            if base_feature.GetField(field_name) == field_value:
-                feature = base_feature
-                break
-        LOGGER.debug('extracting feature %s', feature.GetField(field_name))
+    attempt_number = 0
+    while True:
+        try:
+            LOGGER.debug('opening vector: %s', vector_path)
+            base_vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
+            LOGGER.debug('getting layer')
+            base_layer = base_vector.GetLayer()
+            feature = None
+            LOGGER.debug('iterating over features')
+            for base_feature in base_layer:
+                if base_feature.GetField(field_name) == field_value:
+                    feature = base_feature
+                    break
+            LOGGER.debug('extracting feature %s', feature.GetField(field_name))
 
-        geom = feature.GetGeometryRef()
-        base_srs = base_layer.GetSpatialRef()
+            geom = feature.GetGeometryRef()
+            base_srs = base_layer.GetSpatialRef()
 
-        base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
+            base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
 
-        base_layer = None
-        base_vector = None
+            base_layer = None
+            base_vector = None
 
-        # create a new shapefile
-        if os.path.exists(target_vector_path):
-            os.remove(target_vector_path)
-        driver = ogr.GetDriverByName('GPKG')
-        target_vector = driver.CreateDataSource(
-            target_vector_path)
-        target_layer = target_vector.CreateLayer(
-            os.path.splitext(os.path.basename(target_vector_path))[0],
-            base_srs, ogr.wkbMultiPolygon)
-        layer_defn = target_layer.GetLayerDefn()
-        feature_geometry = geom.Clone()
-        base_feature = ogr.Feature(layer_defn)
-        base_feature.SetGeometry(feature_geometry)
-        target_layer.CreateFeature(base_feature)
-        target_layer.SyncToDisk()
-        geom = None
-        feature_geometry = None
-        base_feature = None
-        target_layer = None
-        target_vector = None
+            # create a new shapefile
+            if os.path.exists(target_vector_path):
+                os.remove(target_vector_path)
+            driver = ogr.GetDriverByName('GPKG')
+            target_vector = driver.CreateDataSource(
+                target_vector_path)
+            target_layer = target_vector.CreateLayer(
+                os.path.splitext(os.path.basename(target_vector_path))[0],
+                base_srs, ogr.wkbMultiPolygon)
+            layer_defn = target_layer.GetLayerDefn()
+            feature_geometry = geom.Clone()
+            base_feature = ogr.Feature(layer_defn)
+            base_feature.SetGeometry(feature_geometry)
+            target_layer.CreateFeature(base_feature)
+            target_layer.SyncToDisk()
+            geom = None
+            feature_geometry = None
+            base_feature = None
+            target_layer = None
+            target_vector = None
 
-        pygeoprocessing.align_and_resize_raster_stack(
-            [base_raster_path], [target_raster_path], ['near'],
-            base_raster_info['pixel_size'], 'intersection',
-            base_vector_path_list=[target_vector_path],
-            vector_mask_options={
-                'mask_vector_path': target_vector_path,
-            })
-        return True
-    except Exception:
-        raise
+            pygeoprocessing.align_and_resize_raster_stack(
+                [base_raster_path], [target_raster_path], ['near'],
+                base_raster_info['pixel_size'], 'intersection',
+                base_vector_path_list=[target_vector_path],
+                vector_mask_options={
+                    'mask_vector_path': target_vector_path,
+                })
+            return True
+        except Exception:
+            attempt_number += 1
+            if attempt_number == 20:
+                return False
+            time.sleep(min(1, 0.1*2**attempt_number))
 
 
 def bin_raster_op(
