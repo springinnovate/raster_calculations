@@ -536,7 +536,9 @@ def main():
     LOGGER.debug('stitch stopped')
     # TODO: percentile csv tables for
     #   - regular, nodata set to 0
+    LOGGER.debug('building histogram/cdf')
     for raster_id, raster_path in raster_id_to_path_map.items():
+        LOGGER.debug('building csv for %s %s', raster_id, raster_path)
         result = _execute_sqlite(
             '''
             SELECT
@@ -552,6 +554,7 @@ def main():
             for (country_id, percentile_list, percentile0_list,
                  cdf, cdfnodata0) in result
         }
+        LOGGER.debug('percentile map: %s', percentile_map)
         global_available = False
         if None in percentile_map:
             global_available = True
