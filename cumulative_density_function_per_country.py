@@ -590,12 +590,12 @@ def main():
             if global_available:
                 csv_cdf_file.write(
                     '\nworld,' +
-                    ','.join([str(x) for x in cdf]))
+                    ','.join(reversed([str(x) for x in cdf])))
             for country_id in sorted(percentile_map):
                 csv_cdf_file.write(
                     '\n%s,' % country_id +
-                    ','.join([
-                        str(x) for x in percentile_map[country_id][2]]))
+                    ','.join(reversed([
+                        str(x) for x in percentile_map[country_id][2]])))
 
         with open(csv_nodata0_cdf_path, 'w') as csv_cdf_nodata0_file:
             csv_cdf_nodata0_file.write('%s cdfs' % raster_id)
@@ -606,12 +606,12 @@ def main():
             if global_available:
                 csv_cdf_nodata0_file.write(
                     '\nworld,' +
-                    ','.join([str(x) for x in cdfnodata0]))
+                    ','.join(reversed([str(x) for x in cdfnodata0])))
             for country_id in sorted(percentile_map):
                 csv_cdf_nodata0_file.write(
                     '\n%s,' % country_id +
-                    ','.join([
-                        str(x) for x in percentile_map[country_id][3]]))
+                    ','.join(reversed([
+                        str(x) for x in percentile_map[country_id][3]])))
 
         with open(csv_percentile_path, 'w') as csv_percentile_file:
             csv_percentile_file.write('%s percentiles' % raster_id)
