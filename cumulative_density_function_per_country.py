@@ -582,66 +582,66 @@ def main():
             WORKSPACE_DIR, '%s_nodata0_cdf.csv' % raster_id)
 
         with open(csv_cdf_path, 'w') as csv_cdf_file:
-            csv_cdf_file.write('%s cdfs\n' % raster_id)
+            csv_cdf_file.write('%s cdfs' % raster_id)
             csv_cdf_file.write(
-                'country,' +
+                '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
             if global_available:
                 csv_cdf_file.write(
-                    'world,' +
+                    '\nworld,' +
                     ','.join([str(x) for x in cdf]))
             for country_id in sorted(percentile_map):
                 csv_cdf_file.write(
-                    '%s,' % country_id +
+                    '\n%s,' % country_id +
                     ','.join([
                         str(x) for x in percentile_map[country_id][2]]))
 
         with open(csv_nodata0_cdf_path, 'w') as csv_cdf_nodata0_file:
-            csv_cdf_nodata0_file.write('%s cdfs\n' % raster_id)
+            csv_cdf_nodata0_file.write('%s cdfs' % raster_id)
             csv_cdf_nodata0_file.write(
-                'country,' +
+                '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
             if global_available:
                 csv_cdf_nodata0_file.write(
-                    'world,' +
+                    '\nworld,' +
                     ','.join([str(x) for x in cdfnodata0]))
             for country_id in sorted(percentile_map):
                 csv_cdf_nodata0_file.write(
-                    '%s,' % country_id +
+                    '\n%s,' % country_id +
                     ','.join([
                         str(x) for x in percentile_map[country_id][3]]))
 
         with open(csv_percentile_path, 'w') as csv_percentile_file:
-            csv_percentile_file.write('%s percentiles\n' % raster_id)
+            csv_percentile_file.write('%s percentiles' % raster_id)
             csv_percentile_file.write(
-                'country,' +
+                '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
             if global_available:
                 csv_percentile_file.write(
-                    'world,' +
+                    '\nworld,' +
                     ','.join([str(x) for x in world_percentile_list]))
             for country_id in sorted(percentile_map):
                 csv_percentile_file.write(
-                    '%s,' % country_id +
+                    '\n%s,' % country_id +
                     ','.join([str(x) for x in percentile_map[country_id][0]]))
 
         with open(csv_nodata0_percentile_path, 'w') as \
                 csv_nodata0_percentile_file:
-            csv_nodata0_percentile_file.write('%s percentiles\n' % raster_id)
+            csv_nodata0_percentile_file.write('%s percentiles' % raster_id)
             csv_nodata0_percentile_file.write(
-                'country,' +
+                '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
             if global_available:
                 csv_nodata0_percentile_file.write(
-                    'world,' +
+                    '\nworld,' +
                     ','.join([str(x) for x in world_nodata0_percentile_list]))
             for country_id in sorted(percentile_map):
                 csv_nodata0_percentile_file.write(
-                    '%s,' % country_id +
+                    '\n%s,' % country_id +
                     ','.join([str(x) for x in percentile_map[country_id][1]]))
 
 
