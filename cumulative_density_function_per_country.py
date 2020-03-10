@@ -271,7 +271,9 @@ def process_country_worker(
             stitch_queue.put((bin_raster_path, raster_id, 'nodata0'))
 
     except Exception:
-        LOGGER.exception('exception on process_country_worker')
+        LOGGER.exception(
+            'exception on process_country_worker for %s %s' % (
+                raster_id, country_id))
         raise
     finally:
         task_graph.close()
