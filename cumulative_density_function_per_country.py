@@ -560,10 +560,11 @@ def main():
         global_available = False
         if None in percentile_map:
             global_available = True
-            world_percentile_list = percentile_map[None][0]
-            world_nodata0_percentile_list = percentile_map[None][1]
-            cdf = percentile_map[None][2]
-            cdfnodata0 = percentile_map[None][3]
+            world_percentile_list = pickle.loads(percentile_map[None][0])
+            world_nodata0_percentile_list = pickle.loads(
+                percentile_map[None][1])
+            cdf = pickle.loads(percentile_map[None][2])
+            cdfnodata0 = pickle.loads(percentile_map[None][3])
             del percentile_map[None]
 
         csv_percentile_path = os.path.join(
@@ -590,7 +591,8 @@ def main():
                 csv_cdf_file.write(
                     '%s,' % country_id +
                     ','.join([
-                        str(x) for x in percentile_map[country_id][2]]))
+                        str(x) for x in pickle.loads(
+                            percentile_map[country_id][2])]))
 
         with open(csv_nodata0_cdf_path, 'w') as csv_cdf_nodata0_file:
             csv_cdf_nodata0_file.write('%s cdfs\n' % raster_id)
@@ -606,7 +608,8 @@ def main():
                 csv_cdf_nodata0_file.write(
                     '%s,' % country_id +
                     ','.join([
-                        str(x) for x in percentile_map[country_id][3]]))
+                        str(x) for x in pickle.loads(
+                            percentile_map[country_id][3])]))
 
         with open(csv_percentile_path, 'w') as csv_percentile_file:
             csv_percentile_file.write('%s percentiles\n' % raster_id)
@@ -621,7 +624,8 @@ def main():
             for country_id in sorted(percentile_map):
                 csv_percentile_file.write(
                     '%s,' % country_id +
-                    ','.join([str(x) for x in percentile_map[country_id][0]]))
+                    ','.join([str(x) for x in pickle.loads(
+                        percentile_map[country_id][0])]))
 
         with open(csv_nodata0_percentile_path, 'w') as \
                 csv_nodata0_percentile_file:
@@ -637,7 +641,8 @@ def main():
             for country_id in sorted(percentile_map):
                 csv_nodata0_percentile_file.write(
                     '%s,' % country_id +
-                    ','.join([str(x) for x in percentile_map[country_id][1]]))
+                    ','.join([str(x) for x in pickle.loads(
+                        percentile_map[country_id][1])]))
 
 
 def calculate_cdf(raster_path, percentile_list):
