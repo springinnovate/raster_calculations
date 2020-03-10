@@ -15,6 +15,7 @@ import pygeoprocessing
 from osgeo import gdal
 from osgeo import osr
 from osgeo import ogr
+import retrying
 from taskgraph.Task import _execute_sqlite
 import taskgraph
 
@@ -152,18 +153,16 @@ def process_country_worker(
             country_raster_path = '%s.tif' % os.path.splitext(
                 country_vector_path)[0]
 
-            with feature_lock:
-                extract_feature_checked_task = task_graph.add_task(
-                    func=extract_feature_checked,
-                    args=(
-                        world_border_vector_path, 'iso3', country_id,
-                        raster_id_to_path_map[raster_id],
-                        country_vector_path, country_raster_path),
-                    ignore_path_list=[
-                        world_border_vector_path, country_vector_path],
-                    target_path_list=[country_raster_path],
-                    task_name='extract vector %s' % country_id)
-                extract_feature_checked_task.join()
+            extract_feature_checked_task = task_graph.add_task(
+                func=extract_feature_checked,
+                args=(
+                    world_border_vector_path, 'iso3', country_id,
+                    raster_id_to_path_map[raster_id],
+                    country_vector_path, country_raster_path),
+                ignore_path_list=[
+                    world_border_vector_path, country_vector_path],
+                target_path_list=[country_raster_path],
+                task_name='extract vector %s' % country_id)
 
             if not extract_feature_checked_task.get():
                 with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
@@ -274,6 +273,9 @@ def process_country_worker(
     task_graph.join()
 
 
+@retrying.retry(
+    stop_max_attempt_number=10, wait_exponential_multiplier=100,
+    wait_exponential_max=1000)
 def extract_feature_checked(
         vector_path, field_name, field_value, base_raster_path,
         target_vector_path, target_raster_path):
@@ -346,7 +348,7 @@ def extract_feature_checked(
         return True
     except Exception:
         LOGGER.exception('exception on extract vector')
-        return False
+        raise
 
 
 def bin_raster_op(
@@ -516,8 +518,8 @@ def main():
         country_worker_process = multiprocessing.Process(
             target=process_country_worker,
             args=(
-                feature_lock, work_queue, world_borders_vector_path, raster_id_to_path_map,
-                stitch_queue),
+                feature_lock, work_queue, world_borders_vector_path,
+                raster_id_to_path_map, stitch_queue),
             name='%d' % worker_id)
         country_worker_process.start()
         worker_list.append(country_worker_process)
@@ -686,7 +688,6 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
             local_tile_raster_path, raster_id, nodata_flag = payload
             global_stitch_raster_path = \
                 raster_id_to_global_stitch_path_map[(raster_id, nodata_flag)]
-
 
             # get ul of tile and figure out where it goes in global
             local_tile_info = pygeoprocessing.get_raster_info(
