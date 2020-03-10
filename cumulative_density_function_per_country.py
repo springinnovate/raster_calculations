@@ -154,16 +154,22 @@ def process_country_worker(
                 country_raster_path = '%s.tif' % os.path.splitext(
                     country_vector_path)[0]
 
-                extract_feature_checked_task = task_graph.add_task(
-                    func=extract_feature_checked,
-                    args=(
-                        world_border_vector_path, 'iso3', country_id,
-                        raster_id_to_path_map[raster_id],
-                        country_vector_path, country_raster_path),
-                    ignore_path_list=[
-                        world_border_vector_path, country_vector_path],
-                    target_path_list=[country_raster_path],
-                    task_name='extract vector %s' % country_id)
+                try:
+                    extract_feature_checked_task = task_graph.add_task(
+                        func=extract_feature_checked,
+                        args=(
+                            world_border_vector_path, 'iso3', country_id,
+                            raster_id_to_path_map[raster_id],
+                            country_vector_path, country_raster_path),
+                        ignore_path_list=[
+                            world_border_vector_path, country_vector_path],
+                        target_path_list=[country_raster_path],
+                        task_name='extract vector %s' % country_id)
+                    extract_feature_checked.join()
+                except Exception:
+                    LOGGER.exception(
+                        'extract error: skipping %s, %s', raster_id, country_id)
+                    continue
 
                 if not extract_feature_checked_task.get():
                     with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
@@ -281,8 +287,8 @@ def process_country_worker(
 
 
 @retrying.retry(
-    stop_max_attempt_number=1000, wait_exponential_multiplier=100,
-    wait_exponential_max=5000)
+    stop_max_attempt_number=1000, wait_exponential_multiplier=10,
+    wait_exponential_max=100)
 def extract_feature_checked(
         vector_path, field_name, field_value, base_raster_path,
         target_vector_path, target_raster_path):
