@@ -13,7 +13,7 @@ add-apt-repository \
    $(lsb_release -cs) \
    stable"
 apt-get update
-apt-get install docker-ce docker-ce-cli containerd.io
+apt-get install docker-ce docker-ce-cli containerd.io -y
 git clone https://github.com/therealspring/raster_calculations.git /usr/local/raster_calculations
 cd /usr/local/raster_calculations
 docker run --rm -it -v `pwd`:/var/workspace therealspring/computational-env:4 cumulative_density_function_per_country.py > log.txt

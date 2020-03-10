@@ -503,9 +503,7 @@ def main():
     work_queue = multiprocessing.Queue()
     # TODO: iterate by country size from largest to smallest, including no country first
     for raster_id, country_id in result:
-        if country_id == 'AFG':
-            work_queue.put((raster_id, country_id))
-            break
+        work_queue.put((raster_id, country_id))
 
     work_queue.put('STOP')
 
@@ -536,8 +534,6 @@ def main():
     LOGGER.debug('wait for stitch to stop')
     stitch_worker_process.join()
     LOGGER.debug('stitch stopped')
-    # TODO: percentile csv tables for
-    #   - regular, nodata set to 0
     LOGGER.debug('building histogram/cdf')
     for raster_id, raster_path in raster_id_to_path_map.items():
         LOGGER.debug('building csv for %s %s', raster_id, raster_path)
@@ -643,6 +639,7 @@ def main():
                 csv_nodata0_percentile_file.write(
                     '\n%s,' % country_id +
                     ','.join([str(x) for x in percentile_map[country_id][1]]))
+    LOGGER.info('ALL DONE!')
 
 
 def calculate_cdf(raster_path, percentile_list):
