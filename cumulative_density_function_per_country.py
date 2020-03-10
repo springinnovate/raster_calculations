@@ -50,6 +50,7 @@ PERCENTILE_RECLASS_LIST = [
 BIN_NODATA = -1
 WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.db')
 
+SKIP_THESE_COUNTRIES = ['ATA']
 
 def country_nodata0_op(base_array, nodata):
     """Convert base_array 0s to nodata."""
@@ -287,7 +288,7 @@ def process_country_worker(
 
 
 @retrying.retry(
-    stop_max_attempt_number=1000, wait_exponential_multiplier=10,
+    stop_max_attempt_number=20, wait_exponential_multiplier=10,
     wait_exponential_max=100)
 def extract_feature_checked(
         vector_path, field_name, field_value, base_raster_path,
@@ -519,6 +520,8 @@ def main():
     work_queue = multiprocessing.Queue()
     # TODO: iterate by country size from largest to smallest, including no country first
     for raster_id, country_id in result:
+        if country_id in SKIP_THESE_COUNTRIES:
+            continue
         work_queue.put((raster_id, country_id))
 
     work_queue.put('STOP')
