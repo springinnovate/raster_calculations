@@ -172,8 +172,8 @@ def process_country_worker(
                     with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
                             error_file:
                         error_file.write(
-                            'extraction not work %s:%s',
-                            country_id, base_raster_info)
+                            'extraction not work %s:%s' % (
+                                country_id, base_raster_info))
                     continue
             else:
                 country_raster_path = raster_id_to_path_map[raster_id]
@@ -734,8 +734,8 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
                 win_ysize_write = global_band.YSize - global_j
 
             global_band.WriteArray(
-                global_array, xoff=global_i, yoff=global_j,
-                win_xsize=win_xsize_write, win_ysize=win_ysize_write)
+                global_array[0:win_ysize_write, 0:win_xsize_write],
+                xoff=global_i, yoff=global_j)
             global_band.FlushCache()
             global_band = None
             global_raster = None
