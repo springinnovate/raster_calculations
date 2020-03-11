@@ -731,6 +731,9 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
             global_array[valid_mask] = local_array[valid_mask]
             win_ysize_write, win_xsize_write = global_array.shape
             if win_ysize_write == 0 or win_xsize_write == 0:
+                LOGGER.debug(
+                    'got zeros on sizes: %d %d %s',
+                    win_ysize_write, win_xsize_write, payload)
                 continue
             if global_i + win_xsize_write >= global_band.XSize:
                 win_xsize_write = int(global_band.XSize - global_i)
