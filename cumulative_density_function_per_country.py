@@ -42,9 +42,14 @@ logging.getLogger('taskgraph').setLevel(logging.INFO)
 WORLD_BORDERS_URL = (
     'https://storage.googleapis.com/critical-natural-capital-ecoshards/'
     'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg')
+
+EEZ_URL = (
+    'https://storage.googleapis.com/critical-natural-capital-ecoshards/'
+    'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg')
+
 COUNTRY_ID_FIELDNAME = 'iso3'
 
-PERCENTILE_LIST = list(range(0, 101, 5))
+PERCENTILE_LIST = list(range(0, 101, 1))
 PERCENTILE_RECLASS_LIST = [
     i/(len(PERCENTILE_LIST)-1) * 10
     for i in range(len(PERCENTILE_LIST))]
@@ -372,9 +377,9 @@ def bin_raster_op(
     result[zero_mask] = 0
     set_so_far_mask = numpy.isclose(base_array, base_nodata) | zero_mask
     for value, reclass_value in zip(
-            percentile_value_list[:-1],
-            percentile_reclass_list[1:]):
-        mask = (base_array < value) & ~set_so_far_mask
+            percentile_value_list,
+            percentile_reclass_list):
+        mask = (base_array <= value) & ~set_so_far_mask
         result[mask] = reclass_value
         set_so_far_mask |= mask
     return result

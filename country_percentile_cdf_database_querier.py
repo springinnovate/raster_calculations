@@ -7,7 +7,7 @@ from taskgraph.Task import _execute_sqlite
 
 WORK_DATABASE_PATH = 'work_status.db'
 
-PERCENTILE_LIST = list(range(0, 101, 5))
+PERCENTILE_LIST = list(range(0, 101, 1))
 
 
 def main():
