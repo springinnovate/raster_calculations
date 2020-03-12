@@ -464,15 +464,15 @@ def main():
     create_status_database_task.join()
 
     for aggregate_vector_id, work_vector_dict in WORK_MAP.items():
-        world_borders_vector_path = os.path.join(
+        aggregate_vector_path = os.path.join(
             ECOSHARD_DIR, os.path.basename(work_vector_dict['vector_url']))
         download_aggregate_vector_task = task_graph.add_task(
             func=ecoshard.download_url,
-            args=(work_vector_dict['vector_url'], world_borders_vector_path),
+            args=(work_vector_dict['vector_url'], aggregate_vector_path),
             hash_target_files=False,
-            target_path_list=[world_borders_vector_path],
-            task_name='download world borders')
-        download_aggregate_vector_task.join()
+            target_path_list=[aggregate_vector_path],
+            task_name='download aggregate vector path')
+        work_vector_dict['vector_path'] = aggregate_vector_path
 
         raster_gs_path_list = subprocess.run(
             'gsutil ls -p ecoshard %s' % work_vector_dict[
@@ -484,6 +484,7 @@ def main():
             os.path.basename(os.path.splitext(gs_path)[0])
             for gs_path in gs_path_list]
 
+        download_aggregate_vector_task.join()
         feature_id_task = task_graph.add_task(
             func=get_value_list,
             args=(work_vector_dict['vector_path'],
@@ -491,6 +492,21 @@ def main():
             ignore_path_list=[work_vector_dict['vector_path']],
             dependent_task_list=[download_aggregate_vector_task],
             task_name='fetch vector feature ids')
+
+        feature_id_task.join()
+        feature_id_list = feature_id_task.get()
+        LOGGER.debug('field values list: %s', feature_id_list)
+
+        # create any missing entries in the database if they don't exist:
+        _execute_sqlite(
+            'INSERT OR IGNORE INTO '
+            'job_status(raster_id, aggregate_vector_id, feature_id) '
+            'VALUES (?, ?, ?)', WORK_DATABASE_PATH,
+            argument_list=[
+                (raster_id, aggregate_vector_id, feature_id)
+                for raster_id, feature_id in
+                itertools.product(raster_id_list, feature_id_list)],
+            mode='modify')
 
         raster_id_to_path_map = {}
         LOGGER.debug('copy gs files')
@@ -507,21 +523,6 @@ def main():
                 target_path_list=[target_raster_path],
                 task_name='gs copy %s' % gs_path)
         task_graph.join()
-
-        feature_id_task.join()
-        feature_id_list = feature_id_task.get()
-        LOGGER.debug('field values list: %s', feature_id_list)
-
-        # create any missing entries in the database if they don't exist:
-        _execute_sqlite(
-            'INSERT OR IGNORE INTO '
-            'job_status(raster_id, aggregate_vector_id, feature_id) '
-            'VALUES (?, ?, ?)', WORK_DATABASE_PATH,
-            argument_list=[
-                (raster_id, aggregate_vector_id, feature_id)
-                for raster_id, feature_id in
-                itertools.product(raster_id_list, feature_id_list)],
-            mode='modify')
 
         sys.exit(0)
 
