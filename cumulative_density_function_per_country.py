@@ -11,6 +11,7 @@ import os
 import pickle
 import sqlite3
 import subprocess
+import sys
 import time
 
 import numpy
@@ -40,16 +41,27 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logging.getLogger('taskgraph').setLevel(logging.INFO)
 
-BUCKET_PATTERN = 'gs://shared-with-users/realized_services/*.tif'
-WORLD_BORDERS_URL = (
-    'https://storage.googleapis.com/critical-natural-capital-ecoshards/'
-    'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg')
+WORK_MAP = {
+    'world_borders': {
+        'vector_url':  (
+            'https://storage.googleapis.com/'
+            'critical-natural-capital-ecoshards/'
+            'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'),
+        'fieldname_id': 'iso3',
+        'raster_gs_pattern':
+            'gs://shared-with-users/realized_services/*.tif'
+    },
+    'eez': {
+        'vector_url':  (
+            'https://storage.googleapis.com/'
+            'critical-natural-capital-ecoshards/'
+            'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg'),
+        'fieldname_id': 'ISO_SOV1',
+        'raster_gs_pattern':
+            'gs://shared-with-users/realized_services/marine/*.tif'
+    }
+}
 
-EEZ_URL = (
-    'https://storage.googleapis.com/critical-natural-capital-ecoshards/'
-    'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg')
-
-COUNTRY_ID_FIELDNAME = 'iso3'
 GLOBAL_ID = '_GLOBAL'
 
 PERCENTILE_LIST = list(range(0, 101, 1))
@@ -69,8 +81,7 @@ def country_nodata0_op(base_array, nodata):
     return result
 
 
-def create_status_database(
-        database_path, raster_id_list, country_id_list):
+def create_status_database(database_path):
     """Create a runtime status database if it doesn't exist.
 
     Parameters:
@@ -88,8 +99,8 @@ def create_status_database(
         """
         CREATE TABLE job_status (
             raster_id TEXT NOT NULL,
-            country_id TEXT,
-            is_country INT NOT NULL,
+            aggregate_vector_id TEXT NOT NULL,
+            feature_id TEXT NOT NULL,
             percentile_list BLOB,
             percentile0_list BLOB,
             cdf BLOB,
@@ -99,17 +110,6 @@ def create_status_database(
         os.remove(database_path)
     connection = sqlite3.connect(database_path)
     connection.executescript(create_database_sql)
-
-    # insert global
-    connection.executemany(
-        'INSERT INTO job_status(raster_id, country_id, is_country) '
-        'VALUES (?, ?, 0)',
-        [(x, GLOBAL_ID) for x in raster_id_list])
-    # insert countries
-    connection.executemany(
-        'INSERT INTO job_status(raster_id, country_id, is_country) '
-        'VALUES (?, ?, 1)',
-        itertools.product(raster_id_list, country_id_list))
     connection.commit()
     connection.close()
 
@@ -401,16 +401,29 @@ def copy_from_gs(gs_uri, target_path):
         'gsutil cp %s %s' % (gs_uri, target_path), shell=True, check=True)
 
 
-def get_value_list(vector_path, fieldname):
-    """Returns a list of values of each features fieldname."""
+def get_value_list(vector_path, fieldname_id_tuple):
+    """Returns a list of values of each features fieldname.
+
+    Parameters:
+        vector_path (str): path to vector that has fieldnames defined by the
+            `fieldname_id_tuple`.
+        fieldname_id_tuple (tuple): tuple of fieldnames that are used to
+            concatenate unique values per feature.
+
+    Returns:
+        a list containing strings of the form '%s_%s_..._%s' for the number of
+        %s there are elements in fieldname_id_tuple for the number of features
+        in the vector in sorted order.
+
+    """
     vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
     layer = vector.GetLayer()
-    value_list = [
-        feature.GetField(fieldname)
-        for feature in layer]
+    value_list = set([
+        '_'.join([str(feature.GetField(x)) for x in fieldname_id_tuple])
+        for feature in layer])
     layer = None
     vector = None
-    return value_list
+    return list(sorted(value_list))
 
 
 def gs_copy(gs_path, target_path):
@@ -437,90 +450,107 @@ def main():
     task_graph = taskgraph.TaskGraph(
             CHURN_DIR, multiprocessing.cpu_count(), 5.0)
     LOGGER.info('starting `main`')
-    world_borders_vector_path = os.path.join(
-        ECOSHARD_DIR, os.path.basename(WORLD_BORDERS_URL))
-    download_world_borders_task = task_graph.add_task(
-        func=ecoshard.download_url,
-        args=(WORLD_BORDERS_URL, world_borders_vector_path),
-        hash_target_files=False,
-        target_path_list=[world_borders_vector_path],
-        task_name='download world borders')
-    download_world_borders_task.join()
 
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)
 
-    result = subprocess.run(
-        'gsutil ls -p ecoshard %s' % BUCKET_PATTERN, capture_output=True,
-        shell=True, check=True)
-    gs_path_list = [
-        x.decode('utf-8') for x in result.stdout.splitlines()
-        if 'reef' not in x.decode('utf-8').lower()]
-    raster_id_list = [
-        os.path.basename(os.path.splitext(gs_path)[0])
-        for gs_path in gs_path_list]
-
-    LOGGER.debug(raster_id_list)
-
-    country_id_task = task_graph.add_task(
-        func=get_value_list,
-        args=(world_borders_vector_path, COUNTRY_ID_FIELDNAME),
-        ignore_path_list=[world_borders_vector_path],
-        dependent_task_list=[download_world_borders_task],
-        task_name='fetch country ids')
-
-    country_id_task.join()
-    country_id_list = country_id_task.get()
-    LOGGER.debug('country id list: %s', country_id_list)
-
     create_status_database_task = task_graph.add_task(
         func=create_status_database,
-        args=(WORK_DATABASE_PATH, raster_id_list,
-              country_id_list),
+        args=(WORK_DATABASE_PATH,),
         target_path_list=[WORK_DATABASE_PATH],
         hash_target_files=False,
         task_name='initalize work database')
     LOGGER.debug('create work database')
     create_status_database_task.join()
 
-    raster_id_to_path_map = {}
-    LOGGER.debug('copy gs files')
-    for gs_path in gs_path_list:
-        LOGGER.debug('copy %s', gs_path)
-        raster_id = os.path.basename(os.path.splitext(gs_path)[0])
-        target_raster_path = os.path.join(CHURN_DIR, os.path.basename(gs_path))
-        raster_id_to_path_map[raster_id] = target_raster_path
-        _ = task_graph.add_task(
-            func=gs_copy,
-            args=(gs_path, target_raster_path),
-            target_path_list=[target_raster_path],
-            task_name='gs copy %s' % gs_path)
-    task_graph.join()
-    result = _execute_sqlite(
-        'SELECT raster_id, country_id FROM job_status''',
-        WORK_DATABASE_PATH, execute='execute', argument_list=[], fetch='all')
+    for aggregate_vector_id, work_vector_dict in WORK_MAP.items():
+        world_borders_vector_path = os.path.join(
+            ECOSHARD_DIR, os.path.basename(work_vector_dict['vector_url']))
+        download_aggregate_vector_task = task_graph.add_task(
+            func=ecoshard.download_url,
+            args=(work_vector_dict['vector_url'], world_borders_vector_path),
+            hash_target_files=False,
+            target_path_list=[world_borders_vector_path],
+            task_name='download world borders')
+        download_aggregate_vector_task.join()
 
-    task_graph.join()
-    raster_id_to_global_stitch_path_map = {}
-    for raster_id, raster_path in raster_id_to_path_map.items():
-        for nodata_id in ['', 'nodata0']:
-            global_stitch_raster_id = (
-                '%s%s_by_country' % (raster_id, nodata_id))
-            global_stitch_raster_path = os.path.join(
-                WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
-            raster_id_to_global_stitch_path_map[(raster_id, nodata_id)] = (
-                global_stitch_raster_path)
-            raster_info = pygeoprocessing.get_raster_info(
-                raster_path)
-            task_graph.add_task(
-                func=new_raster_from_base,
-                args=(
-                    raster_path, global_stitch_raster_id, WORKSPACE_DIR,
-                    raster_info['datatype'], raster_info['nodata'][0]),
-                hash_target_files=False,
-                target_path_list=[global_stitch_raster_path],
-                task_name='make empty stitch raster for %s%s' % (
-                    raster_id, nodata_id))
+        raster_gs_path_list = subprocess.run(
+            'gsutil ls -p ecoshard %s' % work_vector_dict[
+                'raster_gs_pattern'],
+            capture_output=True, shell=True, check=True)
+        gs_path_list = [
+            x.decode('utf-8') for x in raster_gs_path_list.stdout.splitlines()]
+        raster_id_list = [
+            os.path.basename(os.path.splitext(gs_path)[0])
+            for gs_path in gs_path_list]
+
+        feature_id_task = task_graph.add_task(
+            func=get_value_list,
+            args=(work_vector_dict['vector_path'],
+                  work_vector_dict['fieldname_id']),
+            ignore_path_list=[work_vector_dict['vector_path']],
+            dependent_task_list=[download_aggregate_vector_task],
+            task_name='fetch vector feature ids')
+
+        raster_id_to_path_map = {}
+        LOGGER.debug('copy gs files')
+
+        for gs_path in gs_path_list:
+            LOGGER.debug('copy %s', gs_path)
+            raster_id = os.path.basename(os.path.splitext(gs_path)[0])
+            target_raster_path = os.path.join(
+                CHURN_DIR, os.path.basename(gs_path))
+            raster_id_to_path_map[raster_id] = target_raster_path
+            _ = task_graph.add_task(
+                func=gs_copy,
+                args=(gs_path, target_raster_path),
+                target_path_list=[target_raster_path],
+                task_name='gs copy %s' % gs_path)
+        task_graph.join()
+
+        feature_id_task.join()
+        feature_id_list = feature_id_task.get()
+        LOGGER.debug('field values list: %s', feature_id_list)
+
+        # create any missing entries in the database if they don't exist:
+        _execute_sqlite(
+            'INSERT OR IGNORE INTO '
+            'job_status(raster_id, aggregate_vector_id, feature_id) '
+            'VALUES (?, ?, ?)', WORK_DATABASE_PATH,
+            argument_list=[
+                (raster_id, aggregate_vector_id, feature_id)
+                for raster_id, feature_id in
+                itertools.product(raster_id_list, feature_id_list)],
+            mode='modify')
+
+        sys.exit(0)
+
+        result = _execute_sqlite(
+            'SELECT raster_id, country_id FROM job_status''',
+            WORK_DATABASE_PATH, execute='execute', argument_list=[],
+            fetch='all')
+
+        task_graph.join()
+        raster_id_to_global_stitch_path_map = {}
+        for raster_id, raster_path in raster_id_to_path_map.items():
+            for nodata_id in ['', 'nodata0']:
+                global_stitch_raster_id = (
+                    '%s%s_by_country' % (raster_id, nodata_id))
+                global_stitch_raster_path = os.path.join(
+                    WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
+                raster_id_to_global_stitch_path_map[(raster_id, nodata_id)] = (
+                    global_stitch_raster_path)
+                raster_info = pygeoprocessing.get_raster_info(
+                    raster_path)
+                task_graph.add_task(
+                    func=new_raster_from_base,
+                    args=(
+                        raster_path, global_stitch_raster_id, WORKSPACE_DIR,
+                        raster_info['datatype'], raster_info['nodata'][0]),
+                    hash_target_files=False,
+                    target_path_list=[global_stitch_raster_path],
+                    task_name='make empty stitch raster for %s%s' % (
+                        raster_id, nodata_id))
 
     task_graph.close()
     task_graph.join()
