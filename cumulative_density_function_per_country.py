@@ -557,7 +557,8 @@ def main():
     }
 
     stitch_worker_list = []
-    for worker_id in range(max(1, multiprocessing.cpu_count())):
+    # TODO: no workers for stitching! temporarily
+    for worker_id in []: #range(max(1, multiprocessing.cpu_count())):
         stitch_worker_process = multiprocessing.Process(
             target=stitch_worker,
             args=(stitch_queue, raster_id_to_global_stitch_path_map,
