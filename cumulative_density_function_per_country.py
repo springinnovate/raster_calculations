@@ -259,7 +259,7 @@ def process_country_worker(
                 gdal.GDT_Float32, BIN_NODATA)
             LOGGER.debug(
                 'stitch this: %s', str((bin_raster_path, raster_id, '')))
-            stitch_queue.put((bin_raster_path, raster_id, ''))
+            stitch_queue.put((bin_raster_path, (raster_id, '')))
 
             if country_id:
                 bin_nodata0_raster_path = os.path.join(
@@ -280,7 +280,7 @@ def process_country_worker(
                 gdal.GDT_Float32, BIN_NODATA)
             LOGGER.debug('stitch this: %s', str(
                 (bin_raster_path, raster_id, 'nodata0')))
-            stitch_queue.put((bin_raster_path, raster_id, 'nodata0'))
+            stitch_queue.put((bin_raster_path, (raster_id, 'nodata0')))
 
     except Exception:
         LOGGER.exception(
@@ -552,8 +552,8 @@ def main():
         worker_list.append(country_worker_process)
 
     raster_id_lock_map = {
-        raster_id: multiprocessing.Lock()
-        for raster_id in raster_id_to_global_stitch_path_map
+        raster_id_nodata_id_tuple: multiprocessing.Lock()
+        for raster_id_nodata_id_tuple in raster_id_to_global_stitch_path_map
     }
 
     stitch_worker_list = []
@@ -703,9 +703,9 @@ def stitch_worker(
                 LOGGER.info('stopping stitch_worker')
                 stitch_queue.put('STOP')
                 break
-            local_tile_raster_path, raster_id, nodata_flag = payload
+            local_tile_raster_path, raster_nodata_id_tuple = payload
             global_stitch_raster_path = \
-                raster_id_to_global_stitch_path_map[(raster_id, nodata_flag)]
+                raster_id_to_global_stitch_path_map[raster_nodata_id_tuple]
 
             # get ul of tile and figure out where it goes in global
             local_tile_info = pygeoprocessing.get_raster_info(
@@ -725,7 +725,7 @@ def stitch_worker(
                 local_array, local_tile_info['nodata'][0])
             if valid_mask.size == 0:
                 continue
-            with raster_id_lock_map[raster_id]:
+            with raster_id_lock_map[raster_nodata_id_tuple]:
                 global_raster = gdal.OpenEx(
                     global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
                 LOGGER.debug(
