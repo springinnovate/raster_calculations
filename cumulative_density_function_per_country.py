@@ -539,11 +539,18 @@ def main():
         country_worker_process.start()
         worker_list.append(country_worker_process)
 
-    stitch_worker_process = multiprocessing.Process(
-        target=stitch_worker,
-        args=(stitch_queue, raster_id_to_global_stitch_path_map),
-        name='stitch worker')
-    stitch_worker_process.start()
+    raster_id_lock_map = {
+        raster_id: multiprocessing.Lock()
+        for raster_id in raster_id_to_global_stitch_path_map
+    }
+
+    for worker_id in range(max(1, multiprocessing.cpu_count())):
+        stitch_worker_process = multiprocessing.Process(
+            target=stitch_worker,
+            args=(stitch_queue, raster_id_to_global_stitch_path_map,
+                  raster_id_lock_map),
+            name='stitch worker %s' % worker_id)
+        stitch_worker_process.start()
 
     work_queue.put('STOP')
     LOGGER.debug('wait for workers to stop')
@@ -679,7 +686,9 @@ def calculate_cdf(raster_path, percentile_list):
     return cdf_array
 
 
-def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
+def stitch_worker(
+        stitch_queue, raster_id_to_global_stitch_path_map,
+        raster_id_lock_map):
     """Stitch incoming country rasters into global raster.
 
     Parameters:
@@ -691,6 +700,8 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
             `raster_id_to_global_stitch_path_map[(raster_id, nodata_flag)]`.
         raster_id_to_global_stitch_path_map (dict): dictionary indexed by
             raster id and nodata flag tuple to the global raster.
+        raster_id_lock_map (dict): mapping raster ids to multiprocessing Locks
+            so we don't edit more than one raster at a time.
 
     """
     try:
@@ -714,40 +725,43 @@ def stitch_worker(stitch_queue, raster_id_to_global_stitch_path_map):
             local_gt = local_tile_info['geotransform']
             global_i, global_j = gdal.ApplyGeoTransform(
                 global_inv_gt, local_gt[0], local_gt[3])
-
             local_tile_raster = gdal.OpenEx(
                 local_tile_raster_path, gdal.OF_RASTER)
             local_array = local_tile_raster.ReadAsArray()
             local_tile_raster = None
-            global_raster = gdal.OpenEx(
-                global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
-            LOGGER.debug('stitching this %s into this %s', global_stitch_raster_path, payload)
-            global_band = global_raster.GetRasterBand(1)
-            global_array = global_band.ReadAsArray(
-                xoff=global_i, yoff=global_j,
-                win_xsize=local_array.shape[1], win_ysize=local_array.shape[0])
             valid_mask = ~numpy.isclose(
                 local_array, local_tile_info['nodata'][0])
             if valid_mask.size == 0:
                 continue
-            global_array[valid_mask] = local_array[valid_mask]
-            win_ysize_write, win_xsize_write = global_array.shape
-            if win_ysize_write == 0 or win_xsize_write == 0:
+            with raster_id_lock_map[raster_id]:
+                global_raster = gdal.OpenEx(
+                    global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
                 LOGGER.debug(
-                    'got zeros on sizes: %d %d %s',
-                    win_ysize_write, win_xsize_write, payload)
-                continue
-            if global_i + win_xsize_write >= global_band.XSize:
-                win_xsize_write = int(global_band.XSize - global_i)
-            if global_j + win_ysize_write >= global_band.YSize:
-                win_ysize_write = int(global_band.YSize - global_j)
+                    'stitching this %s into this %s',
+                    global_stitch_raster_path, payload)
+                global_band = global_raster.GetRasterBand(1)
+                global_array = global_band.ReadAsArray(
+                    xoff=global_i, yoff=global_j,
+                    win_xsize=local_array.shape[1],
+                    win_ysize=local_array.shape[0])
+                global_array[valid_mask] = local_array[valid_mask]
+                win_ysize_write, win_xsize_write = global_array.shape
+                if win_ysize_write == 0 or win_xsize_write == 0:
+                    LOGGER.debug(
+                        'got zeros on sizes: %d %d %s',
+                        win_ysize_write, win_xsize_write, payload)
+                    continue
+                if global_i + win_xsize_write >= global_band.XSize:
+                    win_xsize_write = int(global_band.XSize - global_i)
+                if global_j + win_ysize_write >= global_band.YSize:
+                    win_ysize_write = int(global_band.YSize - global_j)
 
-            global_band.WriteArray(
-                global_array[0:win_ysize_write, 0:win_xsize_write],
-                xoff=global_i, yoff=global_j)
-            global_band.FlushCache()
-            global_band = None
-            global_raster = None
+                global_band.WriteArray(
+                    global_array[0:win_ysize_write, 0:win_xsize_write],
+                    xoff=global_i, yoff=global_j)
+                global_band.FlushCache()
+                global_band = None
+                global_raster = None
     except Exception:
         LOGGER.exception('exception on stitch worker')
 
