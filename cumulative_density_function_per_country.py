@@ -1,4 +1,7 @@
-"""Count non-zero non-nodata pixels in raster, get percentile values, and sum above each percentile to build the CDF."""
+"""
+Count non-zero non-nodata pixels in raster, get percentile values, and sum
+above each percentile to build the CDF.
+"""
 import ecoshard
 import itertools
 import logging
@@ -21,7 +24,6 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
-BUCKET_PATTERN = 'gs://shared-with-users/realized_services/*.tif'
 WORKSPACE_DIR = 'cdf_by_country'
 ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshard')
 CHURN_DIR = os.path.join(WORKSPACE_DIR, 'churn')
@@ -38,6 +40,7 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logging.getLogger('taskgraph').setLevel(logging.INFO)
 
+BUCKET_PATTERN = 'gs://shared-with-users/realized_services/*.tif'
 WORLD_BORDERS_URL = (
     'https://storage.googleapis.com/critical-natural-capital-ecoshards/'
     'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg')
@@ -47,7 +50,6 @@ EEZ_URL = (
     'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg')
 
 COUNTRY_ID_FIELDNAME = 'iso3'
-
 GLOBAL_COUNTRY_NAME = '*GLOBAL'
 
 PERCENTILE_LIST = list(range(0, 101, 1))
@@ -98,23 +100,24 @@ def create_status_database(
     connection = sqlite3.connect(database_path)
     connection.executescript(create_database_sql)
 
+    # insert global
+    connection.executemany(
+        'INSERT INTO job_status(raster_id, country_id, is_country) '
+        'VALUES (?, ?, 0)',
+        [(x, GLOBAL_COUNTRY_NAME) for x in raster_id_list])
     # insert countries
     connection.executemany(
         'INSERT INTO job_status(raster_id, country_id, is_country) '
         'VALUES (?, ?, 1)',
         itertools.product(raster_id_list, country_id_list))
-    # insert global
-    connection.executemany(
-        'INSERT INTO job_status(raster_id, country_id, is_country) VALUES (?, ?, 0)',
-        [(x, GLOBAL_COUNTRY_NAME) for x in raster_id_list])
     connection.commit()
     connection.close()
 
 
 @retrying.retry()
 def process_country_worker(
-        feature_lock, work_queue, world_border_vector_path, raster_id_to_path_map,
-        stitch_queue):
+        feature_lock, work_queue, world_border_vector_path,
+        raster_id_to_path_map, stitch_queue):
     """Process work queue.
 
     Parameters:
@@ -220,7 +223,8 @@ def process_country_worker(
 
             cdf_nodata0_task = task_graph.add_task(
                 func=calculate_cdf,
-                args=(country_nodata0_raster_path, percentile_nodata0_task.get()),
+                args=(country_nodata0_raster_path,
+                      percentile_nodata0_task.get()),
                 task_name='calculate cdf for %s' % country_nodata0_raster_path)
 
             _execute_sqlite(
@@ -249,10 +253,12 @@ def process_country_worker(
                     WORKSPACE_DIR, '%s_bin_raster.tif' % raster_id)
             pygeoprocessing.raster_calculator(
                 [(country_raster_path, 1), (country_nodata, 'raw'),
-                 (percentile_task.get(), 'raw'), (PERCENTILE_RECLASS_LIST, 'raw'),
-                 (BIN_NODATA, 'raw')], bin_raster_op, bin_raster_path,
+                 (percentile_task.get(), 'raw'),
+                 (PERCENTILE_RECLASS_LIST, 'raw'), (BIN_NODATA, 'raw')],
+                bin_raster_op, bin_raster_path,
                 gdal.GDT_Float32, BIN_NODATA)
-            LOGGER.debug('stitch this: %s', str((bin_raster_path, raster_id, '')))
+            LOGGER.debug(
+                'stitch this: %s', str((bin_raster_path, raster_id, '')))
             stitch_queue.put((bin_raster_path, raster_id, ''))
 
             if country_id:
@@ -263,7 +269,7 @@ def process_country_worker(
                 bin_nodata0_raster_path = os.path.join(
                     WORKSPACE_DIR, '%s_bin_nodata0_raster.tif' % raster_id)
 
-            # the first argument is supposed to be `country_raster_path` because
+            # the first argument is supposed to be `country_raster_path` since
             # we want to leave the 0s in there even though the percentiles are
             # different
             pygeoprocessing.raster_calculator(
@@ -272,7 +278,8 @@ def process_country_worker(
                  (PERCENTILE_RECLASS_LIST, 'raw'),
                  (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
                 gdal.GDT_Float32, BIN_NODATA)
-            LOGGER.debug('stitch this: %s', str((bin_raster_path, raster_id, 'nodata0')))
+            LOGGER.debug('stitch this: %s', str(
+                (bin_raster_path, raster_id, 'nodata0')))
             stitch_queue.put((bin_raster_path, raster_id, 'nodata0'))
 
     except Exception:
@@ -323,7 +330,8 @@ def extract_feature_checked(
             geom = feature.GetGeometryRef()
             base_srs = base_layer.GetSpatialRef()
 
-            base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
+            base_raster_info = pygeoprocessing.get_raster_info(
+                base_raster_path)
 
             base_layer = None
             base_vector = None
@@ -518,9 +526,12 @@ def main():
     task_graph.join()
 
     work_queue = multiprocessing.Queue()
-    # TODO: iterate by country size from largest to smallest, including no country first
     for raster_id, country_id in result:
         if country_id in SKIP_THESE_COUNTRIES:
+            continue
+        # TODO: this is temporarily set to global only just so we can get
+        # values
+        if country_id != GLOBAL_COUNTRY_NAME:
             continue
         work_queue.put((raster_id, country_id))
 
@@ -544,6 +555,7 @@ def main():
         for raster_id in raster_id_to_global_stitch_path_map
     }
 
+    stitch_worker_list = []
     for worker_id in range(max(1, multiprocessing.cpu_count())):
         stitch_worker_process = multiprocessing.Process(
             target=stitch_worker,
@@ -551,16 +563,16 @@ def main():
                   raster_id_lock_map),
             name='stitch worker %s' % worker_id)
         stitch_worker_process.start()
+        stitch_worker_list.append(stitch_worker_process)
 
     work_queue.put('STOP')
     LOGGER.debug('wait for workers to stop')
     for process in worker_list:
         process.join()
+
     LOGGER.debug('workers stopped')
     stitch_queue.put('STOP')
-    LOGGER.debug('wait for stitch to stop')
-    stitch_worker_process.join()
-    LOGGER.debug('stitch stopped')
+
     LOGGER.debug('building histogram/cdf')
     for raster_id, raster_path in raster_id_to_path_map.items():
         LOGGER.debug('building csv for %s %s', raster_id, raster_path)
@@ -585,14 +597,6 @@ def main():
             if None not in (
                 country_id, percentile_list, percentile0_list, cdf, cdfnodata0)
         }
-        global_available = False
-        if None in percentile_map:
-            global_available = True
-            world_percentile_list = percentile_map[None][0]
-            world_nodata0_percentile_list = percentile_map[None][1]
-            cdf = percentile_map[None][2]
-            cdfnodata0 = percentile_map[None][3]
-            del percentile_map[None]
 
         csv_percentile_path = os.path.join(
             WORKSPACE_DIR, '%s_percentile.csv' % raster_id)
@@ -610,10 +614,6 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            if global_available:
-                csv_cdf_file.write(
-                    '\nworld,' +
-                    ','.join(reversed([str(x) for x in cdf])))
             for country_id in sorted(percentile_map):
                 csv_cdf_file.write(
                     '\n%s,' % country_id +
@@ -626,10 +626,6 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            if global_available:
-                csv_cdf_nodata0_file.write(
-                    '\nworld,' +
-                    ','.join(reversed([str(x) for x in cdfnodata0])))
             for country_id in sorted(percentile_map):
                 csv_cdf_nodata0_file.write(
                     '\n%s,' % country_id +
@@ -642,10 +638,6 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            if global_available:
-                csv_percentile_file.write(
-                    '\nworld,' +
-                    ','.join([str(x) for x in world_percentile_list]))
             for country_id in sorted(percentile_map):
                 csv_percentile_file.write(
                     '\n%s,' % country_id +
@@ -658,19 +650,20 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            if global_available:
-                csv_nodata0_percentile_file.write(
-                    '\nworld,' +
-                    ','.join([str(x) for x in world_nodata0_percentile_list]))
             for country_id in sorted(percentile_map):
                 csv_nodata0_percentile_file.write(
                     '\n%s,' % country_id +
                     ','.join([str(x) for x in percentile_map[country_id][1]]))
+
+    LOGGER.debug('wait for stitch to stop')
+    for stitch_worker_process in stitch_worker_list:
+        stitch_worker_process.join()
+    LOGGER.debug('stitch stopped')
     LOGGER.info('ALL DONE!')
 
 
 def calculate_cdf(raster_path, percentile_list):
-    """Calculate the CDF and threshold limit of a raster given its percentile list."""
+    """Calculate the CDF given its percentile list."""
     cdf_array = [0.0] * len(percentile_list)
     nodata = pygeoprocessing.get_raster_info(
         raster_path)['nodata'][0]
@@ -682,7 +675,6 @@ def calculate_cdf(raster_path, percentile_list):
         for index, percentile_value in enumerate(percentile_list):
             cdf_array[index] += numpy.sum(data_block[
                 nodata_mask & (data_block >= percentile_value)])
-
     return cdf_array
 
 
