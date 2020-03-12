@@ -533,6 +533,7 @@ def main():
         # values
         if country_id != GLOBAL_COUNTRY_NAME:
             continue
+        LOGGER.debug('putting %s %s to work', raster_id, country_id)
         work_queue.put((raster_id, country_id))
 
     work_queue.put('STOP')
@@ -565,7 +566,6 @@ def main():
         stitch_worker_process.start()
         stitch_worker_list.append(stitch_worker_process)
 
-    work_queue.put('STOP')
     LOGGER.debug('wait for workers to stop')
     for process in worker_list:
         process.join()
