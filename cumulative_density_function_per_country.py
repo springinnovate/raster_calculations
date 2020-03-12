@@ -20,7 +20,6 @@ from osgeo import gdal
 from osgeo import osr
 from osgeo import ogr
 import retrying
-from taskgraph.Task import _execute_sqlite
 import taskgraph
 
 gdal.SetCacheMax(2**30)
@@ -401,14 +400,13 @@ def copy_from_gs(gs_uri, target_path):
         'gsutil cp %s %s' % (gs_uri, target_path), shell=True, check=True)
 
 
-def get_value_list(vector_path, fieldname_id_tuple):
+def get_value_list(vector_path, fieldname_id):
     """Returns a list of values of each features fieldname.
 
     Parameters:
         vector_path (str): path to vector that has fieldnames defined by the
             `fieldname_id_tuple`.
-        fieldname_id_tuple (tuple): tuple of fieldnames that are used to
-            concatenate unique values per feature.
+        fieldname_id (tuple): fieldname of value to retrieve.
 
     Returns:
         a list containing strings of the form '%s_%s_..._%s' for the number of
@@ -416,11 +414,10 @@ def get_value_list(vector_path, fieldname_id_tuple):
         in the vector in sorted order.
 
     """
+    LOGGER.debug('getting field ')
     vector = gdal.OpenEx(vector_path, gdal.OF_VECTOR)
     layer = vector.GetLayer()
-    value_list = set([
-        '_'.join([str(feature.GetField(x)) for x in fieldname_id_tuple])
-        for feature in layer])
+    value_list = set([feature.GetField(fieldname_id) for feature in layer])
     layer = None
     vector = None
     return list(sorted(value_list))
@@ -506,7 +503,7 @@ def main():
                 (raster_id, aggregate_vector_id, feature_id)
                 for raster_id, feature_id in
                 itertools.product(raster_id_list, feature_id_list)],
-            mode='modify')
+            execute='many', mode='modify')
 
         raster_id_to_path_map = {}
         LOGGER.debug('copy gs files')
@@ -810,6 +807,75 @@ def new_raster_from_base(
     pygeoprocessing.new_raster_from_base(
         base_raster, target_raster_path,
         target_datatype, [target_nodata])
+
+
+@retrying.retry(wait_exponential_multiplier=1000, wait_exponential_max=5000)
+def _execute_sqlite(
+        sqlite_command, database_path, argument_list=None,
+        mode='read_only', execute='execute', fetch=None):
+    """Execute SQLite command and attempt retries on a failure.
+
+    Parameters:
+        sqlite_command (str): a well formatted SQLite command.
+        database_path (str): path to the SQLite database to operate on.
+        argument_list (list): `execute == 'execute` then this list is passed to
+            the internal sqlite3 `execute` call.
+        mode (str): must be either 'read_only' or 'modify'.
+        execute (str): must be either 'execute', 'many', or 'script'.
+        fetch (str): if not `None` can be either 'all' or 'one'.
+            If not None the result of a fetch will be returned by this
+            function.
+
+    Returns:
+        result of fetch if `fetch` is not None.
+
+    """
+    cursor = None
+    connection = None
+    try:
+        if mode == 'read_only':
+            ro_uri = r'%s?mode=ro' % pathlib.Path(
+                os.path.abspath(database_path)).as_uri()
+            LOGGER.debug(
+                '%s exists: %s', ro_uri, os.path.exists(os.path.abspath(
+                    database_path)))
+            connection = sqlite3.connect(ro_uri, uri=True)
+        elif mode == 'modify':
+            connection = sqlite3.connect(database_path)
+        else:
+            raise ValueError('Unknown mode: %s' % mode)
+
+        if execute == 'execute':
+            cursor = connection.execute(sqlite_command, argument_list)
+        elif execute == 'many':
+            cursor = connection.executemany(sqlite_command, argument_list)
+        elif execute == 'script':
+            cursor = connection.executescript(sqlite_command)
+        else:
+            raise ValueError('Unknown execute mode: %s' % execute)
+
+        result = None
+        payload = None
+        if fetch == 'all':
+            payload = (cursor.fetchall())
+        elif fetch == 'one':
+            payload = (cursor.fetchone())
+        elif fetch is not None:
+            raise ValueError('Unknown fetch mode: %s' % fetch)
+        if payload is not None:
+            result = list(payload)
+        cursor.close()
+        connection.commit()
+        connection.close()
+        return result
+    except Exception:
+        LOGGER.exception('Exception on _execute_sqlite: %s', sqlite_command)
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.commit()
+            connection.close()
+        raise
 
 
 if __name__ == '__main__':
