@@ -91,13 +91,7 @@ def create_status_database(
             percentile_list BLOB,
             percentile0_list BLOB,
             cdf BLOB,
-            cdfnodata0 BLOB,
-            path_to_nodata0_raster
-            path_to_percentile_raster TEXT,
-            path_to_percentile0_raster TEXT,
-            path_to_histogram_raster TEXT,
-            path_to_histogram0_raster TEXT,
-            path_to_raster TEXT);
+            cdfnodata0 BLOB);
         """)
     if os.path.exists(database_path):
         os.remove(database_path)
