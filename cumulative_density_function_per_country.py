@@ -8,7 +8,6 @@ import os
 import pickle
 import sqlite3
 import subprocess
-import sys
 import time
 
 import numpy
@@ -48,6 +47,8 @@ EEZ_URL = (
     'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg')
 
 COUNTRY_ID_FIELDNAME = 'iso3'
+
+GLOBAL_COUNTRY_NAME = '*GLOBAL'
 
 PERCENTILE_LIST = list(range(0, 101, 1))
 PERCENTILE_RECLASS_LIST = [
@@ -110,10 +111,11 @@ def create_status_database(
         itertools.product(raster_id_list, country_id_list))
     # insert global
     connection.executemany(
-        'INSERT INTO job_status(raster_id, is_country) VALUES (?, 0)',
-        [(x,) for x in raster_id_list])
+        'INSERT INTO job_status(raster_id, country_id, is_country) VALUES (?, ?, 0)',
+        [(x, GLOBAL_COUNTRY_NAME) for x in raster_id_list])
     connection.commit()
     connection.close()
+
 
 @retrying.retry()
 def process_country_worker(
@@ -182,6 +184,7 @@ def process_country_worker(
                     continue
             else:
                 country_raster_path = raster_id_to_path_map[raster_id]
+                country_id = GLOBAL_COUNTRY_NAME
 
             working_sort_directory = os.path.join(worker_dir, 'percentile_reg')
             percentile_task = task_graph.add_task(
