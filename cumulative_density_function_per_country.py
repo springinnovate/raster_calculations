@@ -48,7 +48,7 @@ WORK_MAP = {
             'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'),
         'fieldname_id': 'iso3',
         'raster_gs_pattern':
-            'gs://shared-with-users/realized_services/*.tif'
+            'gs://shared-with-users/realized_services/terrestrial/*.tif'
     },
     'eez': {
         'vector_url':  (
