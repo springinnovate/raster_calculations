@@ -571,6 +571,9 @@ def main():
                         fieldname_id))
                 global_stitch_raster_path = os.path.join(
                     WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
+                LOGGER.debug(
+                    'make a global stitch raster: %s',
+                    global_stitch_raster_path)
                 raster_id_to_global_stitch_path_map[
                     (raster_id, aggregate_vector_id, nodata_id)] = (
                         global_stitch_raster_path)
