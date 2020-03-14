@@ -441,6 +441,7 @@ def gs_copy(gs_path, target_path):
     LOGGER.debug('about to gs copy %s to %s', gs_path, target_path)
     subprocess.run(
         'gsutil cp %s %s' % (gs_path, target_path), shell=True, check=True)
+    LOGGER.debug('finished gs copy %s to %s', gs_path, target_path)
 
 
 def main():
@@ -541,6 +542,7 @@ def main():
                 args=(gs_path, target_raster_path),
                 target_path_list=[target_raster_path],
                 task_name='gs copy %s' % gs_path)
+        LOGGER.debug('waiting for copy to finish')
         task_graph.join()
 
         raster_id_agg_vector_tuples = _execute_sqlite(
