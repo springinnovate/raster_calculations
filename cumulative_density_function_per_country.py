@@ -544,6 +544,7 @@ def main():
                 task_name='gs copy %s' % gs_path)
         LOGGER.debug('waiting for copy to finish')
         task_graph.join()
+        LOGGER.debug('gs copies are done')
 
         raster_id_agg_vector_tuples = _execute_sqlite(
             'SELECT raster_id, aggregate_vector_id, fieldname_id '
@@ -551,6 +552,10 @@ def main():
             'GROUP BY raster_id, aggregate_vector_id',
             WORK_DATABASE_PATH, execute='execute', argument_list=[],
             fetch='all')
+
+        LOGGER.debug(
+            'raster id agg vector tuples: %s', str(
+                raster_id_agg_vector_tuples))
 
         raster_id_to_global_stitch_path_map = {}
         # This loop sets up empty rasters for stitching, one per raster type
