@@ -8,10 +8,10 @@ import logging
 import logging.handlers
 import multiprocessing
 import os
+import pathlib
 import pickle
 import sqlite3
 import subprocess
-import sys
 import time
 
 import numpy
@@ -70,7 +70,7 @@ PERCENTILE_RECLASS_LIST = [
 BIN_NODATA = -1
 WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.db')
 
-SKIP_THESE_COUNTRIES = ['ATA']
+SKIP_THESE_FEATURE_IDS = ['ATA']
 
 
 def country_nodata0_op(base_array, nodata):
@@ -114,24 +114,24 @@ def create_status_database(database_path):
 
 
 @retrying.retry()
-def process_country_worker(
-        feature_lock, work_queue, world_border_vector_path,
+def feature_worker(
+        work_queue, aggregate_vector_id_to_path,
         raster_id_to_path_map, stitch_queue):
     """Process work queue.
 
     Parameters:
-        work_queue (queue): expect ('raster_id', 'country_id') tuples.
-            'country_id' can be None which means do the whole raster.
-            If None, shut down.
-        world_border_vector_path (str): path to a world border vector file
-            whose features can be indexed by `country_id`.
+        work_queue (queue): expect (raster_id, aggregate_vector_id, feature_id)
+            tuples. 'feature_id' can be GLOBAL_FEATURE_ID which means do the
+            whole raster. If 'STOP', shut down.
+        aggregate_vector_id_to_path (dict): a dictionary mapping aggregate
+            ids to vector paths for per-feature normalization.
         raster_id_to_path_map (dict): maps 'raster_id' to paths to rasters on
             disk.
         stitch_queue (queue): when a country tuple is complete push a
             (bin_path, raster_id, nodata0) tuple down it.
 
     """
-    LOGGER.debug('starting process_country_worker')
+    LOGGER.debug('starting feature_worker')
     task_graph = taskgraph.TaskGraph(CHURN_DIR, -1)
     try:
         while True:
@@ -140,70 +140,75 @@ def process_country_worker(
                 work_queue.put('STOP')
                 LOGGER.debug('stopping')
                 break
-            raster_id, country_id = payload
-            if raster_id not in raster_id_to_path_map:
-                continue
-            LOGGER.debug('got %s:%s', raster_id, country_id)
+            raster_id, aggregate_vector_id, feature_id = payload
+            LOGGER.debug(
+                'got %s:%s:%s', raster_id, aggregate_vector_id, feature_id)
             worker_dir = os.path.join(
-                COUNTRY_WORKSPACES, '%s_%s' % (raster_id, country_id))
+                COUNTRY_WORKSPACES, '%s_%s_%s' % (
+                    raster_id, aggregate_vector_id, feature_id))
             try:
                 os.makedirs(worker_dir)
             except OSError:
                 pass
 
-            if country_id != GLOBAL_ID:
-                country_vector_path = os.path.join(
-                    worker_dir, '%s.gpkg' % country_id)
-                LOGGER.debug('making country vector %s', country_vector_path)
+            if feature_id != GLOBAL_ID:
+                local_aggregate_vector_path = os.path.join(
+                    worker_dir, '%s_%s.gpkg' % (
+                        aggregate_vector_id, feature_id))
+                LOGGER.debug(
+                    'making aggregate vector %s', local_aggregate_vector_path)
                 base_raster_info = pygeoprocessing.get_raster_info(
-                    raster_id_to_path_map[raster_id])
-                country_raster_path = '%s.tif' % os.path.splitext(
-                    country_vector_path)[0]
+                    raster_id_to_path_map[(raster_id, aggregate_vector_id)])
+                feature_raster_path = '%s.tif' % os.path.splitext(
+                    local_aggregate_vector_path)[0]
 
                 extract_feature_checked_task = task_graph.add_task(
                     func=extract_feature_checked,
                     args=(
-                        world_border_vector_path, 'iso3', country_id,
-                        raster_id_to_path_map[raster_id],
-                        country_vector_path, country_raster_path),
+                        aggregate_vector_id_to_path[aggregate_vector_id],
+                        'iso3', feature_id, # TODO: what to do about 'iso3?'
+                        raster_id_to_path_map[
+                            (raster_id, aggregate_vector_id)],
+                        local_aggregate_vector_path, feature_raster_path),
                     ignore_path_list=[
-                        world_border_vector_path, country_vector_path],
-                    target_path_list=[country_raster_path],
-                    task_name='extract vector %s' % country_id)
+                        aggregate_vector_id_to_path[aggregate_vector_id],
+                        local_aggregate_vector_path],
+                    target_path_list=[feature_raster_path],
+                    task_name='extract vector %s' % feature_id)
 
                 if not extract_feature_checked_task.get():
                     with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
                             error_file:
                         error_file.write(
                             'extraction not work %s:%s' % (
-                                country_id, base_raster_info))
+                                feature_id, base_raster_info))
                     continue
             else:
-                country_raster_path = raster_id_to_path_map[raster_id]
-                country_id = GLOBAL_ID
+                feature_raster_path = raster_id_to_path_map[
+                    (raster_id, aggregate_vector_id)]
 
             working_sort_directory = os.path.join(worker_dir, 'percentile_reg')
             percentile_task = task_graph.add_task(
                 func=pygeoprocessing.raster_band_percentile,
                 args=(
-                    (country_raster_path, 1), working_sort_directory,
+                    (feature_raster_path, 1), working_sort_directory,
                     PERCENTILE_LIST),
                 task_name='percentile for %s' % working_sort_directory)
             LOGGER.debug('percentile_task: %s', percentile_task.get())
 
             country_nodata0_raster_path = '%s_nodata0.tif' % os.path.splitext(
-                country_raster_path)[0]
-            country_raster_info = pygeoprocessing.get_raster_info(
-                country_raster_path)
-            country_nodata = country_raster_info['nodata'][0]
+                feature_raster_path)[0]
+            feature_raster_info = pygeoprocessing.get_raster_info(
+                feature_raster_path)
+            country_nodata = feature_raster_info['nodata'][0]
             nodata0_raster_task = task_graph.add_task(
                 func=pygeoprocessing.raster_calculator,
                 args=(
-                    [(country_raster_path, 1), (country_nodata, 'raw')],
+                    [(feature_raster_path, 1), (country_nodata, 'raw')],
                     country_nodata0_op, country_nodata0_raster_path,
-                    country_raster_info['datatype'], country_nodata),
+                    feature_raster_info['datatype'], country_nodata),
                 target_path_list=[country_nodata0_raster_path],
-                task_name='set zero to nodata for %s' % country_raster_path)
+                task_name='set zero to nodata for %s' % feature_raster_path)
 
             working_sort_nodata0_directory = os.path.join(
                 worker_dir, 'percentile_nodata0')
@@ -217,8 +222,8 @@ def process_country_worker(
 
             cdf_task = task_graph.add_task(
                 func=calculate_cdf,
-                args=(country_raster_path, percentile_task.get()),
-                task_name='calculate cdf for %s' % country_raster_path)
+                args=(feature_raster_path, percentile_task.get()),
+                task_name='calculate cdf for %s' % feature_raster_path)
 
             cdf_nodata0_task = task_graph.add_task(
                 func=calculate_cdf,
@@ -232,7 +237,8 @@ def process_country_worker(
                     SET
                       percentile_list=?, percentile0_list=?,
                       cdf=?, cdfnodata0=?
-                    WHERE raster_id=? and country_id=?
+                    WHERE
+                        raster_id=? AND aggregate_vector_id=? AND feature_id=?
                 ''',
                 WORK_DATABASE_PATH, execute='execute', mode='modify',
                 argument_list=[
@@ -240,51 +246,55 @@ def process_country_worker(
                     pickle.dumps(percentile_nodata0_task.get()),
                     pickle.dumps(cdf_task.get()),
                     pickle.dumps(cdf_nodata0_task.get()),
-                    raster_id, country_id])
+                    raster_id, aggregate_vector_id, feature_id])
 
             LOGGER.debug(
                 'percentile_nodata0_task: %s', percentile_nodata0_task.get())
-            if country_id:
+            if feature_id != GLOBAL_ID:
                 bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
             else:
                 # it's global
                 bin_raster_path = os.path.join(
-                    WORKSPACE_DIR, '%s_bin_raster.tif' % raster_id)
+                    WORKSPACE_DIR, '%s_%s_%s_bin_raster.tif' % (
+                        raster_id, aggregate_vector_id, feature_id))
             pygeoprocessing.raster_calculator(
-                [(country_raster_path, 1), (country_nodata, 'raw'),
+                [(feature_raster_path, 1), (country_nodata, 'raw'),
                  (percentile_task.get(), 'raw'),
                  (PERCENTILE_RECLASS_LIST, 'raw'), (BIN_NODATA, 'raw')],
                 bin_raster_op, bin_raster_path,
                 gdal.GDT_Float32, BIN_NODATA)
-            LOGGER.debug(
-                'stitch this: %s', str((bin_raster_path, raster_id, '')))
-            stitch_queue.put((bin_raster_path, (raster_id, '')))
+            LOGGER.debug('stitch this: %s', str(
+                (bin_raster_path, aggregate_vector_id, raster_id, '')))
+            stitch_queue.put(
+                (bin_raster_path, (raster_id, aggregate_vector_id, '')))
 
-            if country_id:
+            if feature_id != GLOBAL_ID:
                 bin_nodata0_raster_path = os.path.join(
                     worker_dir, 'bin_nodata0_raster.tif')
             else:
                 # it's global
                 bin_nodata0_raster_path = os.path.join(
-                    WORKSPACE_DIR, '%s_bin_nodata0_raster.tif' % raster_id)
+                    WORKSPACE_DIR, '%s_%s_%s_bin_nodata0_raster.tif' % (
+                        raster_id, aggregate_vector_id, feature_id))
 
-            # the first argument is supposed to be `country_raster_path` since
+            # the first argument is supposed to be `feature_raster_path` since
             # we want to leave the 0s in there even though the percentiles are
             # different
             pygeoprocessing.raster_calculator(
-                [(country_raster_path, 1), (country_nodata, 'raw'),
+                [(feature_raster_path, 1), (country_nodata, 'raw'),
                  (percentile_nodata0_task.get(), 'raw'),
                  (PERCENTILE_RECLASS_LIST, 'raw'),
                  (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
                 gdal.GDT_Float32, BIN_NODATA)
             LOGGER.debug('stitch this: %s', str(
-                (bin_raster_path, raster_id, 'nodata0')))
-            stitch_queue.put((bin_raster_path, (raster_id, 'nodata0')))
+                (bin_raster_path, raster_id, aggregate_vector_id, 'nodata0')))
+            stitch_queue.put(
+                (bin_raster_path, (raster_id, aggregate_vector_id, 'nodata0')))
 
     except Exception:
         LOGGER.exception(
-            'exception on process_country_worker for %s %s' % (
-                raster_id, country_id))
+            'exception on feature_worker for %s %s %s' % (
+                raster_id, aggregate_vector_id, feature_id))
         raise
     finally:
         task_graph.close()
@@ -460,9 +470,12 @@ def main():
     LOGGER.debug('create work database')
     create_status_database_task.join()
 
+    aggregate_vector_id_to_path = {}
     for aggregate_vector_id, work_vector_dict in WORK_MAP.items():
         aggregate_vector_path = os.path.join(
             ECOSHARD_DIR, os.path.basename(work_vector_dict['vector_url']))
+        aggregate_vector_id_to_path[aggregate_vector_id] = \
+            aggregate_vector_path
         download_aggregate_vector_task = task_graph.add_task(
             func=ecoshard.download_url,
             args=(work_vector_dict['vector_url'], aggregate_vector_path),
@@ -502,7 +515,8 @@ def main():
             argument_list=[
                 (raster_id, aggregate_vector_id, feature_id)
                 for raster_id, feature_id in
-                itertools.product(raster_id_list, feature_id_list)],
+                itertools.product(
+                    raster_id_list, feature_id_list + [GLOBAL_ID])],
             execute='many', mode='modify')
 
         raster_id_to_path_map = {}
@@ -512,8 +526,10 @@ def main():
             LOGGER.debug('copy %s', gs_path)
             raster_id = os.path.basename(os.path.splitext(gs_path)[0])
             target_raster_path = os.path.join(
-                CHURN_DIR, os.path.basename(gs_path))
-            raster_id_to_path_map[raster_id] = target_raster_path
+                CHURN_DIR, '%s_%s' % (
+                    aggregate_vector_id, os.path.basename(gs_path)))
+            raster_id_to_path_map[
+                (raster_id, aggregate_vector_id)] = target_raster_path
             _ = task_graph.add_task(
                 func=gs_copy,
                 args=(gs_path, target_raster_path),
@@ -539,14 +555,16 @@ def main():
                     '%s%s_by_%s' % (raster_id, nodata_id, aggregate_vector_id))
                 global_stitch_raster_path = os.path.join(
                     WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
-                raster_id_to_global_stitch_path_map[(raster_id, nodata_id)] = (
-                    global_stitch_raster_path)
+                raster_id_to_global_stitch_path_map[
+                    (raster_id, aggregate_vector_id, nodata_id)] = (
+                        global_stitch_raster_path)
                 raster_info = pygeoprocessing.get_raster_info(
-                    raster_id_to_path_map[raster_id])
+                    raster_id_to_path_map[(raster_id, aggregate_vector_id)])
                 task_graph.add_task(
                     func=new_raster_from_base,
                     args=(
-                        raster_id_to_path_map[raster_id],
+                        raster_id_to_path_map[
+                            (raster_id, aggregate_vector_id)],
                         global_stitch_raster_id, WORKSPACE_DIR,
                         raster_info['datatype'], raster_info['nodata'][0]),
                     hash_target_files=False,
@@ -557,34 +575,32 @@ def main():
     task_graph.close()
     task_graph.join()
 
-    raster_id_agg_vector_tuples = _execute_sqlite(
-        'SELECT raster_id, aggregate_vector_id '
-        'FROM job_status '
-        'GROUP BY raster_id, aggregate_vector_id',
-        WORK_DATABASE_PATH, execute='execute', argument_list=[],
+    raster_vector_feature_tuples = _execute_sqlite(
+        '''
+        SELECT raster_id, aggregate_vector_id, feature_id
+        FROM job_status
+        ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
     work_queue = multiprocessing.Queue()
-    for raster_id, country_id in result:
-        if country_id in SKIP_THESE_COUNTRIES:
+    for raster_id, aggregate_vector_id, feature_id in \
+            raster_vector_feature_tuples:
+        if feature_id in SKIP_THESE_FEATURE_IDS:
             continue
-        # TODO: this is temporarily set to global only just so we can get
-        # values
-        if country_id != GLOBAL_ID:
-            continue
-        LOGGER.debug('putting %s %s to work', raster_id, country_id)
-        work_queue.put((raster_id, country_id))
+        LOGGER.debug(
+            'putting %s %s %s to work',
+            raster_id, aggregate_vector_id, feature_id)
+        work_queue.put((raster_id, aggregate_vector_id, feature_id))
 
     work_queue.put('STOP')
 
     stitch_queue = multiprocessing.Queue()
-    feature_lock = multiprocessing.Lock()
     worker_list = []
     for worker_id in range(max(1, multiprocessing.cpu_count())):
         country_worker_process = multiprocessing.Process(
-            target=process_country_worker,
+            target=feature_worker,
             args=(
-                feature_lock, work_queue, world_borders_vector_path,
+                work_queue, aggregate_vector_id_to_path,
                 raster_id_to_path_map, stitch_queue),
             name='%d' % worker_id)
         country_worker_process.start()
@@ -596,8 +612,7 @@ def main():
     }
 
     stitch_worker_list = []
-    # TODO: no workers for stitching! temporarily
-    for worker_id in []: #range(max(1, multiprocessing.cpu_count())):
+    for worker_id in range(multiprocessing.cpu_count()):
         stitch_worker_process = multiprocessing.Process(
             target=stitch_worker,
             args=(stitch_queue, raster_id_to_global_stitch_path_map,
@@ -720,20 +735,22 @@ def calculate_cdf(raster_path, percentile_list):
 
 def stitch_worker(
         stitch_queue, raster_id_to_global_stitch_path_map,
-        raster_id_lock_map):
+        raster_id_aggregate_id_lock_map):
     """Stitch incoming country rasters into global raster.
 
     Parameters:
         stitch_queue (queue): payloads come in as an alert that a sub raster
             is ready for stitching into the global raster. Payloads are of the
-            form `base_raster_path, raster_id, nodata_flag` where the
-            `raster_id` is indexed into `raster_id_to_global_stitch_path_map`
-            and the `nodata_flag` is indexed into
-            `raster_id_to_global_stitch_path_map[(raster_id, nodata_flag)]`.
+            form (bin_raster_path,(raster_id, aggregate_vector_id, nodataflag))
+            is indexed into
+            `raster_id_to_global_stitch_path_map[
+                (raster_id, aggregate_id, nodata_flag)]`.
         raster_id_to_global_stitch_path_map (dict): dictionary indexed by
-            raster id and nodata flag tuple to the global raster.
-        raster_id_lock_map (dict): mapping raster ids to multiprocessing Locks
-            so we don't edit more than one raster at a time.
+            raster id, aggregate id, and nodata flag tuple to the global
+            raster.
+        raster_id_aggregate_id_lock_map (dict): mapping raster ids to
+            multiprocessing Locks so we don't edit more than one raster at a
+            time.
 
     """
     try:
@@ -743,9 +760,9 @@ def stitch_worker(
                 LOGGER.info('stopping stitch_worker')
                 stitch_queue.put('STOP')
                 break
-            local_tile_raster_path, raster_nodata_id_tuple = payload
-            global_stitch_raster_path = \
-                raster_id_to_global_stitch_path_map[raster_nodata_id_tuple]
+            local_tile_raster_path, raster_aggregate_nodata_id_tuple = payload
+            global_stitch_raster_path = raster_id_to_global_stitch_path_map[
+                raster_aggregate_nodata_id_tuple]
 
             # get ul of tile and figure out where it goes in global
             local_tile_info = pygeoprocessing.get_raster_info(
@@ -765,7 +782,8 @@ def stitch_worker(
                 local_array, local_tile_info['nodata'][0])
             if valid_mask.size == 0:
                 continue
-            with raster_id_lock_map[raster_nodata_id_tuple]:
+            with raster_id_aggregate_id_lock_map[
+                    raster_aggregate_nodata_id_tuple]:
                 global_raster = gdal.OpenEx(
                     global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
                 LOGGER.debug(
