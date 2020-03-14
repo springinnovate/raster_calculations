@@ -854,9 +854,11 @@ def new_raster_from_base(
 
     """
     target_raster_path = os.path.join(target_dir, '%s.tif' % target_base_id)
+    LOGGER.debug('making new raster %s', target_raster_path)
     pygeoprocessing.new_raster_from_base(
         base_raster, target_raster_path,
         target_datatype, [target_nodata])
+    LOGGER.debug('done making new raster %s', target_raster_path)
 
 
 @retrying.retry(wait_exponential_multiplier=1000, wait_exponential_max=5000)
