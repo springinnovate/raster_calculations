@@ -521,29 +521,33 @@ def main():
                 task_name='gs copy %s' % gs_path)
         task_graph.join()
 
-        sys.exit(0)
-
-        result = _execute_sqlite(
-            'SELECT raster_id, country_id FROM job_status''',
+        raster_id_agg_vector_tuples = _execute_sqlite(
+            'SELECT raster_id, aggregate_vector_id '
+            'FROM job_status '
+            'GROUP BY raster_id, aggregate_vector_id',
             WORK_DATABASE_PATH, execute='execute', argument_list=[],
             fetch='all')
 
-        task_graph.join()
         raster_id_to_global_stitch_path_map = {}
-        for raster_id, raster_path in raster_id_to_path_map.items():
+        # This loop sets up empty rasters for stitching, one per raster type
+        # / aggregate id / regular/nodata
+        for raster_id, aggregate_vector_id in raster_id_agg_vector_tuples:
+            # this loop will first do a "global" run, then a
+            # per-feature id normalized one.
             for nodata_id in ['', 'nodata0']:
                 global_stitch_raster_id = (
-                    '%s%s_by_country' % (raster_id, nodata_id))
+                    '%s%s_by_%s' % (raster_id, nodata_id, aggregate_vector_id))
                 global_stitch_raster_path = os.path.join(
                     WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
                 raster_id_to_global_stitch_path_map[(raster_id, nodata_id)] = (
                     global_stitch_raster_path)
                 raster_info = pygeoprocessing.get_raster_info(
-                    raster_path)
+                    raster_id_to_path_map[raster_id])
                 task_graph.add_task(
                     func=new_raster_from_base,
                     args=(
-                        raster_path, global_stitch_raster_id, WORKSPACE_DIR,
+                        raster_id_to_path_map[raster_id],
+                        global_stitch_raster_id, WORKSPACE_DIR,
                         raster_info['datatype'], raster_info['nodata'][0]),
                     hash_target_files=False,
                     target_path_list=[global_stitch_raster_path],
@@ -552,6 +556,13 @@ def main():
 
     task_graph.close()
     task_graph.join()
+
+    raster_id_agg_vector_tuples = _execute_sqlite(
+        'SELECT raster_id, aggregate_vector_id '
+        'FROM job_status '
+        'GROUP BY raster_id, aggregate_vector_id',
+        WORK_DATABASE_PATH, execute='execute', argument_list=[],
+        fetch='all')
 
     work_queue = multiprocessing.Queue()
     for raster_id, country_id in result:
