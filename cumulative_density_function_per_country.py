@@ -99,6 +99,7 @@ def create_status_database(database_path):
         CREATE TABLE job_status (
             raster_id TEXT NOT NULL,
             aggregate_vector_id TEXT NOT NULL,
+            fieldname_id TEXT NOT NULL,
             feature_id TEXT NOT NULL,
             percentile_list BLOB,
             percentile0_list BLOB,
@@ -140,7 +141,7 @@ def feature_worker(
                 work_queue.put('STOP')
                 LOGGER.debug('stopping')
                 break
-            raster_id, aggregate_vector_id, feature_id = payload
+            raster_id, aggregate_vector_id, feature_id, fieldname_id = payload
             LOGGER.debug(
                 'got %s:%s:%s', raster_id, aggregate_vector_id, feature_id)
             worker_dir = os.path.join(
@@ -158,7 +159,8 @@ def feature_worker(
                 LOGGER.debug(
                     'making aggregate vector %s', local_aggregate_vector_path)
                 base_raster_info = pygeoprocessing.get_raster_info(
-                    raster_id_to_path_map[(raster_id, aggregate_vector_id)])
+                    raster_id_to_path_map[
+                        (raster_id, aggregate_vector_id, fieldname_id)])
                 feature_raster_path = '%s.tif' % os.path.splitext(
                     local_aggregate_vector_path)[0]
 
@@ -166,9 +168,9 @@ def feature_worker(
                     func=extract_feature_checked,
                     args=(
                         aggregate_vector_id_to_path[aggregate_vector_id],
-                        'iso3', feature_id, # TODO: what to do about 'iso3?'
+                        fieldname_id, feature_id,
                         raster_id_to_path_map[
-                            (raster_id, aggregate_vector_id)],
+                            (raster_id, aggregate_vector_id, fieldname_id)],
                         local_aggregate_vector_path, feature_raster_path),
                     ignore_path_list=[
                         aggregate_vector_id_to_path[aggregate_vector_id],
@@ -185,7 +187,7 @@ def feature_worker(
                     continue
             else:
                 feature_raster_path = raster_id_to_path_map[
-                    (raster_id, aggregate_vector_id)]
+                    (raster_id, aggregate_vector_id, fieldname_id)]
 
             working_sort_directory = os.path.join(worker_dir, 'percentile_reg')
             percentile_task = task_graph.add_task(
@@ -238,7 +240,8 @@ def feature_worker(
                       percentile_list=?, percentile0_list=?,
                       cdf=?, cdfnodata0=?
                     WHERE
-                        raster_id=? AND aggregate_vector_id=? AND feature_id=?
+                        raster_id=? AND aggregate_vector_id=? AND
+                        feature_id=? AND fieldname_id=?
                 ''',
                 WORK_DATABASE_PATH, execute='execute', mode='modify',
                 argument_list=[
@@ -246,7 +249,7 @@ def feature_worker(
                     pickle.dumps(percentile_nodata0_task.get()),
                     pickle.dumps(cdf_task.get()),
                     pickle.dumps(cdf_nodata0_task.get()),
-                    raster_id, aggregate_vector_id, feature_id])
+                    raster_id, aggregate_vector_id, feature_id, fieldname_id])
 
             LOGGER.debug(
                 'percentile_nodata0_task: %s', percentile_nodata0_task.get())
@@ -509,11 +512,12 @@ def main():
 
         # create any missing entries in the database if they don't exist:
         _execute_sqlite(
-            'INSERT OR IGNORE INTO '
-            'job_status(raster_id, aggregate_vector_id, feature_id) '
-            'VALUES (?, ?, ?)', WORK_DATABASE_PATH,
+            'INSERT OR IGNORE INTO job_status('
+            '   raster_id, aggregate_vector_id, fieldname_id, feature_id) '
+            'VALUES (?, ?, ?, ?)', WORK_DATABASE_PATH,
             argument_list=[
-                (raster_id, aggregate_vector_id, feature_id)
+                (raster_id, aggregate_vector_id,
+                 work_vector_dict['fieldname_id'], feature_id)
                 for raster_id, feature_id in
                 itertools.product(
                     raster_id_list, feature_id_list + [GLOBAL_ID])],
@@ -529,7 +533,9 @@ def main():
                 CHURN_DIR, '%s_%s' % (
                     aggregate_vector_id, os.path.basename(gs_path)))
             raster_id_to_path_map[
-                (raster_id, aggregate_vector_id)] = target_raster_path
+                    (raster_id, aggregate_vector_id,
+                     work_vector_dict['fieldname_id'])] = \
+                target_raster_path
             _ = task_graph.add_task(
                 func=gs_copy,
                 args=(gs_path, target_raster_path),
@@ -538,7 +544,7 @@ def main():
         task_graph.join()
 
         raster_id_agg_vector_tuples = _execute_sqlite(
-            'SELECT raster_id, aggregate_vector_id '
+            'SELECT raster_id, aggregate_vector_id, fieldname_id '
             'FROM job_status '
             'GROUP BY raster_id, aggregate_vector_id',
             WORK_DATABASE_PATH, execute='execute', argument_list=[],
@@ -547,24 +553,28 @@ def main():
         raster_id_to_global_stitch_path_map = {}
         # This loop sets up empty rasters for stitching, one per raster type
         # / aggregate id / regular/nodata
-        for raster_id, aggregate_vector_id in raster_id_agg_vector_tuples:
+        for raster_id, aggregate_vector_id, fieldname_id in \
+                raster_id_agg_vector_tuples:
             # this loop will first do a "global" run, then a
             # per-feature id normalized one.
             for nodata_id in ['', 'nodata0']:
                 global_stitch_raster_id = (
-                    '%s%s_by_%s' % (raster_id, nodata_id, aggregate_vector_id))
+                    '%s%s_by_%s_%s' % (
+                        raster_id, nodata_id, aggregate_vector_id,
+                        fieldname_id))
                 global_stitch_raster_path = os.path.join(
                     WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
                 raster_id_to_global_stitch_path_map[
                     (raster_id, aggregate_vector_id, nodata_id)] = (
                         global_stitch_raster_path)
                 raster_info = pygeoprocessing.get_raster_info(
-                    raster_id_to_path_map[(raster_id, aggregate_vector_id)])
+                    raster_id_to_path_map[
+                        (raster_id, aggregate_vector_id, fieldname_id)])
                 task_graph.add_task(
                     func=new_raster_from_base,
                     args=(
                         raster_id_to_path_map[
-                            (raster_id, aggregate_vector_id)],
+                            (raster_id, aggregate_vector_id, fieldname_id)],
                         global_stitch_raster_id, WORKSPACE_DIR,
                         raster_info['datatype'], raster_info['nodata'][0]),
                     hash_target_files=False,
@@ -577,7 +587,7 @@ def main():
 
     raster_vector_feature_tuples = _execute_sqlite(
         '''
-        SELECT raster_id, aggregate_vector_id, feature_id
+        SELECT raster_id, aggregate_vector_id, fieldname_id, feature_id
         FROM job_status
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
@@ -590,7 +600,8 @@ def main():
         LOGGER.debug(
             'putting %s %s %s to work',
             raster_id, aggregate_vector_id, feature_id)
-        work_queue.put((raster_id, aggregate_vector_id, feature_id))
+        work_queue.put(
+            (raster_id, aggregate_vector_id, feature_id, fieldname_id))
 
     work_queue.put('STOP')
 
