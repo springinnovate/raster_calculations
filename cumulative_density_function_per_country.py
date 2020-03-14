@@ -577,9 +577,13 @@ def main():
                 raster_id_to_global_stitch_path_map[
                     (raster_id, aggregate_vector_id, nodata_id)] = (
                         global_stitch_raster_path)
+                LOGGER.debug(
+                    'get info from: %s', raster_id_to_path_map[
+                        (raster_id, aggregate_vector_id, fieldname_id)])
                 raster_info = pygeoprocessing.get_raster_info(
                     raster_id_to_path_map[
                         (raster_id, aggregate_vector_id, fieldname_id)])
+                LOGGER.debug('info: %s', raster_info)
                 task_graph.add_task(
                     func=new_raster_from_base,
                     args=(
