@@ -553,48 +553,48 @@ def main():
             WORK_DATABASE_PATH, execute='execute', argument_list=[],
             fetch='all')
 
-        LOGGER.debug(
-            'raster id agg vector tuples: %s', str(
-                raster_id_agg_vector_tuples))
+    LOGGER.debug(
+        'raster id agg vector tuples: %s', str(
+            raster_id_agg_vector_tuples))
 
-        raster_id_to_global_stitch_path_map = {}
-        # This loop sets up empty rasters for stitching, one per raster type
-        # / aggregate id / regular/nodata
-        for raster_id, aggregate_vector_id, fieldname_id in \
-                raster_id_agg_vector_tuples:
-            # this loop will first do a "global" run, then a
-            # per-feature id normalized one.
-            for nodata_id in ['', 'nodata0']:
-                global_stitch_raster_id = (
-                    '%s%s_by_%s_%s' % (
-                        raster_id, nodata_id, aggregate_vector_id,
-                        fieldname_id))
-                global_stitch_raster_path = os.path.join(
-                    WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
-                LOGGER.debug(
-                    'make a global stitch raster: %s',
+    raster_id_to_global_stitch_path_map = {}
+    # This loop sets up empty rasters for stitching, one per raster type
+    # / aggregate id / regular/nodata
+    for raster_id, aggregate_vector_id, fieldname_id in \
+            raster_id_agg_vector_tuples:
+        # this loop will first do a "global" run, then a
+        # per-feature id normalized one.
+        for nodata_id in ['', 'nodata0']:
+            global_stitch_raster_id = (
+                '%s%s_by_%s_%s' % (
+                    raster_id, nodata_id, aggregate_vector_id,
+                    fieldname_id))
+            global_stitch_raster_path = os.path.join(
+                WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
+            LOGGER.debug(
+                'make a global stitch raster: %s',
+                global_stitch_raster_path)
+            raster_id_to_global_stitch_path_map[
+                (raster_id, aggregate_vector_id, nodata_id)] = (
                     global_stitch_raster_path)
-                raster_id_to_global_stitch_path_map[
-                    (raster_id, aggregate_vector_id, nodata_id)] = (
-                        global_stitch_raster_path)
-                LOGGER.debug(
-                    'get info from: %s', raster_id_to_path_map[
-                        (raster_id, aggregate_vector_id, fieldname_id)])
-                raster_info = pygeoprocessing.get_raster_info(
+            LOGGER.debug(
+                'get info from: %s', raster_id_to_path_map[
+                    (raster_id, aggregate_vector_id, fieldname_id)])
+            raster_info = pygeoprocessing.get_raster_info(
+                raster_id_to_path_map[
+                    (raster_id, aggregate_vector_id, fieldname_id)])
+            LOGGER.debug('info: %s', raster_info)
+            task_graph.add_task(
+                func=new_raster_from_base,
+                args=(
                     raster_id_to_path_map[
-                        (raster_id, aggregate_vector_id, fieldname_id)])
-                LOGGER.debug('info: %s', raster_info)
-                task_graph.add_task(
-                    func=new_raster_from_base,
-                    args=(
-                        raster_id_to_path_map[
-                            (raster_id, aggregate_vector_id, fieldname_id)],
-                        global_stitch_raster_id, WORKSPACE_DIR,
-                        raster_info['datatype'], raster_info['nodata'][0]),
-                    hash_target_files=False,
-                    target_path_list=[global_stitch_raster_path],
-                    task_name='make empty stitch raster for %s%s' % (
-                        raster_id, nodata_id))
+                        (raster_id, aggregate_vector_id, fieldname_id)],
+                    global_stitch_raster_id, WORKSPACE_DIR,
+                    raster_info['datatype'], raster_info['nodata'][0]),
+                hash_target_files=False,
+                target_path_list=[global_stitch_raster_path],
+                task_name='make empty stitch raster for %s%s' % (
+                    raster_id, nodata_id))
 
     task_graph.close()
     task_graph.join()
