@@ -475,6 +475,7 @@ def main():
     create_status_database_task.join()
 
     aggregate_vector_id_to_path = {}
+    raster_id_to_path_map = {}
     for aggregate_vector_id, work_vector_dict in WORK_MAP.items():
         aggregate_vector_path = os.path.join(
             ECOSHARD_DIR, os.path.basename(work_vector_dict['vector_url']))
@@ -524,7 +525,6 @@ def main():
                     raster_id_list, feature_id_list + [GLOBAL_ID])],
             execute='many', mode='modify')
 
-        raster_id_to_path_map = {}
         LOGGER.debug('copy gs files')
 
         for gs_path in gs_path_list:
@@ -543,7 +543,6 @@ def main():
                 target_path_list=[target_raster_path],
                 task_name='gs copy %s' % gs_path)
         LOGGER.debug('waiting for copy to finish')
-        task_graph.join()
         LOGGER.debug('gs copies are done')
 
         raster_id_agg_vector_tuples = _execute_sqlite(
@@ -552,6 +551,7 @@ def main():
             'GROUP BY raster_id, aggregate_vector_id',
             WORK_DATABASE_PATH, execute='execute', argument_list=[],
             fetch='all')
+    task_graph.join()
 
     LOGGER.debug(
         'raster id agg vector tuples: %s', str(
