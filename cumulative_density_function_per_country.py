@@ -380,7 +380,7 @@ def extract_feature_checked(
                 })
             return True
         except Exception:
-            LOGGER.debug('exception when extracting %s %s %s' % (
+            LOGGER.exception('exception when extracting %s %s %s' % (
                 field_name, field_value, vector_path))
             attempt_number += 1
             if attempt_number == 20:
