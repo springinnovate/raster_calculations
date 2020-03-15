@@ -461,7 +461,7 @@ def main():
             pass
 
     task_graph = taskgraph.TaskGraph(
-            CHURN_DIR, multiprocessing.cpu_count(), 5.0)
+            CHURN_DIR, -1, 5.0)
     LOGGER.info('starting `main`')
 
     wgs84_srs = osr.SpatialReference()
@@ -623,7 +623,7 @@ def main():
 
     stitch_queue = multiprocessing.Queue()
     worker_list = []
-    for worker_id in range(max(1, multiprocessing.cpu_count())):
+    for worker_id in range(min(1, multiprocessing.cpu_count())):
         country_worker_process = multiprocessing.Process(
             target=feature_worker,
             args=(
@@ -639,7 +639,7 @@ def main():
     }
 
     stitch_worker_list = []
-    for worker_id in range(multiprocessing.cpu_count()):
+    for worker_id in range(min(1, multiprocessing.cpu_count())):
         stitch_worker_process = multiprocessing.Process(
             target=stitch_worker,
             args=(stitch_queue, raster_id_to_global_stitch_path_map,
