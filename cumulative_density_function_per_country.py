@@ -325,6 +325,8 @@ def extract_feature_checked(
 
     """
     attempt_number = 0
+    if not os.path.exists(base_raster_path):
+        raise ValueError("%s does not exist" % base_raster_path)
     while True:
         try:
             LOGGER.debug('opening vector: %s', vector_path)
@@ -378,7 +380,7 @@ def extract_feature_checked(
                 })
             return True
         except Exception:
-            LOGGER.debug('exception when extracting %s %s' % (
+            LOGGER.debug('exception when extracting %s %s %s' % (
                 field_name, field_value, vector_path))
             attempt_number += 1
             if attempt_number == 20:
