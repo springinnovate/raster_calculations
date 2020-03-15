@@ -28,7 +28,7 @@ WORKSPACE_DIR = 'cdf_by_country'
 ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshard')
 CHURN_DIR = os.path.join(WORKSPACE_DIR, 'churn')
 COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
-NCPUS = -1
+NCPUS = multiprocessing.cpu_count()
 
 logging.basicConfig(
         level=logging.DEBUG,
@@ -625,7 +625,7 @@ def main():
 
     stitch_queue = multiprocessing.Queue()
     worker_list = []
-    for worker_id in range(min(1, multiprocessing.cpu_count())):
+    for worker_id in range(NCPUS):
         country_worker_process = multiprocessing.Process(
             target=feature_worker,
             args=(
@@ -641,7 +641,7 @@ def main():
     }
 
     stitch_worker_list = []
-    for worker_id in range(min(1, multiprocessing.cpu_count())):
+    for worker_id in range(NCPUS):
         stitch_worker_process = multiprocessing.Process(
             target=stitch_worker,
             args=(stitch_queue, raster_id_to_global_stitch_path_map,
