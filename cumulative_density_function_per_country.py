@@ -23,6 +23,7 @@ import retrying
 import taskgraph
 
 gdal.SetCacheMax(2**30)
+gdal.UseExceptions()
 
 WORKSPACE_DIR = 'cdf_by_country'
 ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshard')
