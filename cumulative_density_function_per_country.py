@@ -816,7 +816,7 @@ def stitch_worker(
         payload = stitch_queue.get()
         if payload == 'STOP':
             LOGGER.info('stopping stitch_worker')
-            stitch_queue.task_complete()
+            stitch_queue.task_done()
             break
         local_tile_raster_path, raster_aggregate_nodata_id_tuple = payload
         global_stitch_raster_path = raster_id_to_global_stitch_path_map[
@@ -870,7 +870,7 @@ def stitch_worker(
             global_band.FlushCache()
             global_band = None
             global_raster = None
-        stitch_queue.task_complete()
+        stitch_queue.task_done()
 
 
 def new_raster_from_base(
