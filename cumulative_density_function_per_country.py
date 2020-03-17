@@ -636,7 +636,8 @@ def main():
     work_queue.put('STOP')
 
     stitch_queue = multiprocessing.Queue()
-    align_lock = multiprocessing.Lock()
+    m_manager = multiprocessing.Manager()
+    align_lock = m_manager.Lock()
     worker_list = []
     for worker_id in range(NCPUS):
         country_worker_process = multiprocessing.Process(
