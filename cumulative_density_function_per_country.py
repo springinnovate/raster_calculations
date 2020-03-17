@@ -660,7 +660,7 @@ def main():
         work_queue.put('STOP')  # a sentinal per process
 
     raster_id_lock_map = {
-        raster_id_nodata_id_tuple: multiprocessing.Lock()
+        raster_id_nodata_id_tuple: m_manager.Lock()
         for raster_id_nodata_id_tuple in raster_id_to_global_stitch_path_map
     }
 
