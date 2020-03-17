@@ -121,7 +121,6 @@ def create_status_database(database_path):
     connection.close()
 
 
-@retrying.retry()
 def feature_worker(
         work_queue, align_lock, aggregate_vector_id_to_path,
         raster_id_to_path_map, stitch_queue, worker_id):
@@ -320,6 +319,7 @@ def feature_worker(
         task_graph.join()
         shutil.rmtree(taskgraph_dir)
         LOGGER.debug('all done with worker %d', worker_id)
+        return
 
 
 def extract_feature_checked(
