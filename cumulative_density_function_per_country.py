@@ -51,15 +51,16 @@ WORK_MAP = {
         'raster_gs_pattern':
             'gs://shared-with-users/realized_services/terrestrial/*.tif'
     },
-    'eez': {
-        'vector_url':  (
-            'https://storage.googleapis.com/'
-            'critical-natural-capital-ecoshards/'
-            'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg'),
-        'fieldname_id': 'ISO_SOV1',
-        'raster_gs_pattern':
-            'gs://shared-with-users/realized_services/marine/*.tif'
-    }
+    # Becky wants me to skip the EEZ zones.
+    # 'eez': {
+    #     'vector_url':  (
+    #         'https://storage.googleapis.com/'
+    #         'critical-natural-capital-ecoshards/'
+    #         'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg'),
+    #     'fieldname_id': 'ISO_SOV1',
+    #     'raster_gs_pattern':
+    #         'gs://shared-with-users/realized_services/marine/*.tif'
+    # }
 }
 
 GLOBAL_ID = '_GLOBAL'
@@ -120,7 +121,7 @@ def create_status_database(database_path):
 
 @retrying.retry()
 def feature_worker(
-        work_queue, aggregate_vector_id_to_path,
+        work_queue, align_lock, aggregate_vector_id_to_path,
         raster_id_to_path_map, stitch_queue):
     """Process work queue.
 
@@ -128,6 +129,8 @@ def feature_worker(
         work_queue (queue): expect (raster_id, aggregate_vector_id, feature_id)
             tuples. 'feature_id' can be GLOBAL_FEATURE_ID which means do the
             whole raster. If 'STOP', shut down.
+        align_lock (multiprocessing.Lock): to ensure only one align per time
+            so GDAL doesn't get confused on lookup for coordinate systems.
         aggregate_vector_id_to_path (dict): a dictionary mapping aggregate
             ids to vector paths for per-feature normalization.
         raster_id_to_path_map (dict): maps 'raster_id' to paths to rasters on
@@ -171,6 +174,7 @@ def feature_worker(
                 extract_feature_checked_task = task_graph.add_task(
                     func=extract_feature_checked,
                     args=(
+                        align_lock,
                         aggregate_vector_id_to_path[aggregate_vector_id],
                         fieldname_id, feature_id,
                         raster_id_to_path_map[
@@ -309,13 +313,15 @@ def feature_worker(
 
 
 def extract_feature_checked(
-        vector_path, field_name, field_value, base_raster_path,
+        align_lock, vector_path, field_name, field_value, base_raster_path,
         target_vector_path, target_raster_path):
     """Extract single feature into separate vector and check for no error.
 
     Do not do a transform since it's all wgs84.
 
     Parameters:
+        align_lock (multiprocessing.Lock): lock to only allow one align at
+            a time.
         vector_path (str): base vector in WGS84 coordinates.
         field_name (str): field to search for
         field_value (str): field value to isolate
@@ -375,13 +381,14 @@ def extract_feature_checked(
             target_layer = None
             target_vector = None
 
-            pygeoprocessing.align_and_resize_raster_stack(
-                [base_raster_path], [target_raster_path], ['near'],
-                base_raster_info['pixel_size'], 'intersection',
-                base_vector_path_list=[target_vector_path],
-                vector_mask_options={
-                    'mask_vector_path': target_vector_path,
-                })
+            with align_lock:
+                pygeoprocessing.align_and_resize_raster_stack(
+                    [base_raster_path], [target_raster_path], ['near'],
+                    base_raster_info['pixel_size'], 'intersection',
+                    base_vector_path_list=[target_vector_path],
+                    vector_mask_options={
+                        'mask_vector_path': target_vector_path,
+                    })
             return True
         except Exception:
             LOGGER.exception('exception when extracting %s %s %s' % (
@@ -570,8 +577,6 @@ def main():
     # / aggregate id / regular/nodata
     for raster_id, aggregate_vector_id, fieldname_id in \
             raster_id_agg_vector_tuples:
-        if aggregate_vector_id == 'eez':
-            continue   # TODO: Becky wants me to skip this at 3/16/2020 11:28pm
         # this loop will first do a "global" run, then a
         # per-feature id normalized one.
         for nodata_id in ['', 'nodata0']:
@@ -631,12 +636,13 @@ def main():
     work_queue.put('STOP')
 
     stitch_queue = multiprocessing.Queue()
+    align_lock = multiprocessing.Lock()
     worker_list = []
     for worker_id in range(NCPUS):
         country_worker_process = multiprocessing.Process(
             target=feature_worker,
             args=(
-                work_queue, aggregate_vector_id_to_path,
+                work_queue, align_lock, aggregate_vector_id_to_path,
                 raster_id_to_path_map, stitch_queue),
             name='%d' % worker_id)
         country_worker_process.start()
