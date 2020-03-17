@@ -77,6 +77,11 @@ WORK_DATABASE_PATH = os.path.join(CHURN_DIR, 'work_status.db')
 SKIP_THESE_FEATURE_IDS = ['ATA']
 
 
+def error_callback(exception):
+    LOGGER.debug("got an exception:")
+    LOGGER.debug(exception)
+
+
 def country_nodata0_op(base_array, nodata):
     """Convert base_array 0s to nodata."""
     result = base_array.copy()
@@ -641,15 +646,15 @@ def main():
     m_manager = multiprocessing.Manager()
     align_lock = m_manager.Lock()
     worker_list = []
+
+    feature_worker_pool = multiprocessing.pool.Pool(NCPUS)
     for worker_id in range(NCPUS):
-        country_worker_process = multiprocessing.Process(
-            target=feature_worker,
+        country_worker_process = feature_worker_pool.apply_async(
+            func=feature_worker,
             args=(
                 work_queue, align_lock, aggregate_vector_id_to_path,
                 raster_id_to_path_map, stitch_queue, worker_id),
-            name='%d' % worker_id)
-        country_worker_process.daemon = True
-        country_worker_process.start()
+            error_callback=error_callback)
         worker_list.append(country_worker_process)
         work_queue.put('STOP')  # a sentinal per process
 
@@ -660,12 +665,13 @@ def main():
 
     # TODO:
     # stitch_worker_list = []
+    # stitch_worker_pool = multiprocessing.pool.Pool(NCPUS)
     # for worker_id in range(NCPUS):
-    #     stitch_worker_process = multiprocessing.Process(
-    #         target=stitch_worker,
+    #     stitch_worker_process = stitch_worker_pool.apply_async(
+    #         func=stitch_worker,
     #         args=(stitch_queue, raster_id_to_global_stitch_path_map,
     #               raster_id_lock_map),
-    #         name='stitch worker %s' % worker_id)
+    #         error_callback=error_callback)
     #     stitch_worker_process.daemon = True
     #     stitch_worker_process.start()
     #     stitch_worker_list.append(stitch_worker_process)
