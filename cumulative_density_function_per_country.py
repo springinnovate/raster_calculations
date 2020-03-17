@@ -141,14 +141,14 @@ def feature_worker(
             (bin_path, raster_id, nodata0) tuple down it.
 
     """
-    LOGGER.debug('starting feature_worker')
-    taskgraph_dir = os.path.join(CHURN_DIR, 'taskgraph_%d' % worker_id)
     try:
-        os.makedirs(taskgraph_dir)
-    except:
-        pass
-    task_graph = taskgraph.TaskGraph(taskgraph_dir, -1)
-    try:
+        LOGGER.debug('starting feature_worker')
+        taskgraph_dir = os.path.join(CHURN_DIR, 'taskgraph_%d' % worker_id)
+        try:
+            os.makedirs(taskgraph_dir)
+        except OSError:
+            pass
+        task_graph = taskgraph.TaskGraph(taskgraph_dir, -1)
         while True:
             payload = work_queue.get()
             if payload == 'STOP':
@@ -315,9 +315,11 @@ def feature_worker(
                 raster_id, aggregate_vector_id, feature_id))
         raise
     finally:
+        LOGGER.debug('about to close worker %d', worker_id)
         task_graph.close()
         task_graph.join()
         shutil.rmtree(taskgraph_dir)
+        LOGGER.debug('all done with worker %d', worker_id)
 
 
 def extract_feature_checked(
