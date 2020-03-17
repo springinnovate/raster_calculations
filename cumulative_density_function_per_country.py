@@ -824,9 +824,6 @@ def stitch_worker(
         global_stitch_raster_path = raster_id_to_global_stitch_path_map[
             raster_aggregate_nodata_id_tuple]
 
-        shutil.copyfile(global_stitch_raster_path, 'global.tif')
-        shutil.copyfile(local_tile_raster_path, 'local.tif')
-
         # get ul of tile and figure out where it goes in global
         local_tile_info = pygeoprocessing.get_raster_info(
             local_tile_raster_path)
@@ -876,6 +873,10 @@ def stitch_worker(
             global_band.FlushCache()
             global_band = None
             global_raster = None
+
+            shutil.copyfile(global_stitch_raster_path, 'global.tif')
+            shutil.copyfile(local_tile_raster_path, 'local.tif')
+
         stitch_queue.task_done()
 
 
