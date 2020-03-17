@@ -127,9 +127,10 @@ def feature_worker(
     """Process work queue.
 
     Parameters:
-        work_queue (queue): expect (raster_id, aggregate_vector_id, feature_id)
+        work_queue (JoinableQueue): expect
+            (raster_id, aggregate_vector_id, feature_id)
             tuples. 'feature_id' can be GLOBAL_FEATURE_ID which means do the
-            whole raster. If 'STOP', shut down.
+            whole raster. If 'STOP', shut down. Call .task_done() when complete
         align_lock (multiprocessing.Lock): to ensure only one align per time
             so GDAL doesn't get confused on lookup for coordinate systems.
         aggregate_vector_id_to_path (dict): a dictionary mapping aggregate
@@ -140,186 +141,179 @@ def feature_worker(
             (bin_path, raster_id, nodata0) tuple down it.
 
     """
+    LOGGER.debug('starting feature_worker')
+    taskgraph_dir = os.path.join(CHURN_DIR, 'taskgraph_%d' % worker_id)
     try:
-        LOGGER.debug('starting feature_worker')
-        taskgraph_dir = os.path.join(CHURN_DIR, 'taskgraph_%d' % worker_id)
+        os.makedirs(taskgraph_dir)
+    except OSError:
+        pass
+    task_graph = taskgraph.TaskGraph(taskgraph_dir, -1)
+    while True:
+        payload = work_queue.get()
+        if payload == 'STOP':
+            work_queue.put('STOP')
+            work_queue.task_done()
+            break
+        raster_id, aggregate_vector_id, feature_id, fieldname_id = payload
+        LOGGER.debug(
+            'got %s:%s:%s', raster_id, aggregate_vector_id, feature_id)
+        worker_dir = os.path.join(
+            COUNTRY_WORKSPACES, '%s_%s_%s' % (
+                raster_id, aggregate_vector_id, feature_id))
         try:
-            os.makedirs(taskgraph_dir)
+            os.makedirs(worker_dir)
         except OSError:
             pass
-        task_graph = taskgraph.TaskGraph(taskgraph_dir, -1)
-        while True:
-            payload = work_queue.get()
-            if payload == 'STOP':
-                work_queue.put('STOP')
-                LOGGER.debug('stopping')
-                break
-            raster_id, aggregate_vector_id, feature_id, fieldname_id = payload
-            LOGGER.debug(
-                'got %s:%s:%s', raster_id, aggregate_vector_id, feature_id)
-            worker_dir = os.path.join(
-                COUNTRY_WORKSPACES, '%s_%s_%s' % (
-                    raster_id, aggregate_vector_id, feature_id))
-            try:
-                os.makedirs(worker_dir)
-            except OSError:
-                pass
 
-            if feature_id != GLOBAL_ID:
-                local_aggregate_vector_path = os.path.join(
-                    worker_dir, '%s_%s.gpkg' % (
-                        aggregate_vector_id, feature_id))
-                LOGGER.debug(
-                    'making aggregate vector %s', local_aggregate_vector_path)
-                base_raster_info = pygeoprocessing.get_raster_info(
+        if feature_id != GLOBAL_ID:
+            local_aggregate_vector_path = os.path.join(
+                worker_dir, '%s_%s.gpkg' % (
+                    aggregate_vector_id, feature_id))
+            LOGGER.debug(
+                'making aggregate vector %s', local_aggregate_vector_path)
+            base_raster_info = pygeoprocessing.get_raster_info(
+                raster_id_to_path_map[
+                    (raster_id, aggregate_vector_id, fieldname_id)])
+            feature_raster_path = '%s.tif' % os.path.splitext(
+                local_aggregate_vector_path)[0]
+
+            extract_feature_checked_task = task_graph.add_task(
+                func=extract_feature_checked,
+                args=(
+                    align_lock,
+                    aggregate_vector_id_to_path[aggregate_vector_id],
+                    fieldname_id, feature_id,
                     raster_id_to_path_map[
-                        (raster_id, aggregate_vector_id, fieldname_id)])
-                feature_raster_path = '%s.tif' % os.path.splitext(
-                    local_aggregate_vector_path)[0]
+                        (raster_id, aggregate_vector_id, fieldname_id)],
+                    local_aggregate_vector_path, feature_raster_path),
+                ignore_path_list=[
+                    aggregate_vector_id_to_path[aggregate_vector_id],
+                    local_aggregate_vector_path],
+                target_path_list=[feature_raster_path],
+                task_name='extract vector %s' % feature_id)
 
-                extract_feature_checked_task = task_graph.add_task(
-                    func=extract_feature_checked,
-                    args=(
-                        align_lock,
-                        aggregate_vector_id_to_path[aggregate_vector_id],
-                        fieldname_id, feature_id,
-                        raster_id_to_path_map[
-                            (raster_id, aggregate_vector_id, fieldname_id)],
-                        local_aggregate_vector_path, feature_raster_path),
-                    ignore_path_list=[
-                        aggregate_vector_id_to_path[aggregate_vector_id],
-                        local_aggregate_vector_path],
-                    target_path_list=[feature_raster_path],
-                    task_name='extract vector %s' % feature_id)
+            if not extract_feature_checked_task.get():
+                with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
+                        error_file:
+                    error_file.write(
+                        'extraction not work %s:%s' % (
+                            feature_id, base_raster_info))
+                continue
+        else:
+            feature_raster_path = raster_id_to_path_map[
+                (raster_id, aggregate_vector_id, fieldname_id)]
 
-                if not extract_feature_checked_task.get():
-                    with open(os.path.join(worker_dir, 'error.txt'), 'w') as \
-                            error_file:
-                        error_file.write(
-                            'extraction not work %s:%s' % (
-                                feature_id, base_raster_info))
-                    continue
-            else:
-                feature_raster_path = raster_id_to_path_map[
-                    (raster_id, aggregate_vector_id, fieldname_id)]
+        working_sort_directory = os.path.join(worker_dir, 'percentile_reg')
+        percentile_task = task_graph.add_task(
+            func=pygeoprocessing.raster_band_percentile,
+            args=(
+                (feature_raster_path, 1), working_sort_directory,
+                PERCENTILE_LIST),
+            task_name='percentile for %s' % working_sort_directory)
+        LOGGER.debug('percentile_task: %s', percentile_task.get())
 
-            working_sort_directory = os.path.join(worker_dir, 'percentile_reg')
-            percentile_task = task_graph.add_task(
-                func=pygeoprocessing.raster_band_percentile,
-                args=(
-                    (feature_raster_path, 1), working_sort_directory,
-                    PERCENTILE_LIST),
-                task_name='percentile for %s' % working_sort_directory)
-            LOGGER.debug('percentile_task: %s', percentile_task.get())
+        country_nodata0_raster_path = '%s_nodata0.tif' % os.path.splitext(
+            feature_raster_path)[0]
+        feature_raster_info = pygeoprocessing.get_raster_info(
+            feature_raster_path)
+        country_nodata = feature_raster_info['nodata'][0]
+        nodata0_raster_task = task_graph.add_task(
+            func=pygeoprocessing.raster_calculator,
+            args=(
+                [(feature_raster_path, 1), (country_nodata, 'raw')],
+                country_nodata0_op, country_nodata0_raster_path,
+                feature_raster_info['datatype'], country_nodata),
+            target_path_list=[country_nodata0_raster_path],
+            task_name='set zero to nodata for %s' % feature_raster_path)
 
-            country_nodata0_raster_path = '%s_nodata0.tif' % os.path.splitext(
-                feature_raster_path)[0]
-            feature_raster_info = pygeoprocessing.get_raster_info(
-                feature_raster_path)
-            country_nodata = feature_raster_info['nodata'][0]
-            nodata0_raster_task = task_graph.add_task(
-                func=pygeoprocessing.raster_calculator,
-                args=(
-                    [(feature_raster_path, 1), (country_nodata, 'raw')],
-                    country_nodata0_op, country_nodata0_raster_path,
-                    feature_raster_info['datatype'], country_nodata),
-                target_path_list=[country_nodata0_raster_path],
-                task_name='set zero to nodata for %s' % feature_raster_path)
+        working_sort_nodata0_directory = os.path.join(
+            worker_dir, 'percentile_nodata0')
+        percentile_nodata0_task = task_graph.add_task(
+            func=pygeoprocessing.raster_band_percentile,
+            args=(
+                (country_nodata0_raster_path, 1),
+                working_sort_nodata0_directory, PERCENTILE_LIST),
+            dependent_task_list=[nodata0_raster_task],
+            task_name='percentile for %s' % working_sort_directory)
 
-            working_sort_nodata0_directory = os.path.join(
-                worker_dir, 'percentile_nodata0')
-            percentile_nodata0_task = task_graph.add_task(
-                func=pygeoprocessing.raster_band_percentile,
-                args=(
-                    (country_nodata0_raster_path, 1),
-                    working_sort_nodata0_directory, PERCENTILE_LIST),
-                dependent_task_list=[nodata0_raster_task],
-                task_name='percentile for %s' % working_sort_directory)
+        cdf_task = task_graph.add_task(
+            func=calculate_cdf,
+            args=(feature_raster_path, percentile_task.get()),
+            task_name='calculate cdf for %s' % feature_raster_path)
 
-            cdf_task = task_graph.add_task(
-                func=calculate_cdf,
-                args=(feature_raster_path, percentile_task.get()),
-                task_name='calculate cdf for %s' % feature_raster_path)
+        cdf_nodata0_task = task_graph.add_task(
+            func=calculate_cdf,
+            args=(country_nodata0_raster_path,
+                  percentile_nodata0_task.get()),
+            task_name='calculate cdf for %s' % country_nodata0_raster_path)
 
-            cdf_nodata0_task = task_graph.add_task(
-                func=calculate_cdf,
-                args=(country_nodata0_raster_path,
-                      percentile_nodata0_task.get()),
-                task_name='calculate cdf for %s' % country_nodata0_raster_path)
+        _execute_sqlite(
+            '''
+                UPDATE job_status
+                SET
+                  percentile_list=?, percentile0_list=?,
+                  cdf=?, cdfnodata0=?
+                WHERE
+                    raster_id=? AND aggregate_vector_id=? AND
+                    feature_id=? AND fieldname_id=?
+            ''',
+            WORK_DATABASE_PATH, execute='execute', mode='modify',
+            argument_list=[
+                pickle.dumps(percentile_task.get()),
+                pickle.dumps(percentile_nodata0_task.get()),
+                pickle.dumps(cdf_task.get()),
+                pickle.dumps(cdf_nodata0_task.get()),
+                raster_id, aggregate_vector_id, feature_id, fieldname_id])
 
-            _execute_sqlite(
-                '''
-                    UPDATE job_status
-                    SET
-                      percentile_list=?, percentile0_list=?,
-                      cdf=?, cdfnodata0=?
-                    WHERE
-                        raster_id=? AND aggregate_vector_id=? AND
-                        feature_id=? AND fieldname_id=?
-                ''',
-                WORK_DATABASE_PATH, execute='execute', mode='modify',
-                argument_list=[
-                    pickle.dumps(percentile_task.get()),
-                    pickle.dumps(percentile_nodata0_task.get()),
-                    pickle.dumps(cdf_task.get()),
-                    pickle.dumps(cdf_nodata0_task.get()),
-                    raster_id, aggregate_vector_id, feature_id, fieldname_id])
+        LOGGER.debug(
+            'percentile_nodata0_task: %s', percentile_nodata0_task.get())
+        if feature_id != GLOBAL_ID:
+            bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
+        else:
+            # it's global
+            bin_raster_path = os.path.join(
+                WORKSPACE_DIR, '%s_%s_%s_bin_raster.tif' % (
+                    raster_id, aggregate_vector_id, feature_id))
+        pygeoprocessing.raster_calculator(
+            [(feature_raster_path, 1), (country_nodata, 'raw'),
+             (percentile_task.get(), 'raw'),
+             (PERCENTILE_RECLASS_LIST, 'raw'), (BIN_NODATA, 'raw')],
+            bin_raster_op, bin_raster_path,
+            gdal.GDT_Float32, BIN_NODATA)
+        LOGGER.debug('stitch this: %s', str(
+            (bin_raster_path, aggregate_vector_id, raster_id, '')))
+        stitch_queue.put(
+            (bin_raster_path, (raster_id, aggregate_vector_id, '')))
 
-            LOGGER.debug(
-                'percentile_nodata0_task: %s', percentile_nodata0_task.get())
-            if feature_id != GLOBAL_ID:
-                bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
-            else:
-                # it's global
-                bin_raster_path = os.path.join(
-                    WORKSPACE_DIR, '%s_%s_%s_bin_raster.tif' % (
-                        raster_id, aggregate_vector_id, feature_id))
-            pygeoprocessing.raster_calculator(
-                [(feature_raster_path, 1), (country_nodata, 'raw'),
-                 (percentile_task.get(), 'raw'),
-                 (PERCENTILE_RECLASS_LIST, 'raw'), (BIN_NODATA, 'raw')],
-                bin_raster_op, bin_raster_path,
-                gdal.GDT_Float32, BIN_NODATA)
-            LOGGER.debug('stitch this: %s', str(
-                (bin_raster_path, aggregate_vector_id, raster_id, '')))
-            stitch_queue.put(
-                (bin_raster_path, (raster_id, aggregate_vector_id, '')))
+        if feature_id != GLOBAL_ID:
+            bin_nodata0_raster_path = os.path.join(
+                worker_dir, 'bin_nodata0_raster.tif')
+        else:
+            # it's global
+            bin_nodata0_raster_path = os.path.join(
+                WORKSPACE_DIR, '%s_%s_%s_bin_nodata0_raster.tif' % (
+                    raster_id, aggregate_vector_id, feature_id))
 
-            if feature_id != GLOBAL_ID:
-                bin_nodata0_raster_path = os.path.join(
-                    worker_dir, 'bin_nodata0_raster.tif')
-            else:
-                # it's global
-                bin_nodata0_raster_path = os.path.join(
-                    WORKSPACE_DIR, '%s_%s_%s_bin_nodata0_raster.tif' % (
-                        raster_id, aggregate_vector_id, feature_id))
+        # the first argument is supposed to be `feature_raster_path` since
+        # we want to leave the 0s in there even though the percentiles are
+        # different
+        pygeoprocessing.raster_calculator(
+            [(feature_raster_path, 1), (country_nodata, 'raw'),
+             (percentile_nodata0_task.get(), 'raw'),
+             (PERCENTILE_RECLASS_LIST, 'raw'),
+             (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
+            gdal.GDT_Float32, BIN_NODATA)
+        LOGGER.debug('stitch this: %s', str(
+            (bin_raster_path, raster_id, aggregate_vector_id, 'nodata0')))
+        stitch_queue.put(
+            (bin_raster_path, (raster_id, aggregate_vector_id, 'nodata0')))
+        work_queue.task_done()
 
-            # the first argument is supposed to be `feature_raster_path` since
-            # we want to leave the 0s in there even though the percentiles are
-            # different
-            pygeoprocessing.raster_calculator(
-                [(feature_raster_path, 1), (country_nodata, 'raw'),
-                 (percentile_nodata0_task.get(), 'raw'),
-                 (PERCENTILE_RECLASS_LIST, 'raw'),
-                 (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
-                gdal.GDT_Float32, BIN_NODATA)
-            LOGGER.debug('stitch this: %s', str(
-                (bin_raster_path, raster_id, aggregate_vector_id, 'nodata0')))
-            stitch_queue.put(
-                (bin_raster_path, (raster_id, aggregate_vector_id, 'nodata0')))
-
-    except Exception:
-        LOGGER.exception(
-            'exception on feature_worker for %s %s %s' % (
-                raster_id, aggregate_vector_id, feature_id))
-        raise
-    finally:
-        LOGGER.debug('about to close worker %d', worker_id)
-        task_graph.close()
-        task_graph.join()
-        shutil.rmtree(taskgraph_dir)
-        LOGGER.debug('all done with worker %d', worker_id)
-        return
+    LOGGER.debug('about to close worker %d', worker_id)
+    task_graph.close()
+    task_graph.join()
+    shutil.rmtree(taskgraph_dir)
+    LOGGER.debug('all done with worker %d', worker_id)
 
 
 def extract_feature_checked(
@@ -633,7 +627,7 @@ def main():
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
-    work_queue = multiprocessing.Queue()
+    work_queue = multiprocessing.JoinableQueue()
     for raster_id, aggregate_vector_id, fieldname_id, feature_id in \
             raster_vector_feature_tuples:
         if feature_id in SKIP_THESE_FEATURE_IDS:
@@ -677,6 +671,7 @@ def main():
     #     stitch_worker_list.append(stitch_worker_process)
 
     LOGGER.debug('wait for workers to stop in tihs list: %s', str(worker_list))
+    work_queue.join()
     while worker_list:
         process = worker_list.pop(0)
         LOGGER.debug('joining worker %s', process.name)
