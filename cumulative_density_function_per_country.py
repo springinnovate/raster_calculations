@@ -674,7 +674,8 @@ def main():
     stitch_queue.put('STOP')
 
     LOGGER.debug('building histogram/cdf')
-    for raster_id, raster_path in raster_id_to_path_map.items():
+    for (raster_id, _, _), raster_path in raster_id_to_path_map.items():
+
         LOGGER.debug('building csv for %s %s', raster_id, raster_path)
         result = _execute_sqlite(
             '''
