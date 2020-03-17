@@ -1,4 +1,6 @@
 # Docker image spring/computational-env:5
+# docker build Docker -f Docker/Dockerfile -t spring/computational-env:5 && rm -f log.txt; git pull && docker run -d --rm -it -v `pwd`:/var/workspace therealspring/computational-env:5 cumulative_density_function_per_country.py; touch log.txt; tail -f log.txt
+
 FROM conda/miniconda3
 USER root
 RUN apt-get update \
