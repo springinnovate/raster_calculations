@@ -151,7 +151,6 @@ def feature_worker(
     while True:
         payload = work_queue.get()
         if payload == 'STOP':
-            work_queue.put('STOP')
             work_queue.task_done()
             break
         raster_id, aggregate_vector_id, feature_id, fieldname_id = payload
@@ -638,9 +637,7 @@ def main():
         work_queue.put(
             (raster_id, aggregate_vector_id, feature_id, fieldname_id))
 
-    work_queue.put('STOP')
-
-    stitch_queue = multiprocessing.Queue()
+    stitch_queue = multiprocessing.JoinableQueue()
     m_manager = multiprocessing.Manager()
     align_lock = m_manager.Lock()
     worker_list = []
@@ -651,8 +648,10 @@ def main():
                 work_queue, align_lock, aggregate_vector_id_to_path,
                 raster_id_to_path_map, stitch_queue, worker_id),
             name='%d' % worker_id)
+        country_worker_process.daemon = True
         country_worker_process.start()
         worker_list.append(country_worker_process)
+        work_queue.put('STOP')  # a sentinal per process
 
     raster_id_lock_map = {
         raster_id_nodata_id_tuple: multiprocessing.Lock()
@@ -667,23 +666,17 @@ def main():
     #         args=(stitch_queue, raster_id_to_global_stitch_path_map,
     #               raster_id_lock_map),
     #         name='stitch worker %s' % worker_id)
+    #     stitch_worker_process.daemon = True
     #     stitch_worker_process.start()
     #     stitch_worker_list.append(stitch_worker_process)
+    #     stitch_queue.put('STOP')  # a sentinal per process
 
     LOGGER.debug('wait for workers to stop in tihs list: %s', str(worker_list))
     work_queue.join()
-    while worker_list:
-        process = worker_list.pop(0)
-        LOGGER.debug('joining worker %s', process.name)
-        process.join(2)
-        if process.is_alive():
-            LOGGER.warn('process %s is still alive', process.name)
-            worker_list.append(process)
-        else:
-            LOGGER.debug('joined worker %s', process.name)
+    LOGGER.debug('work queue complete')
 
-    LOGGER.debug('workers stopped')
-    stitch_queue.put('STOP')
+    stitch_queue.join()
+    LOGGER.debug('stitch queue complete')
 
     LOGGER.debug('building histogram/cdf')
     for (raster_id, _, _), raster_path in raster_id_to_path_map.items():
@@ -816,67 +809,65 @@ def stitch_worker(
             time.
 
     """
-    try:
-        while True:
-            payload = stitch_queue.get()
-            if payload == 'STOP':
-                LOGGER.info('stopping stitch_worker')
-                stitch_queue.put('STOP')
-                break
-            local_tile_raster_path, raster_aggregate_nodata_id_tuple = payload
-            global_stitch_raster_path = raster_id_to_global_stitch_path_map[
-                raster_aggregate_nodata_id_tuple]
+    while True:
+        payload = stitch_queue.get()
+        if payload == 'STOP':
+            LOGGER.info('stopping stitch_worker')
+            stitch_queue.task_complete()
+            break
+        local_tile_raster_path, raster_aggregate_nodata_id_tuple = payload
+        global_stitch_raster_path = raster_id_to_global_stitch_path_map[
+            raster_aggregate_nodata_id_tuple]
 
-            # get ul of tile and figure out where it goes in global
-            local_tile_info = pygeoprocessing.get_raster_info(
-                local_tile_raster_path)
-            global_stitch_info = pygeoprocessing.get_raster_info(
-                global_stitch_raster_path)
-            global_inv_gt = gdal.InvGeoTransform(
-                global_stitch_info['geotransform'])
-            local_gt = local_tile_info['geotransform']
-            global_i, global_j = gdal.ApplyGeoTransform(
-                global_inv_gt, local_gt[0], local_gt[3])
-            local_tile_raster = gdal.OpenEx(
-                local_tile_raster_path, gdal.OF_RASTER)
-            local_array = local_tile_raster.ReadAsArray()
-            local_tile_raster = None
-            valid_mask = ~numpy.isclose(
-                local_array, local_tile_info['nodata'][0])
-            if valid_mask.size == 0:
-                continue
-            with raster_id_aggregate_id_lock_map[
-                    raster_aggregate_nodata_id_tuple]:
-                global_raster = gdal.OpenEx(
-                    global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
+        # get ul of tile and figure out where it goes in global
+        local_tile_info = pygeoprocessing.get_raster_info(
+            local_tile_raster_path)
+        global_stitch_info = pygeoprocessing.get_raster_info(
+            global_stitch_raster_path)
+        global_inv_gt = gdal.InvGeoTransform(
+            global_stitch_info['geotransform'])
+        local_gt = local_tile_info['geotransform']
+        global_i, global_j = gdal.ApplyGeoTransform(
+            global_inv_gt, local_gt[0], local_gt[3])
+        local_tile_raster = gdal.OpenEx(
+            local_tile_raster_path, gdal.OF_RASTER)
+        local_array = local_tile_raster.ReadAsArray()
+        local_tile_raster = None
+        valid_mask = ~numpy.isclose(
+            local_array, local_tile_info['nodata'][0])
+        if valid_mask.size == 0:
+            continue
+        with raster_id_aggregate_id_lock_map[
+                raster_aggregate_nodata_id_tuple]:
+            global_raster = gdal.OpenEx(
+                global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
+            LOGGER.debug(
+                'stitching this %s into this %s',
+                global_stitch_raster_path, payload)
+            global_band = global_raster.GetRasterBand(1)
+            global_array = global_band.ReadAsArray(
+                xoff=global_i, yoff=global_j,
+                win_xsize=local_array.shape[1],
+                win_ysize=local_array.shape[0])
+            global_array[valid_mask] = local_array[valid_mask]
+            win_ysize_write, win_xsize_write = global_array.shape
+            if win_ysize_write == 0 or win_xsize_write == 0:
                 LOGGER.debug(
-                    'stitching this %s into this %s',
-                    global_stitch_raster_path, payload)
-                global_band = global_raster.GetRasterBand(1)
-                global_array = global_band.ReadAsArray(
-                    xoff=global_i, yoff=global_j,
-                    win_xsize=local_array.shape[1],
-                    win_ysize=local_array.shape[0])
-                global_array[valid_mask] = local_array[valid_mask]
-                win_ysize_write, win_xsize_write = global_array.shape
-                if win_ysize_write == 0 or win_xsize_write == 0:
-                    LOGGER.debug(
-                        'got zeros on sizes: %d %d %s',
-                        win_ysize_write, win_xsize_write, payload)
-                    continue
-                if global_i + win_xsize_write >= global_band.XSize:
-                    win_xsize_write = int(global_band.XSize - global_i)
-                if global_j + win_ysize_write >= global_band.YSize:
-                    win_ysize_write = int(global_band.YSize - global_j)
+                    'got zeros on sizes: %d %d %s',
+                    win_ysize_write, win_xsize_write, payload)
+                continue
+            if global_i + win_xsize_write >= global_band.XSize:
+                win_xsize_write = int(global_band.XSize - global_i)
+            if global_j + win_ysize_write >= global_band.YSize:
+                win_ysize_write = int(global_band.YSize - global_j)
 
-                global_band.WriteArray(
-                    global_array[0:win_ysize_write, 0:win_xsize_write],
-                    xoff=global_i, yoff=global_j)
-                global_band.FlushCache()
-                global_band = None
-                global_raster = None
-    except Exception:
-        LOGGER.exception('exception on stitch worker')
+            global_band.WriteArray(
+                global_array[0:win_ysize_write, 0:win_xsize_write],
+                xoff=global_i, yoff=global_j)
+            global_band.FlushCache()
+            global_band = None
+            global_raster = None
+        stitch_queue.task_complete()
 
 
 def new_raster_from_base(
