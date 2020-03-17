@@ -715,7 +715,8 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            for feature_id in sorted(percentile_map):
+            for feature_id in ['_GLOBAL'] + \
+                    sorted(set(percentile_map)-set(['_GLOBAL'])):
                 csv_cdf_file.write(
                     '\n%s,' % feature_id +
                     ','.join(reversed([
@@ -727,7 +728,8 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            for feature_id in sorted(percentile_map):
+            for feature_id in ['_GLOBAL'] + \
+                    sorted(set(percentile_map)-set(['_GLOBAL'])):
                 csv_cdf_nodata0_file.write(
                     '\n%s,' % feature_id +
                     ','.join(reversed([
@@ -739,7 +741,8 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            for feature_id in sorted(percentile_map):
+            for feature_id in ['_GLOBAL'] + \
+                    sorted(set(percentile_map)-set(['_GLOBAL'])):
                 csv_percentile_file.write(
                     '\n%s,' % feature_id +
                     ','.join([str(x) for x in percentile_map[feature_id][0]]))
@@ -751,7 +754,8 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            for feature_id in sorted(percentile_map):
+            for feature_id in ['_GLOBAL'] + \
+                    sorted(set(percentile_map)-set(['_GLOBAL'])):
                 csv_nodata0_percentile_file.write(
                     '\n%s,' % feature_id +
                     ','.join([str(x) for x in percentile_map[feature_id][1]]))
