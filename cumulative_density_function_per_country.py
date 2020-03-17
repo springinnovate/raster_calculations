@@ -10,6 +10,7 @@ import multiprocessing
 import os
 import pathlib
 import pickle
+import shutil
 import sqlite3
 import subprocess
 import time
@@ -123,7 +124,7 @@ def create_status_database(database_path):
 @retrying.retry()
 def feature_worker(
         work_queue, align_lock, aggregate_vector_id_to_path,
-        raster_id_to_path_map, stitch_queue):
+        raster_id_to_path_map, stitch_queue, worker_id):
     """Process work queue.
 
     Parameters:
@@ -141,7 +142,12 @@ def feature_worker(
 
     """
     LOGGER.debug('starting feature_worker')
-    task_graph = taskgraph.TaskGraph(CHURN_DIR, -1)
+    taskgraph_dir = os.path.join(CHURN_DIR, 'taskgraph_%d' % worker_id)
+    try:
+        os.makedirs(taskgraph_dir)
+    except:
+        pass
+    task_graph = taskgraph.TaskGraph(taskgraph_dir, -1)
     try:
         while True:
             payload = work_queue.get()
@@ -311,6 +317,7 @@ def feature_worker(
     finally:
         task_graph.close()
         task_graph.join()
+        shutil.rmtree(taskgraph_dir)
 
 
 def extract_feature_checked(
@@ -646,7 +653,7 @@ def main():
             target=feature_worker,
             args=(
                 work_queue, align_lock, aggregate_vector_id_to_path,
-                raster_id_to_path_map, stitch_queue),
+                raster_id_to_path_map, stitch_queue, worker_id),
             name='%d' % worker_id)
         country_worker_process.start()
         worker_list.append(country_worker_process)
