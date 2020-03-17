@@ -676,11 +676,12 @@ def main():
     #     stitch_worker_process.start()
     #     stitch_worker_list.append(stitch_worker_process)
 
-    LOGGER.debug('wait for workers to stop')
+    LOGGER.debug('wait for workers to stop in tihs list: %s', str(worker_list))
     for process in worker_list:
-        LOGGER.debug('joining worker %d', process.name)
+        LOGGER.debug('about to join a worker')
+        LOGGER.debug('joining worker %s', process.name)
         process.join()
-        LOGGER.debug('joined worker %d', process.name)
+        LOGGER.debug('joined worker %s', process.name)
 
     LOGGER.debug('workers stopped')
     stitch_queue.put('STOP')
