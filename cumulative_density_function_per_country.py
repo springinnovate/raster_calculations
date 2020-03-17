@@ -49,7 +49,8 @@ WORK_MAP = {
             'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'),
         'fieldname_id': 'iso3',
         'raster_gs_pattern':
-            'gs://shared-with-users/realized_services/terrestrial/*.tif'
+            'gs://shared-with-users/realized_services/terrestrial/realized_fwfish_distrib_catch*.tif'
+            #'gs://shared-with-users/realized_services/terrestrial/*.tif'
     },
     # Becky wants me to skip the EEZ zones.
     # 'eez': {
@@ -563,6 +564,7 @@ def main():
         raster_id_agg_vector_tuples = _execute_sqlite(
             'SELECT raster_id, aggregate_vector_id, fieldname_id '
             'FROM job_status '
+            'WHERE raster_id LIKE "realized_fwfish_distrib_catch%" '
             'GROUP BY raster_id, aggregate_vector_id',
             WORK_DATABASE_PATH, execute='execute', argument_list=[],
             fetch='all')
