@@ -681,8 +681,9 @@ def main():
     work_queue.join()
     LOGGER.debug('work queue complete')
 
-    stitch_queue.join()
-    LOGGER.debug('stitch queue complete')
+    # TODO:
+    #stitch_queue.join()
+    #LOGGER.debug('stitch queue complete')
 
     LOGGER.debug('building histogram/cdf')
     for (raster_id, _, _), raster_path in raster_id_to_path_map.items():
