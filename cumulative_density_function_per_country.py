@@ -51,6 +51,7 @@ WORK_MAP = {
         'fieldname_id': 'iso3',
         'raster_gs_pattern':
             'gs://shared-with-users/realized_services/terrestrial/realized_fwfish_distrib_catch*.tif'
+            # TODO:
             #'gs://shared-with-users/realized_services/terrestrial/*.tif'
     },
     # Becky wants me to skip the EEZ zones.
@@ -663,27 +664,27 @@ def main():
         for raster_id_nodata_id_tuple in raster_id_to_global_stitch_path_map
     }
 
-    # TODO:
-    # stitch_worker_list = []
-    # stitch_worker_pool = multiprocessing.pool.Pool(NCPUS)
-    # for worker_id in range(NCPUS):
-    #     stitch_worker_process = stitch_worker_pool.apply_async(
-    #         func=stitch_worker,
-    #         args=(stitch_queue, raster_id_to_global_stitch_path_map,
-    #               raster_id_lock_map),
-    #         error_callback=error_callback)
-    #     stitch_worker_process.daemon = True
-    #     stitch_worker_process.start()
-    #     stitch_worker_list.append(stitch_worker_process)
-    #     stitch_queue.put('STOP')  # a sentinal per process
+    stitch_worker_list = []
+    stitch_worker_pool = multiprocessing.pool.Pool(NCPUS)
+    for worker_id in range(NCPUS):
+        stitch_worker_process = stitch_worker_pool.apply_async(
+            func=stitch_worker,
+            args=(stitch_queue, raster_id_to_global_stitch_path_map,
+                  raster_id_lock_map),
+            error_callback=error_callback)
+        stitch_worker_list.append(stitch_worker_process)
 
     LOGGER.debug('wait for workers to stop in tihs list: %s', str(worker_list))
     work_queue.join()
     LOGGER.debug('work queue complete')
 
-    # TODO:
-    #stitch_queue.join()
-    #LOGGER.debug('stitch queue complete')
+    # don't stop stitching until all the fragments have been run
+    for worker_id in range(NCPUS):
+        stitch_queue.put('STOP')  # a sentinal per process
+
+    LOGGER.debug('wait for stitch queue to complete')
+    stitch_queue.join()
+    LOGGER.debug('stitch queue complete')
 
     LOGGER.debug('building histogram/cdf')
     for (raster_id, _, _), raster_path in raster_id_to_path_map.items():
@@ -772,11 +773,6 @@ def main():
                     '\n%s,' % feature_id +
                     ','.join([str(x) for x in percentile_map[feature_id][1]]))
 
-    LOGGER.debug('wait for stitch to stop')
-    # TODO:
-    # for stitch_worker_process in stitch_worker_list:
-    #     stitch_worker_process.join()
-    LOGGER.debug('stitch stopped')
     LOGGER.info('ALL DONE!')
 
 
