@@ -677,11 +677,15 @@ def main():
     #     stitch_worker_list.append(stitch_worker_process)
 
     LOGGER.debug('wait for workers to stop in tihs list: %s', str(worker_list))
-    for process in worker_list:
-        LOGGER.debug('about to join a worker')
+    while worker_list:
+        process = worker_list.pop(0)
         LOGGER.debug('joining worker %s', process.name)
-        process.join()
-        LOGGER.debug('joined worker %s', process.name)
+        process.join(2)
+        if process.is_alive():
+            LOGGER.warn('process %s is still alive', process.name)
+            worker_list.append(process)
+        else:
+            LOGGER.debug('joined worker %s', process.name)
 
     LOGGER.debug('workers stopped')
     stitch_queue.put('STOP')
