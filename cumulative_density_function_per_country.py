@@ -632,7 +632,7 @@ def main():
         fetch='all')
 
     m_manager = multiprocessing.Manager()
-    work_queue = m_manger.JoinableQueue()
+    work_queue = m_manager.JoinableQueue()
     for raster_id, aggregate_vector_id, fieldname_id, feature_id in \
             raster_vector_feature_tuples:
         if feature_id in SKIP_THESE_FEATURE_IDS:
