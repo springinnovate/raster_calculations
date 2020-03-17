@@ -631,7 +631,8 @@ def main():
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
-    work_queue = multiprocessing.JoinableQueue()
+    m_manager = multiprocessing.Manager()
+    work_queue = m_manger.JoinableQueue()
     for raster_id, aggregate_vector_id, fieldname_id, feature_id in \
             raster_vector_feature_tuples:
         if feature_id in SKIP_THESE_FEATURE_IDS:
@@ -642,8 +643,7 @@ def main():
         work_queue.put(
             (raster_id, aggregate_vector_id, feature_id, fieldname_id))
 
-    stitch_queue = multiprocessing.JoinableQueue()
-    m_manager = multiprocessing.Manager()
+    stitch_queue = m_manager.JoinableQueue()
     align_lock = m_manager.Lock()
     worker_list = []
 
