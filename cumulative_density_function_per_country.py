@@ -287,8 +287,9 @@ def feature_worker(
             gdal.GDT_Float32, BIN_NODATA)
         LOGGER.debug('stitch this: %s', str(
             (bin_raster_path, aggregate_vector_id, raster_id, '')))
-        stitch_queue.put(
-            (bin_raster_path, (raster_id, aggregate_vector_id, '')))
+        if feature_id == 'USA':
+            stitch_queue.put(
+                (bin_raster_path, (raster_id, aggregate_vector_id, '')))
 
         if feature_id != GLOBAL_ID:
             bin_nodata0_raster_path = os.path.join(
@@ -310,8 +311,9 @@ def feature_worker(
             gdal.GDT_Float32, BIN_NODATA)
         LOGGER.debug('stitch this: %s', str(
             (bin_raster_path, raster_id, aggregate_vector_id, 'nodata0')))
-        stitch_queue.put(
-            (bin_raster_path, (raster_id, aggregate_vector_id, 'nodata0')))
+        if feature_id == 'USA':
+            stitch_queue.put(
+                (bin_raster_path, (raster_id, aggregate_vector_id, 'nodata0')))
         work_queue.task_done()
 
     LOGGER.debug('about to close worker %d', worker_id)
