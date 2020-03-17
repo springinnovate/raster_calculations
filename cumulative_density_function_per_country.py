@@ -570,6 +570,8 @@ def main():
     # / aggregate id / regular/nodata
     for raster_id, aggregate_vector_id, fieldname_id in \
             raster_id_agg_vector_tuples:
+        if aggregate_vector_id == 'EEZ':
+            continue   # TODO: Becky wants me to skip this at 3/16/2020 11:28pm
         # this loop will first do a "global" run, then a
         # per-feature id normalized one.
         for nodata_id in ['', 'nodata0']:
@@ -625,7 +627,6 @@ def main():
             raster_id, aggregate_vector_id, feature_id)
         work_queue.put(
             (raster_id, aggregate_vector_id, feature_id, fieldname_id))
-        break
 
     work_queue.put('STOP')
 
@@ -669,7 +670,7 @@ def main():
         result = _execute_sqlite(
             '''
             SELECT
-              country_id, percentile_list, percentile0_list, cdf, cdfnodata0
+              feature_id, percentile_list, percentile0_list, cdf, cdfnodata0
             FROM job_status
             WHERE raster_id=?;
             ''',
@@ -677,15 +678,15 @@ def main():
             fetch='all')
 
         percentile_map = {
-            country_id: (
+            feature_id: (
                 pickle.loads(percentile_list),
                 pickle.loads(percentile0_list),
                 pickle.loads(cdf),
                 pickle.loads(cdfnodata0))
-            for (country_id, percentile_list, percentile0_list,
+            for (feature_id, percentile_list, percentile0_list,
                  cdf, cdfnodata0) in result
             if None not in (
-                country_id, percentile_list, percentile0_list, cdf, cdfnodata0)
+                feature_id, percentile_list, percentile0_list, cdf, cdfnodata0)
         }
 
         csv_percentile_path = os.path.join(
@@ -704,11 +705,11 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            for country_id in sorted(percentile_map):
+            for feature_id in sorted(percentile_map):
                 csv_cdf_file.write(
-                    '\n%s,' % country_id +
+                    '\n%s,' % feature_id +
                     ','.join(reversed([
-                        str(x) for x in percentile_map[country_id][2]])))
+                        str(x) for x in percentile_map[feature_id][2]])))
 
         with open(csv_nodata0_cdf_path, 'w') as csv_cdf_nodata0_file:
             csv_cdf_nodata0_file.write('%s cdfs' % raster_id)
@@ -716,11 +717,11 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            for country_id in sorted(percentile_map):
+            for feature_id in sorted(percentile_map):
                 csv_cdf_nodata0_file.write(
-                    '\n%s,' % country_id +
+                    '\n%s,' % feature_id +
                     ','.join(reversed([
-                        str(x) for x in percentile_map[country_id][3]])))
+                        str(x) for x in percentile_map[feature_id][3]])))
 
         with open(csv_percentile_path, 'w') as csv_percentile_file:
             csv_percentile_file.write('%s percentiles' % raster_id)
@@ -728,10 +729,10 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            for country_id in sorted(percentile_map):
+            for feature_id in sorted(percentile_map):
                 csv_percentile_file.write(
-                    '\n%s,' % country_id +
-                    ','.join([str(x) for x in percentile_map[country_id][0]]))
+                    '\n%s,' % feature_id +
+                    ','.join([str(x) for x in percentile_map[feature_id][0]]))
 
         with open(csv_nodata0_percentile_path, 'w') as \
                 csv_nodata0_percentile_file:
@@ -740,10 +741,10 @@ def main():
                 '\ncountry,' +
                 ','.join([str(x) for x in PERCENTILE_LIST]))
             # first do the whole world
-            for country_id in sorted(percentile_map):
+            for feature_id in sorted(percentile_map):
                 csv_nodata0_percentile_file.write(
-                    '\n%s,' % country_id +
-                    ','.join([str(x) for x in percentile_map[country_id][1]]))
+                    '\n%s,' % feature_id +
+                    ','.join([str(x) for x in percentile_map[feature_id][1]]))
 
     LOGGER.debug('wait for stitch to stop')
     for stitch_worker_process in stitch_worker_list:
