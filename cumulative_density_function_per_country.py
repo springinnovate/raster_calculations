@@ -678,7 +678,9 @@ def main():
 
     LOGGER.debug('wait for workers to stop')
     for process in worker_list:
+        LOGGER.debug('joining worker %d', process.name)
         process.join()
+        LOGGER.debug('joined worker %d', process.name)
 
     LOGGER.debug('workers stopped')
     stitch_queue.put('STOP')
