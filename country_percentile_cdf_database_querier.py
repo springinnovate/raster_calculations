@@ -16,7 +16,7 @@ def main():
         SELECT
           percentile_list, percentile0_list, cdf, cdfnodata0
         FROM job_status
-        WHERE raster_id=? AND country_id=?;
+        WHERE raster_id=? AND feature_id=?;
         ''',
         WORK_DATABASE_PATH, execute='execute', argument_list=[
             'realized_grazing_natnotforest', 'CHN'],
