@@ -611,6 +611,7 @@ def main():
         '''
         SELECT raster_id, aggregate_vector_id, fieldname_id, feature_id
         FROM job_status
+        WHERE percentile0_list is NULL
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
@@ -624,6 +625,7 @@ def main():
             raster_id, aggregate_vector_id, feature_id)
         work_queue.put(
             (raster_id, aggregate_vector_id, feature_id, fieldname_id))
+        break
 
     work_queue.put('STOP')
 
