@@ -1,4 +1,4 @@
-# Docker image spring/computational-env:4
+# Docker image spring/computational-env:5
 FROM conda/miniconda3
 USER root
 RUN apt-get update \
@@ -11,7 +11,7 @@ RUN apt-get update \
 
 SHELL ["/bin/bash", "-c"]
 RUN conda create -y --name py38 python=3.8 && conda clean -a -y
-RUN conda run -v -n py38 conda install -c conda-forge gdal=3.0.2
+RUN conda run -v -n py38 conda install -c conda-forge gdal=3.0.4
 RUN conda run -v -n py38 pip install --no-cache-dir \
     cython \
     ecoshard==0.3.3 \
@@ -32,6 +32,7 @@ RUN conda run -v -n py38 pip install --no-cache-dir \
 RUN conda run -v -n py38 pip install --no-cache-dir \
     gsutil \
     git+https://github.com/richpsharp/ecoshard.git@feature/ECOSHARD-3-download-and-unzip \
+    git+https://github.com/richpsharp/taskgraph.git@release/0.9 \
     && conda clean -a -y
 RUN conda init bash && echo "source activate py38" > ~/.bashrc
 
