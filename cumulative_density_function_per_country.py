@@ -570,7 +570,7 @@ def main():
     # / aggregate id / regular/nodata
     for raster_id, aggregate_vector_id, fieldname_id in \
             raster_id_agg_vector_tuples:
-        if aggregate_vector_id == 'EEZ':
+        if aggregate_vector_id == 'eez':
             continue   # TODO: Becky wants me to skip this at 3/16/2020 11:28pm
         # this loop will first do a "global" run, then a
         # per-feature id normalized one.
