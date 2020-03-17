@@ -106,6 +106,9 @@ def create_status_database(database_path):
             percentile0_list BLOB,
             cdf BLOB,
             cdfnodata0 BLOB);
+
+        CREATE UNIQUE INDEX unique_job_status ON
+        job_status (raster_id, aggregate_vector_id, fieldname_id, feature_id);
         """)
     if os.path.exists(database_path):
         os.remove(database_path)
