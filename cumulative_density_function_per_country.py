@@ -656,15 +656,16 @@ def main():
         for raster_id_nodata_id_tuple in raster_id_to_global_stitch_path_map
     }
 
-    stitch_worker_list = []
-    for worker_id in range(NCPUS):
-        stitch_worker_process = multiprocessing.Process(
-            target=stitch_worker,
-            args=(stitch_queue, raster_id_to_global_stitch_path_map,
-                  raster_id_lock_map),
-            name='stitch worker %s' % worker_id)
-        stitch_worker_process.start()
-        stitch_worker_list.append(stitch_worker_process)
+    # TODO:
+    # stitch_worker_list = []
+    # for worker_id in range(NCPUS):
+    #     stitch_worker_process = multiprocessing.Process(
+    #         target=stitch_worker,
+    #         args=(stitch_queue, raster_id_to_global_stitch_path_map,
+    #               raster_id_lock_map),
+    #         name='stitch worker %s' % worker_id)
+    #     stitch_worker_process.start()
+    #     stitch_worker_list.append(stitch_worker_process)
 
     LOGGER.debug('wait for workers to stop')
     for process in worker_list:
@@ -761,8 +762,9 @@ def main():
                     ','.join([str(x) for x in percentile_map[feature_id][1]]))
 
     LOGGER.debug('wait for stitch to stop')
-    for stitch_worker_process in stitch_worker_list:
-        stitch_worker_process.join()
+    # TODO:
+    # for stitch_worker_process in stitch_worker_list:
+    #     stitch_worker_process.join()
     LOGGER.debug('stitch stopped')
     LOGGER.info('ALL DONE!')
 
