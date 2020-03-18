@@ -33,22 +33,199 @@ def main():
 
     # CNC calculations
 
-
-    masked_service_list = [
-        {
-            'expression': 'service*mask + -1*(1-mask)', #this sets all values not in the mask to nodata (in this case, -1)
+    masker_list = [
+         {
+            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)]+[210])[1:-1]),
             'symbol_to_path_map': {
-                'mask': r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\processed_rasters_dir\14e98a7df6fa935207dbb83454612485\masked_all_nathab_esa2015.tif",
-                'service': r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\processed_rasters_dir\14e98a7df6fa935207dbb83454612485\half_degree_grid_langa_19_dslv_density.tif",
+                'raster': r"C:\Users\Becky\Documents\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif",
             },
             'target_nodata': -1,
-            'default_nan': -1,
-            'target_raster_path': "realized_cultural_language_nathab.tif",
+            'target_raster_path': "masked_all_nathab_wstreams_esa2015.tif",
+        },
+    ]
+    for masker in masker_list:
+       raster_calculations_core.evaluate_calculation(
+            masker, TASK_GRAPH, WORKSPACE_DIR)
+    
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': 'service/10',
+        'symbol_to_path_map': {
+            'service': r"C:\Users\Becky\Documents\raster_calculations\to_ave\reefsplus_coastalprotection_average_raster.tif",
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "realized_reefsplus_coastalprotectionbin.tif",
+        'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        'resample_method': 'average'
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+    LOth_MM = 0.00001
+    clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_commercialtimber_forest_md5_99153e7a8177fd7ed6bb75a5fdc426e5.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_commercialtimber_forest_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_domestictimber_forest_md5_3ee8a15ce8ed38b0710b8f6d74640b70.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_domestictimber_forest_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_flood_nathab_md5_bf277802945a0a7067d2a90941e355e1.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_flood_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_fuelwood_forest_md5_e86706b0ebe0d296acac30db78f2c284.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fuelwood_forest_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_grazing_natnotforest_md5_fbc4907814187d1be75b35932617af65.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_grazing_natnotforest_clamped.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
     ]
 
-    for calculation in masked_service_list:
+    for calculation in clamped_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+    LOth_ffish = 0.00001
+    NNth_ffish = 1000
+    clamped_service_list = [ 
+        {
+            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + 0*(service<{LOth_ffish})', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fwfish_distrib_catch_0s_clamped1000.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+    ]
+
+    for calculation in clamped_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': 'service * pop',
+        'symbol_to_path_map': {
+            'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\cv_pop_sum_md5_954b755a9300ceb03a284197672b3656.tif",
+            'pop': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\cv_service_sum_md5_0f86665de086aba2e16dca68ac859428.tif",  
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "realized_cv_service.tif",
+        'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        'resample_method': 'average'
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': 'service * pop / 10',
+        'symbol_to_path_map': {
+            'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\barrier_reef_service_average_raster_md5_e12c2928e16bdbad45ce4220d18a5889_eez__GLOBAL_bin_nodata0_raster_md5_c271e54f1b04174d3e620df344a52bd9.tif",
+            'pop': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\barrier_reef_pop_average_raster_md5_8387777dc970a55e7b5f5949791cf1ef_eez__GLOBAL_bin_nodata0_raster_md5_b36485a7d4f837804982e5e9272d34fe.tif",  
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "realized_coastalprotectionbin_barrierreef.tif",
+        'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        'resample_method': 'average'
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    calculation_list = [ 
+        {
+            'expression': 'service*pop', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\potential_nitrogenretention_nathab_clamped_md5_bf6ce40d6d9e8c8c1b2774b375b85b8a.tif",
+                'pop':r"C:\Users\Becky\Documents\cnc_project\masked_rasters\beneficiaries_downstream_nathab_md5_db1311d54c0174c932cc676bbd621643.tif"
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_nitrogenretention_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*pop', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
+                'pop':r"C:\Users\Becky\Documents\cnc_project\masked_rasters\beneficiaries_downstream_nathab_md5_db1311d54c0174c932cc676bbd621643.tif"
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_sedimentdeposition_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*pop', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\cv_service_sum_bin_raster_md5_bc04cd7112c865fc12f8229ad4757af5.tif",
+                'pop':r"C:\Users\Becky\Documents\cnc_project\masked_rasters\cv_pop_sum_bin_raster_md5_27be87e1a0c5a789c82d84122ebf61b8.tif"
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_coastalprotectionbin.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+
+    ]
+
+    for calculation in calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
@@ -95,32 +272,278 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
-    #Single expression
-
-    synthesis_index_expression = {
-            'expression': 'nitrogen + sediment + pollination + timber + nwfp + grazing ',
+    masked_service_list = [
+        {
+            'expression': 'service*mask + 128*(1-mask)', #this sets all values not in the mask to nodata (in this case, 128)
             'symbol_to_path_map': {
-                'nitrogen': "CNC_workspace/norm_by_country_masked_realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501.tif",
-                'nwfp': "CNC_workspace/norm_by_country_masked_realized_nwfp_masked_md5_a907048c3cc62ec51640048bb710d8d8.tif",
-                'pollination': "CNC_workspace/norm_by_country_masked_realized_pollination_md5_443522f6688011fd561297e9a556629b.tif",
-                'sediment': "CNC_workspace/norm_by_country_masked_realized_sedimentdeposition_downstream_md5_1613b12643898c1475c5ec3180836770.tif",
-                'grazing': "CNC_workspace/norm_by_country_masked_realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif",
-                'timber': "CNC_workspace/norm_by_country_masked_realized_timber_md5_340467b17d0950d381f55cd355ae688a.tif",  
+                'mask': r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\half_degree_grid_langa_19_dslv_density.tif",
             },
-            'target_nodata': -1,
-            'target_raster_path': "CNC_workspace/aggregate_normbycountry_realized_ES_score_nspwog.tif",
+            'target_nodata': 128,
+            'target_raster_path': "realized_cultural_language_nathab.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': 'average'
-    }
+        },
+        {
+            'expression': '((service<0)*(-9999)+(service>=0)*service)*mask + -9999*(1-mask)', #this both sets all negative values to nodata AND sets anything outside the mask to nodata
+            'symbol_to_path_map': {
+                'mask': r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_e_source_ratio_ann_mean.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999, # this is necessary because there are apparently nans in this list!
+            'target_raster_path': "realized_moisturerecycling_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\RealInflGStoragePop.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_flood_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_nathab_forest_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\realised_commercial_timber_value.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_commercialtimber_forest.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_nathab_forest_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\realised_domestic_timber_value.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_domestictimber_forest.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_nathab_forest_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\realized_fuelwood.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fuelwood_forest.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_nathab_notforest_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\realized_grazing_md5_19085729ae358e0e8566676c5c7aae72.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_grazing_natnotforest.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\total_pop_near_nature_10.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_natureaccess10_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\total_pop_near_nature_100.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_natureaccess100_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\potential_nitrogenretention_md5_286c51393042973f71884ddc701be03d.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "potential_nitrogenretention_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\potential_sedimentdeposition_md5_aa9ee6050c423b6da37f8c2723d9b513.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "potential_sedimentdeposition_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\downstream_beneficiaries_md5_68495f4bbdd889d7aaf9683ce958a4fe.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "beneficiaries_downstream_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_pollination_md5_443522f6688011fd561297e9a556629b.tif"
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_pollination_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_nitrogenretention_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\realized_sedimentdeposition_downstream_md5_1613b12643898c1475c5ec3180836770.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_sedimentdeposition_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+    ]
 
-    raster_calculations_core.evaluate_calculation(
-        synthesis_index_expression, TASK_GRAPH, WORKSPACE_DIR)
+    for calculation in masked_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
+    return
 
+    
+    NNth_nit = 322
+    NNth_sed = 161
+    NNth_poll = 982
+    NNth_ffish = 75
+    LOth_ffish = 0.01
+    Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
+    LOth_MM = 0.00001
+    clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
+        {
+            'expression': f'(service>{NNth_nit})*{NNth_nit} + (service<={NNth_nit})*(service>=0)*service + -9999*(service<0)', #sets anything above the 99th percentile value to that value, anything negative to nodata
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\potential_nitrogenretention_nathab_md5_95b25783b6114b63738f8d6b20d2af51.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "potential_nitrogenretention_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{NNth_sed})*({NNth_sed})+(service<={NNth_sed})*(service>=0)*service + -9999*(service<0)', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\potential_sedimentdeposition_nathab_md5_1a0dd289bee1fe09c30453ab80f9ddf4.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "potential_sedimentdeposition_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{NNth_poll})*({NNth_poll})+(service<={NNth_poll})*(service>=0)*service + -9999*(service<0)',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_pollination_nathab_md5_feab479b3d6bf25a928c355547c9d9ab.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_pollination_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + -9999*(service<{LOth_ffish})', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fwfish_distrib_catch_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{Max_mfish})*({Max_mfish})+(service<={Max_mfish})*service', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\needed_clamping\realized_marinefish_watson_2015_catch_Ind_Non_Ind_Rprt_IUU_md5_61e08ed60006e9ad23b74bcd44c61548.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_marinefish_watson_2015_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_commercialtimber_forest_md5_99153e7a8177fd7ed6bb75a5fdc426e5.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_commercialtimber_forest_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_domestictimber_forest_md5_3ee8a15ce8ed38b0710b8f6d74640b70.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_domestictimber_forest_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_flood_nathab_md5_bf277802945a0a7067d2a90941e355e1.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_flood_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_fuelwood_forest_md5_e86706b0ebe0d296acac30db78f2c284.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fuelwood_forest_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_grazing_natnotforest_md5_fbc4907814187d1be75b35932617af65.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_grazing_natnotforest_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+    ]
+
+    for calculation in clamped_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     #loop to set thresholds
 
@@ -192,103 +615,6 @@ def main():
     TASK_GRAPH.close()
 
 
-    # a list of expressions
-
-    aggregate_service_list = [
-        {
-            'expression': 'previous_aggregate + flood + moisture',
-            'symbol_to_path_map': {
-                'previous_aggregate': "aggregate_potential_ES_score_nspwog_md5_afc4ad7c7337a974a7284d5f59bf4c69.tif",
-                'flood': "normalized_potential_flood_md5_6b603609e55d3a17d20ea76699aaaf79.tif",
-                'moisture': "normalized_potential_moisture_md5_d5396383d8a30f296988f86bb0fc0528.tif",
-            },
-            'target_nodata': -1,
-            'target_raster_path': "aggregate_potential_ES_score_nspwogfm.tif",
-            'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': 'average'
-        },
-        {
-            'expression': 'previous_aggregate + flood',
-            'symbol_to_path_map': {
-                'previous_aggregate': "aggregate_potential_ES_score_nspwog_md5_afc4ad7c7337a974a7284d5f59bf4c69.tif",
-                'flood': "normalized_potential_flood_md5_6b603609e55d3a17d20ea76699aaaf79.tif",
-            },
-            'target_nodata': -1,
-            'target_raster_path': "aggregate_potential_ES_score_nspwogf.tif",
-            'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': 'average'
-        },
-        {
-            'expression': 'previous_aggregate + flood',
-            'symbol_to_path_map': {
-                'previous_aggregate': "aggregate_realized_ES_score_nspwog_md5_715a67e14a188826f67da5eb5c52c4da.tif",
-                'flood': "normalized_realized_flood_md5_f1237e76a41039e22629abb85963ba16.tif",
-            },
-            'target_nodata': -1,
-            'target_raster_path': "aggregate_realized_ES_score_nspwogf.tif",
-            'target_pixel_size': (0.002777777777778, -0.002777777777778),
-            'resample_method': 'average'
-        },
-    ]
-    
-    for calculation in aggregate_service_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    subprocess.check_call("python -m ecoshard aggregate_potential_ES_score_nspwogfm.tif --hash_file --rename --buildoverviews --interpolation_method average")    
-   
-    TASK_GRAPH.join()
-    subprocess.check_call("python -m ecoshard aggregate_potential_ES_score_nspwogf.tif --hash_file --rename --buildoverviews --interpolation_method average")    
-
-    TASK_GRAPH.join()
-    subprocess.check_call("python -m ecoshard aggregate_realized_ES_score_nspwogf.tif --hash_file --rename --buildoverviews --interpolation_method average")    
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-    return
-
-
-    normalized_service_list = [
-        {
-            'expression': 'service/0.12518708407878876',
-            'symbol_to_path_map': {
-                'service': "potential_flood_storage.tif",
-            },
-            'target_nodata': -1,
-            'target_raster_path': "raw_normalized_potential_flood.tif",
-        },
-        {
-            'expression': 'service/269.3',
-            'symbol_to_path_map': {
-                'service': "potential_moisture_recycling.tif",
-            },
-            'target_nodata': -1,
-            'target_raster_path': "raw_normalized_potential_moisture.tif",
-        },
-        {
-            'expression': 'service/ 276336.7',
-            'symbol_to_path_map': {
-                'service': "realized_flood_storage.tif",
-            },
-            'target_nodata': -1,
-            'target_raster_path': "raw_normalized_realized_flood.tif",
-        },
-        {
-            'expression': 'service/890106050.9',
-            'symbol_to_path_map': {
-                'service': "realized_moisture_recycling.tif",
-            },
-            'target_nodata': -1,
-            'target_raster_path': "raw_normalized_realized_moisture.tif",
-        },
-    ]
-
-    for calculation in normalized_service_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
 
     clamping_service_list = [
         {
@@ -357,39 +683,7 @@ def main():
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
-    #original masker list
-    masker_list = [
-         {
-            # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
-            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]),
-            'symbol_to_path_map': {
-                'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "masked_nathab_esa.tif",
-        },
-        {
-            'expression': 'mask(raster, %s, invert=False)'%(str([20,30]+[x for x in range(80,127)])[1:-1]),
-            'symbol_to_path_map': {
-                'raster': 'https://storage.googleapis.com/ecoshard-root/working-shards/coopernicus_landcover_discrete_compressed_md5_264bda5338a02e4a6cc10412b8edad9f.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "masked_nathab_copernicus.tif",
-        },
-        {
-            # this is for masking out forest from natural habitat, for livestock production
-            # this counts the >50% herbaceous / < 50% tree cover category as "not forest"; also includes lichens, mosses  and shrubland which maybe isn't totally edible by cattle either
-            'expression': 'mask(raster, %s, invert=False)'%(str([x for x in range(110,154)]+[180])[1:-1]),
-            'symbol_to_path_map': {
-                'raster': 'https://storage.googleapis.com/ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
-            },
-            'target_nodata': -1,
-            'target_raster_path': "masked_nathab_notforest_esa.tif",
-        },
-    ]
-    for masker in masker_list:
-       raster_calculations_core.evaluate_calculation(
-            masker, TASK_GRAPH, WORKSPACE_DIR)
+
 
      #dasgupta calcs: 
 

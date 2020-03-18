@@ -39,15 +39,15 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-    percentile_working_dir = r"C:\Users\Becky\Documents\cnc_project\percentile_working_dir"
+    percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\CNC_workspace\percentile_working_dir"
     try:
         os.makedirs(percentile_working_dir)
     except OSError:
         pass
 
-    table_path = r"C:\Users\Becky\Documents\cnc_project\percentile_cdf_pipeline_table.csv"
+    table_path = r"C:\Users\Becky\Documents\raster_calculations\percentile_cdf_pipeline_table.csv"
     # this is the directory the loop will search through
-    base_directory = r"C:\Users\Becky\Documents\cnc_project\the_big_ones"
+    base_directory = r"C:\Users\Becky\Documents\raster_calculations\test_terrestrial_binned"
     # you can modify this list and the rest of the code will adapt
     # make a list full of 0s as long as the percentile list
     percentiles_list = [
@@ -141,9 +141,6 @@ def calculate_percentile(
             mask = (block_data > percentile_value) & (~nodata_mask)
             result_dict['percentile_sum_list'][index] += (
                 numpy.sum(block_data[mask]))
-            print(numpy.sum(block_data[mask]))
-        break
-    return
 
     LOGGER.debug(
         'pickling percentile results of %s to %s', raster_path,
