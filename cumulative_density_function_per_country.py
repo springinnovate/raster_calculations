@@ -835,6 +835,7 @@ def stitch_worker(
     try:
         while True:
             payload = stitch_queue.get()
+            LOGGER.debug('in stitch worker: %s', str(payload))
             if payload == 'STOP':
                 LOGGER.info('stopping stitch_worker')
                 stitch_queue.task_done()
