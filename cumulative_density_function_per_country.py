@@ -862,8 +862,14 @@ def stitch_worker(
                 local_array, local_tile_info['nodata'][0])
             if valid_mask.size == 0:
                 continue
+            LOGGER.debug(
+                'about to acquire %s', raster_id_aggregate_id_lock_map[
+                    raster_aggregate_nodata_id_tuple])
             with raster_id_aggregate_id_lock_map[
                     raster_aggregate_nodata_id_tuple]:
+                LOGGER.debug(
+                    'acquired %s', raster_id_aggregate_id_lock_map[
+                        raster_aggregate_nodata_id_tuple])
                 global_raster = gdal.OpenEx(
                     global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
 
