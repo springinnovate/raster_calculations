@@ -679,6 +679,7 @@ def main():
             error_callback=error_callback)
         worker_list.append(country_worker_process)
         work_queue.put('STOP')  # a sentinal per process
+    feature_worker_pool.close()
 
     raster_id_lock_map = {
         raster_id_nodata_id_tuple: m_manager.Lock()
@@ -694,9 +695,11 @@ def main():
                   raster_id_lock_map, worker_id),
             error_callback=error_callback)
         stitch_worker_list.append(stitch_worker_process)
+    stitch_worker_pool.close()
 
     LOGGER.debug('wait for workers to stop in tihs list: %s', str(worker_list))
     work_queue.join()
+    feature_worker_pool.terminate()
     LOGGER.debug('work queue complete')
 
     # don't stop stitching until all the fragments have been run
@@ -705,6 +708,7 @@ def main():
 
     LOGGER.debug('wait for stitch queue to complete')
     stitch_queue.join()
+    stitch_worker_pool.terminate()
     LOGGER.debug('stitch queue complete')
 
     LOGGER.debug('building histogram/cdf')
