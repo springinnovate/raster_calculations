@@ -580,7 +580,6 @@ def main():
         raster_id_agg_vector_tuples = _execute_sqlite(
             'SELECT raster_id, aggregate_vector_id, fieldname_id '
             'FROM job_status '
-            'WHERE raster_id LIKE "realized_fwfish_distrib_catch%" '
             'GROUP BY raster_id, aggregate_vector_id',
             WORK_DATABASE_PATH, execute='execute', argument_list=[],
             fetch='all')
