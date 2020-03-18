@@ -641,17 +641,30 @@ def main():
 
     m_manager = multiprocessing.Manager()
     work_queue = m_manager.JoinableQueue()
+    stitch_queue = m_manager.JoinableQueue()
     for raster_id, aggregate_vector_id, fieldname_id, feature_id in \
             raster_vector_feature_tuples:
         if feature_id in SKIP_THESE_FEATURE_IDS:
             continue
-        LOGGER.debug(
-            'putting %s %s %s to work',
-            raster_id, aggregate_vector_id, feature_id)
-        work_queue.put(
-            (raster_id, aggregate_vector_id, feature_id, fieldname_id))
+        # TODO: commented out just to stitch
+        # LOGGER.debug(
+        #     'putting %s %s %s to work',
+        #     raster_id, aggregate_vector_id, feature_id)
+        # work_queue.put(
+        #     (raster_id, aggregate_vector_id, feature_id, fieldname_id))
 
-    stitch_queue = m_manager.JoinableQueue()
+        worker_dir = os.path.join(
+            COUNTRY_WORKSPACES, '%s_%s_%s' % (
+                raster_id, aggregate_vector_id, feature_id))
+        bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
+        stitch_queue.put(
+            (bin_raster_path, (raster_id, aggregate_vector_id, '')))
+        bin_nodata0_raster_path = os.path.join(
+            worker_dir, 'bin_nodata0_raster.tif')
+        stitch_queue.put(
+            (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
+             'nodata0')))
+
     align_lock = m_manager.Lock()
     worker_list = []
 
