@@ -636,6 +636,7 @@ def main():
         '''
         SELECT raster_id, aggregate_vector_id, fieldname_id, feature_id
         FROM job_status
+        ORDER BY feature_id
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
