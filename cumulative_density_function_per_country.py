@@ -114,7 +114,12 @@ def create_status_database(database_path):
             percentile_list BLOB,
             percentile0_list BLOB,
             cdf BLOB,
-            cdfnodata0 BLOB);
+            cdfnodata0 BLOB,
+            stitched_bin INT NOT NULL,
+            stitched_bin_nodata0 INT NOT NULL,
+            bin_raster_path TEXT,
+            bin_nodata0_raster_path TEXT
+            );
 
         CREATE UNIQUE INDEX unique_job_status ON
         job_status (raster_id, aggregate_vector_id, fieldname_id, feature_id);
@@ -318,6 +323,21 @@ def feature_worker(
                     (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
                      'nodata0')))
             work_queue.task_done()
+
+        if feature_id != GLOBAL_ID:
+            _execute_sqlite(
+                '''
+                UPDATE job_status
+                SET
+                  bin_raster_path=?, bin_nodata0_raster_path=?
+                WHERE
+                    raster_id=? AND aggregate_vector_id=? AND
+                    feature_id=? AND fieldname_id=?
+                ''',
+                WORK_DATABASE_PATH, execute='execute', mode='modify',
+                argument_list=[
+                    bin_raster_path, bin_nodata0_raster_path,
+                    raster_id, aggregate_vector_id, feature_id, fieldname_id])
 
         LOGGER.debug('about to close worker %d', worker_id)
         task_graph.close()
@@ -550,9 +570,12 @@ def main():
 
         # create any missing entries in the database if they don't exist:
         _execute_sqlite(
-            'INSERT OR IGNORE INTO job_status('
-            '   raster_id, aggregate_vector_id, fieldname_id, feature_id) '
-            'VALUES (?, ?, ?, ?)', WORK_DATABASE_PATH,
+            '''
+            INSERT OR IGNORE INTO job_status(
+               raster_id, aggregate_vector_id, fieldname_id, feature_id,
+               stitched_bin, stitched_bin_nodata0)
+            VALUES (?, ?, ?, ?, 0, 0)
+            ''', WORK_DATABASE_PATH,
             argument_list=[
                 (raster_id, aggregate_vector_id,
                  work_vector_dict['fieldname_id'], feature_id)
@@ -635,7 +658,40 @@ def main():
     task_graph.close()
     task_graph.join()
 
-    raster_vector_feature_tuples = _execute_sqlite(
+    # get any stitches that didn't finish on the last run
+    stitch_raster_vector_feature_tuples = _execute_sqlite(
+        '''
+        SELECT bin_raster_path, raster_id, aggregate_vector_id
+        FROM job_status
+        WHERE bin_raster_path is NOT NULL and stitched_bin=0
+        ORDER BY feature_id
+        ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
+        fetch='all')
+
+    stitch_nodata0_raster_vector_feature_tuples = _execute_sqlite(
+        '''
+        SELECT bin_nodata0_raster_path, raster_id, aggregate_vector_id
+        FROM job_status
+        WHERE bin_nodata0_raster_path is NOT NULL and stitched_bin_nodata0=0
+        ORDER BY feature_id
+        ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
+        fetch='all')
+
+    m_manager = multiprocessing.Manager()
+    stitch_queue = m_manager.JoinableQueue()
+    for bin_raster_path, raster_id, aggregate_vector_id in \
+            stitch_raster_vector_feature_tuples:
+        stitch_queue.put(
+            (bin_raster_path, (raster_id, aggregate_vector_id, '')))
+
+    for bin_nodata0_raster_path, raster_id, aggregate_vector_id in \
+            stitch_nodata0_raster_vector_feature_tuples:
+        stitch_queue.put(
+            (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
+             'nodata0')))
+
+    # schedule work that hasn't been processed
+    work_raster_vector_feature_tuples = _execute_sqlite(
         '''
         SELECT raster_id, aggregate_vector_id, fieldname_id, feature_id
         FROM job_status
@@ -644,11 +700,9 @@ def main():
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
-    m_manager = multiprocessing.Manager()
     work_queue = m_manager.JoinableQueue()
-    stitch_queue = m_manager.JoinableQueue()
     for raster_id, aggregate_vector_id, fieldname_id, feature_id in \
-            raster_vector_feature_tuples:
+            work_raster_vector_feature_tuples:
         if feature_id in SKIP_THESE_FEATURE_IDS:
             continue
         LOGGER.debug(
@@ -897,6 +951,32 @@ def stitch_worker(
 
                 shutil.copyfile(global_stitch_raster_path, 'global.tif')
                 shutil.copyfile(local_tile_raster_path, 'local.tif')
+
+            # update the done queue
+            if raster_aggregate_nodata_id_tuple[2] == '':
+                sql_string = '''
+                    UPDATE job_status
+                        SET
+                          stitched_bin=1
+                        WHERE
+                            bin_raster_path=? AND raster_id=? AND
+                            feature_id=? AND fieldname_id=?
+                    '''
+            else:
+                sql_string = '''
+                    UPDATE job_status
+                        SET
+                          stitched_bin_nodata0=1
+                        WHERE
+                            bin_nodata0_raster_path=? AND raster_id=? AND
+                            feature_id=? AND fieldname_id=?
+                    '''
+            stitch_raster_vector_feature_tuples = _execute_sqlite(
+                sql_string, WORK_DATABASE_PATH, mode='modify',
+                execute='execute', argument_list=[
+                    local_tile_raster_path,
+                    raster_aggregate_nodata_id_tuple[0],
+                    raster_aggregate_nodata_id_tuple[1]])
 
             stitch_queue.task_done()
     except Exception as e:
