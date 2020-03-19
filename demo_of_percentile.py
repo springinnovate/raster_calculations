@@ -33,8 +33,8 @@ def main():
 
     #path = r"C:\Users\Becky\Documents\raster_calculations\realized_flood_storage.tif"
     #percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\flood_percentile_working_dir"
-    path = r"C:\Users\Becky\Documents\cnc_project\first_set\total_pop_near_nature_10.tif"
-    percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\nci\percentile_working_dir"
+    path = r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_fwfish_distrib_catch_clamped_md5_54954ae73276d02e1d1551c9ac63298c.tif"
+    percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:
         os.makedirs(percentile_working_dir)
@@ -50,6 +50,15 @@ def main():
 
     return  # terminates at this point
 
+# realized_reeftourism_Modelled_Total_Dollar_Value_of_Reef_Tourism_USD_per_km2_md5_171a993b8ff40d0447f343dd014c72e0
+##0, 0.01, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 96, 97, 98, 99, 99.9, 100
+# [0, 0,   0, 0, 0, 0, 0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   2, 4,   6,  7, 9,  9,  10, 10, 10, 10,   10]
+# realized_marinefish_watson_2015_catch_Ind_Non_Ind_Rprt_IUU_md5_61e08ed60006e9ad23b74bcd44c61548
+# [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9]
+# realized_moisturerecycling_nathab_md5_8fc0527f5aafb5947cf30debb50f825e
+#[-46.6298828125, -37.2236328125, -2.6240234375, -0.7568359375, -0.2978515625, -0.0517578125, 0.1318359375, 0.8203125, 1.3134765625, 2.0888671875, 2.783203125, 3.7392578125, 5.5810546875, 8.171875, 11.2119140625, 14.50390625, 18.8642578125, 23.974609375, 30.931640625, 39.580078125, 48.5478515625, 58.1865234375, 69.0625, 86.9189453125, 114.5166015625, 121.6923828125, 132.30078125, 146.099609375, 169.0146484375, 239.0595703125, 285.03515625]
+#mangrove_forest_value
+# [0.09112019091844559, 0.1146746575832367, 0.36950379610061646, 0.5469441413879395, 0.6734423041343689, 0.7889978885650635, 0.9028277397155762, 1.2744618654251099, 1.5426571369171143, 1.7565761804580688, 1.9408801794052124, 2.094856023788452, 2.2336559295654297, 2.3777151107788086, 2.508002996444702, 2.6384236812591553, 2.749114990234375, 2.8938496112823486, 3.035269021987915, 3.1978647708892822, 3.4221363067626953, 3.744148015975952, 4.17542028427124, 4.662129878997803, 5.300693988800049, 5.447903156280518, 5.674015045166016, 6.024029731750488, 6.7951788902282715, 9.976946830749512, 21.237258911132812]
 #realized_nitrogenretention_downstream_md5_82d4e57042482eb1b92d03c0d387f501
 #        0th           25th    50th                 75th                   95th               99th                 100th
 #  -680618713.5250311, 0.0, 13816.789725814846, 6,973,767.683561915, 79,365,495.3211188, 301,244,797.7473311, 38,828,470,375.24423
