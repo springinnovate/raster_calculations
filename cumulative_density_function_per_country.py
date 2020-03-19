@@ -50,8 +50,9 @@ WORK_MAP = {
             'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'),
         'fieldname_id': 'iso3',
         'raster_gs_pattern_list': [
-            'gs://shared-with-users/realized_services/terrestrial/*.tif',
-            'gs://shared-with-users/realized_services/terrestrial/new/*.tif'
+            'gs://shared-with-users/realized_services/small_test/*.tif',
+            # 'gs://shared-with-users/realized_services/terrestrial/*.tif',
+            # 'gs://shared-with-users/realized_services/terrestrial/new/*.tif'
             ]
     },
     'eez': {
@@ -61,7 +62,8 @@ WORK_MAP = {
             'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg'),
         'fieldname_id': 'ISO_SOV1',
         'raster_gs_pattern_list': [
-            'gs://shared-with-users/realized_services/marine/*.tif'
+            'gs://shared-with-users/realized_services/small_test/*.tif',
+            # 'gs://shared-with-users/realized_services/marine/*.tif'
             ]
     }
 }
