@@ -960,7 +960,7 @@ def stitch_worker(
                           stitched_bin=1
                         WHERE
                             bin_raster_path=? AND raster_id=? AND
-                            feature_id=? AND fieldname_id=?
+                            aggregate_vector_id=?
                     '''
             else:
                 sql_string = '''
@@ -969,7 +969,7 @@ def stitch_worker(
                           stitched_bin_nodata0=1
                         WHERE
                             bin_nodata0_raster_path=? AND raster_id=? AND
-                            feature_id=? AND fieldname_id=?
+                            aggregate_vector_id=?
                     '''
             _execute_sqlite(
                 sql_string, WORK_DATABASE_PATH, mode='modify',
