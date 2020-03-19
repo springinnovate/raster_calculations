@@ -543,16 +543,17 @@ def main():
             task_name='download aggregate vector path')
         work_vector_dict['vector_path'] = aggregate_vector_path
 
-        raster_gs_path_list = []
+        gs_path_list = []
+        raster_id_list = []
         for raster_gs_pattern in work_vector_dict['raster_gs_pattern_list']:
-            raster_gs_path_list.extend(subprocess.run(
+            raster_gs_result = subprocess.run(
                 'gsutil ls -p ecoshard %s' % raster_gs_pattern,
-                capture_output=True, shell=True, check=True))
-        gs_path_list = [
-            x.decode('utf-8') for x in raster_gs_path_list.stdout.splitlines()]
-        raster_id_list = [
-            os.path.basename(os.path.splitext(gs_path)[0])
-            for gs_path in gs_path_list]
+                capture_output=True, shell=True, check=True)
+            gs_path_list.extend([
+                x.decode('utf-8') for x in raster_gs_result.stdout.splitlines()])
+            raster_id_list.extend([
+                os.path.basename(os.path.splitext(gs_path)[0])
+                for gs_path in gs_path_list])
 
         download_aggregate_vector_task.join()
         feature_id_task = task_graph.add_task(
