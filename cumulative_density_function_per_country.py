@@ -327,6 +327,11 @@ def feature_worker(
             work_queue.task_done()
 
         if feature_id != GLOBAL_ID:
+            LOGGER.debug(
+                "about to execute this sqlite with these args: %s",
+                str([bin_raster_path, bin_nodata0_raster_path,
+                     raster_id, aggregate_vector_id, feature_id,
+                     fieldname_id]))
             _execute_sqlite(
                 '''
                 UPDATE job_status
