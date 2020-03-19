@@ -293,11 +293,6 @@ def feature_worker(
                  (PERCENTILE_RECLASS_LIST, 'raw'), (BIN_NODATA, 'raw')],
                 bin_raster_op, bin_raster_path,
                 gdal.GDT_Float32, BIN_NODATA)
-            if feature_id != GLOBAL_ID:
-                LOGGER.debug('stitch this: %s', str(
-                    (bin_raster_path, aggregate_vector_id, raster_id, '')))
-                stitch_queue.put(
-                    (bin_raster_path, (raster_id, aggregate_vector_id, '')))
 
             if feature_id != GLOBAL_ID:
                 bin_nodata0_raster_path = os.path.join(
@@ -317,34 +312,33 @@ def feature_worker(
                  (PERCENTILE_RECLASS_LIST, 'raw'),
                  (BIN_NODATA, 'raw')], bin_raster_op, bin_nodata0_raster_path,
                 gdal.GDT_Float32, BIN_NODATA)
+
             if feature_id != GLOBAL_ID:
-                LOGGER.debug('stitch this: %s', str(
-                    (bin_nodata0_raster_path, raster_id, aggregate_vector_id,
-                     'nodata0')))
+                LOGGER.debug(
+                    "about to execute this sqlite with these args: %s",
+                    str([bin_raster_path, bin_nodata0_raster_path,
+                         raster_id, aggregate_vector_id, feature_id,
+                         fieldname_id]))
+                _execute_sqlite(
+                    '''
+                    UPDATE job_status
+                    SET
+                      bin_raster_path=?, bin_nodata0_raster_path=?
+                    WHERE
+                        raster_id=? AND aggregate_vector_id=? AND
+                        feature_id=? AND fieldname_id=?
+                    ''',
+                    WORK_DATABASE_PATH, execute='execute', mode='modify',
+                    argument_list=[
+                        bin_raster_path, bin_nodata0_raster_path,
+                        raster_id, aggregate_vector_id, feature_id,
+                        fieldname_id])
+                stitch_queue.put(
+                    (bin_raster_path, (raster_id, aggregate_vector_id, '')))
                 stitch_queue.put(
                     (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
                      'nodata0')))
             work_queue.task_done()
-
-        if feature_id != GLOBAL_ID:
-            LOGGER.debug(
-                "about to execute this sqlite with these args: %s",
-                str([bin_raster_path, bin_nodata0_raster_path,
-                     raster_id, aggregate_vector_id, feature_id,
-                     fieldname_id]))
-            _execute_sqlite(
-                '''
-                UPDATE job_status
-                SET
-                  bin_raster_path=?, bin_nodata0_raster_path=?
-                WHERE
-                    raster_id=? AND aggregate_vector_id=? AND
-                    feature_id=? AND fieldname_id=?
-                ''',
-                WORK_DATABASE_PATH, execute='execute', mode='modify',
-                argument_list=[
-                    bin_raster_path, bin_nodata0_raster_path,
-                    raster_id, aggregate_vector_id, feature_id, fieldname_id])
 
         LOGGER.debug('about to close worker %d', worker_id)
         task_graph.close()
