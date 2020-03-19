@@ -681,10 +681,9 @@ def main():
         work_queue.put('STOP')  # a sentinal per process
     feature_worker_pool.close()
 
-    raster_id_lock_map = {
-        raster_id_nodata_id_tuple: m_manager.Lock()
-        for raster_id_nodata_id_tuple in raster_id_to_global_stitch_path_map
-    }
+    raster_id_lock_map = m_manager.dict()
+    for raster_id_nodata_id_tuple in raster_id_to_global_stitch_path_map:
+        raster_id_lock_map[raster_id_nodata_id_tuple] = m_manager.Lock()
 
     stitch_worker_list = []
     stitch_worker_pool = multiprocessing.pool.Pool(NCPUS)
