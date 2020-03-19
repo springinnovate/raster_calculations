@@ -57,9 +57,8 @@ WORK_MAP = {
     },
     'eez': {
         'vector_url':  (
-            'https://storage.googleapis.com/'
-            'critical-natural-capital-ecoshards/'
-            'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg'),
+            'https://storage.googleapis.com/shared-with-users/'
+            'eez_iso_sov1_md5_d18f061b8628dc6da36067db7b485d3a.gpkg'),
         'fieldname_id': 'ISO_SOV1',
         'raster_gs_pattern_list': [
             'gs://shared-with-users/realized_services/small_test/*.tif',
@@ -1014,7 +1013,7 @@ def new_raster_from_base(
     LOGGER.debug('done making new raster %s', target_raster_path)
 
 
-@retrying.retry(wait_exponential_multiplier=1000, wait_exponential_max=5000)
+@retrying.retry(wait_exponential_multiplier=50, wait_exponential_max=1000)
 def _execute_sqlite(
         sqlite_command, database_path, argument_list=None,
         mode='read_only', execute='execute', fetch=None):
