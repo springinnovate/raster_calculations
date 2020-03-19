@@ -695,7 +695,9 @@ def main():
         '''
         SELECT raster_id, aggregate_vector_id, fieldname_id, feature_id
         FROM job_status
-        WHERE percentile0_list is NULL
+        WHERE
+            (bin_raster_path is NULL and feature_id != '_GLOBAL') OR
+            (percentile_list is NULL and feature_id = '_GLOBAL')
         ORDER BY feature_id
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
