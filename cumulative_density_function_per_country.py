@@ -49,19 +49,21 @@ WORK_MAP = {
             'critical-natural-capital-ecoshards/'
             'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'),
         'fieldname_id': 'iso3',
-        'raster_gs_pattern':
-            'gs://shared-with-users/realized_services/terrestrial/*.tif'
+        'raster_gs_pattern_list': [
+            'gs://shared-with-users/realized_services/terrestrial/*.tif',
+            'gs://shared-with-users/realized_services/terrestrial/new/*.tif'
+            ]
     },
-    # Becky wants me to skip the EEZ zones.
-    # 'eez': {
-    #     'vector_url':  (
-    #         'https://storage.googleapis.com/'
-    #         'critical-natural-capital-ecoshards/'
-    #         'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg'),
-    #     'fieldname_id': 'ISO_SOV1',
-    #     'raster_gs_pattern':
-    #         'gs://shared-with-users/realized_services/marine/*.tif'
-    # }
+    'eez': {
+        'vector_url':  (
+            'https://storage.googleapis.com/'
+            'critical-natural-capital-ecoshards/'
+            'eez_v11_md5_72307ea605d6712bf79618f33e67676e.gpkg'),
+        'fieldname_id': 'ISO_SOV1',
+        'raster_gs_pattern_list': [
+            'gs://shared-with-users/realized_services/marine/*.tif'
+            ]
+    }
 }
 
 GLOBAL_ID = '_GLOBAL'
@@ -521,10 +523,12 @@ def main():
             task_name='download aggregate vector path')
         work_vector_dict['vector_path'] = aggregate_vector_path
 
-        raster_gs_path_list = subprocess.run(
-            'gsutil ls -p ecoshard %s' % work_vector_dict[
-                'raster_gs_pattern'],
-            capture_output=True, shell=True, check=True)
+        raster_gs_path_list = []
+        for raster_gs_pattern in work_vector_dict['raster_gs_pattern_list']:
+            raster_gs_path_list.extend(subprocess.run(
+                'gsutil ls -p ecoshard %s' % work_vector_dict[
+                    'raster_gs_pattern'],
+                capture_output=True, shell=True, check=True))
         gs_path_list = [
             x.decode('utf-8') for x in raster_gs_path_list.stdout.splitlines()]
         raster_id_list = [
