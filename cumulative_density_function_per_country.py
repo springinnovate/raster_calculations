@@ -956,9 +956,6 @@ def stitch_worker(
                 global_band = None
                 global_raster = None
 
-                shutil.copyfile(global_stitch_raster_path, 'global.tif')
-                shutil.copyfile(local_tile_raster_path, 'local.tif')
-
             # update the done queue
             if raster_aggregate_nodata_id_tuple[2] == '':
                 sql_string = '''
@@ -978,6 +975,12 @@ def stitch_worker(
                             bin_nodata0_raster_path=? AND raster_id=? AND
                             aggregate_vector_id=?
                     '''
+            LOGGER.debug(
+                'update the database with this command %s\nand these data:%s',
+                sql_string, [
+                    local_tile_raster_path,
+                    raster_aggregate_nodata_id_tuple[0],
+                    raster_aggregate_nodata_id_tuple[1]])
             _execute_sqlite(
                 sql_string, WORK_DATABASE_PATH, mode='modify',
                 execute='execute', argument_list=[
