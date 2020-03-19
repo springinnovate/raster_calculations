@@ -635,11 +635,11 @@ def main():
     task_graph.close()
     task_graph.join()
 
-    # TODO: put WHERE percentile0_list is NULL back
     raster_vector_feature_tuples = _execute_sqlite(
         '''
         SELECT raster_id, aggregate_vector_id, fieldname_id, feature_id
         FROM job_status
+        WHERE percentile0_list is NULL
         ORDER BY feature_id
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
@@ -651,24 +651,11 @@ def main():
             raster_vector_feature_tuples:
         if feature_id in SKIP_THESE_FEATURE_IDS:
             continue
-        # TODO: commented out just to stitch
-        # LOGGER.debug(
-        #     'putting %s %s %s to work',
-        #     raster_id, aggregate_vector_id, feature_id)
-        # work_queue.put(
-        #     (raster_id, aggregate_vector_id, feature_id, fieldname_id))
-
-        worker_dir = os.path.join(
-            COUNTRY_WORKSPACES, '%s_%s_%s' % (
-                raster_id, aggregate_vector_id, feature_id))
-        bin_raster_path = os.path.join(worker_dir, 'bin_raster.tif')
-        stitch_queue.put(
-            (bin_raster_path, (raster_id, aggregate_vector_id, '')))
-        bin_nodata0_raster_path = os.path.join(
-            worker_dir, 'bin_nodata0_raster.tif')
-        stitch_queue.put(
-            (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
-             'nodata0')))
+        LOGGER.debug(
+            'putting %s %s %s to work',
+            raster_id, aggregate_vector_id, feature_id)
+        work_queue.put(
+            (raster_id, aggregate_vector_id, feature_id, fieldname_id))
 
     align_lock = m_manager.Lock()
     worker_list = []
