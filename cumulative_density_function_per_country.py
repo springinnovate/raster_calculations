@@ -546,8 +546,7 @@ def main():
         raster_gs_path_list = []
         for raster_gs_pattern in work_vector_dict['raster_gs_pattern_list']:
             raster_gs_path_list.extend(subprocess.run(
-                'gsutil ls -p ecoshard %s' % work_vector_dict[
-                    'raster_gs_pattern'],
+                'gsutil ls -p ecoshard %s' % raster_gs_pattern,
                 capture_output=True, shell=True, check=True))
         gs_path_list = [
             x.decode('utf-8') for x in raster_gs_path_list.stdout.splitlines()]
@@ -971,7 +970,7 @@ def stitch_worker(
                             bin_nodata0_raster_path=? AND raster_id=? AND
                             feature_id=? AND fieldname_id=?
                     '''
-            stitch_raster_vector_feature_tuples = _execute_sqlite(
+            _execute_sqlite(
                 sql_string, WORK_DATABASE_PATH, mode='modify',
                 execute='execute', argument_list=[
                     local_tile_raster_path,
