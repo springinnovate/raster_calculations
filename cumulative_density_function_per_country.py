@@ -716,7 +716,7 @@ def main():
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
-    stitch_queue = m_manager.JoinableQueue()
+    stitch_queue = m_manager.Queue()
     # get any stitches that didn't finish on the last run
     stitch_raster_vector_feature_tuples = _execute_sqlite(
         '''
@@ -743,6 +743,7 @@ def main():
 
     for bin_nodata0_raster_path, raster_id, aggregate_vector_id in \
             stitch_nodata0_raster_vector_feature_tuples:
+        LOGGER.debug("putting this nodata to stitch queue: %s", str((bin_nodata0_raster_path, raster_id, aggregate_vector_id)))
         stitch_queue.put(
             (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
              'nodata0')))
