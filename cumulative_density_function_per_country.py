@@ -936,42 +936,44 @@ def stitch_raster(lock_map, payload, raster_id_to_global_stitch_path_map):
     local_gt = local_tile_info['geotransform']
     global_i, global_j = gdal.ApplyGeoTransform(
         global_inv_gt, local_gt[0], local_gt[3])
-    local_tile_raster = gdal.OpenEx(
-        local_tile_raster_path, gdal.OF_RASTER)
-    local_array = local_tile_raster.ReadAsArray()
-    local_tile_raster = None
-    valid_mask = ~numpy.isclose(
-        local_array, local_tile_info['nodata'][0])
-    if valid_mask.size > 0:
-        with lock_map[global_stitch_raster_path]:
-            global_raster = gdal.OpenEx(
-                global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
 
-            LOGGER.debug(
-                'stitching this %s into this %s',
-                payload, global_stitch_raster_path)
-            global_band = global_raster.GetRasterBand(1)
-            global_array = global_band.ReadAsArray(
-                xoff=global_i, yoff=global_j,
-                win_xsize=local_array.shape[1],
-                win_ysize=local_array.shape[0])
-            global_array[valid_mask] = local_array[valid_mask]
-            win_ysize_write, win_xsize_write = global_array.shape
-            if win_ysize_write == 0 or win_xsize_write == 0:
-                raise ValueError(
-                    'got zeros on sizes: %d %d %s',
-                    win_ysize_write, win_xsize_write, payload)
-            if global_i + win_xsize_write >= global_band.XSize:
-                win_xsize_write = int(global_band.XSize - global_i)
-            if global_j + win_ysize_write >= global_band.YSize:
-                win_ysize_write = int(global_band.YSize - global_j)
+    for offsect_dict, local_array in pygeoprocessing.iterblocks(
+            (local_tile_raster_path, 1)):
+        valid_mask = ~numpy.isclose(
+            local_array, local_tile_info['nodata'][0])
+        if valid_mask.size > 0:
+            with lock_map[global_stitch_raster_path]:
+                global_raster = gdal.OpenEx(
+                    global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
 
-            global_band.WriteArray(
-                global_array[0:win_ysize_write, 0:win_xsize_write],
-                xoff=global_i, yoff=global_j)
-            global_band.FlushCache()
-            global_band = None
-            global_raster = None
+                LOGGER.debug(
+                    'stitching this %s into this %s',
+                    payload, global_stitch_raster_path)
+                global_band = global_raster.GetRasterBand(1)
+                local_i = global_i+offsect_dict['xoff']
+                local_j = global_j+offsect_dict['yoff']
+                global_array = global_band.ReadAsArray(
+                    xoff=local_i,
+                    yoff=local_j,
+                    win_xsize=local_array.shape[1],
+                    win_ysize=local_array.shape[0])
+                global_array[valid_mask] = local_array[valid_mask]
+                win_ysize_write, win_xsize_write = global_array.shape
+                if win_ysize_write == 0 or win_xsize_write == 0:
+                    raise ValueError(
+                        'got zeros on sizes: %d %d %s',
+                        win_ysize_write, win_xsize_write, payload)
+                if local_i + win_xsize_write >= global_band.XSize:
+                    win_xsize_write = int(global_band.XSize - local_i)
+                if local_j + win_ysize_write >= global_band.YSize:
+                    win_ysize_write = int(global_band.YSize - local_j)
+
+                global_band.WriteArray(
+                    global_array[0:win_ysize_write, 0:win_xsize_write],
+                    xoff=local_i, yoff=local_j)
+                global_band.FlushCache()
+                global_band = None
+                global_raster = None
 
     # update the done database
     if raster_aggregate_nodata_id_tuple[2] == '':
