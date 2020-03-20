@@ -126,6 +126,7 @@ def stitch_manager(
         payload = stitch_queue.get()
         if payload == 'STOP':
             return
+        LOGGER.debug('stitch manager got this payload: %s', str(payload))
         local_tile_raster_path, raster_aggregate_nodata_id_tuple = payload
         worker_pool.apply_async(
             func=stitch_raster,
