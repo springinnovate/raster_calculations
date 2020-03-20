@@ -676,9 +676,9 @@ def main():
     stitch_queue_raster_map = m_manager.dict()
     for raster_id, aggregate_vector_id in raster_id_agg_vector_tuples:
         stitch_queue_raster_map[(raster_id, aggregate_vector_id, '')] = \
-            multiprocessing.JoinableQueue()
+            m_manager.JoinableQueue()
         stitch_queue_raster_map[(raster_id, aggregate_vector_id, 'nodata')] = \
-            multiprocessing.JoinableQueue()
+            m_manager.JoinableQueue()
 
     # get any stitches that didn't finish on the last run
     stitch_raster_vector_feature_tuples = _execute_sqlite(
