@@ -48,11 +48,11 @@ COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
 NCPUS = multiprocessing.cpu_count()
 
 logging.basicConfig(
-        level=logging.DEBUG,
-        format=(
-            '%(asctime)s (%(relativeCreated)d) %(processName)s %(levelname)s '
-            '%(name)s [%(funcName)s:%(lineno)d] %(message)s'),
-        filename='log.txt')
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(processName)s %(levelname)s '
+        '%(name)s [%(funcName)s:%(lineno)d] %(message)s'),
+    stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logging.getLogger('taskgraph').setLevel(logging.INFO)
