@@ -775,6 +775,7 @@ def main():
             target=stitch_worker,
             args=(stitch_queue, raster_id_to_global_stitch_path_map,
                   worker_id))
+        stitch_worker_process.start()
         stitch_worker_list.append(stitch_worker_process)
 
     LOGGER.debug('wait for workers to stop in tihs list: %s', str(worker_list))
