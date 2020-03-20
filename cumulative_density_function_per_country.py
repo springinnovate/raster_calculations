@@ -7,6 +7,7 @@ import itertools
 import logging
 import logging.handlers
 import multiprocessing
+import multiprocessing.managers
 import os
 import pathlib
 import pickle
