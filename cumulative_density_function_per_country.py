@@ -671,7 +671,9 @@ def main():
         GROUP BY raster_id, aggregate_vector_id
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
-    stitch_queue_raster_map = {}
+
+    m_manager = multiprocessing.Manager()
+    stitch_queue_raster_map = m_manager.dict()
     for raster_id, aggregate_vector_id in raster_id_agg_vector_tuples:
         stitch_queue_raster_map[(raster_id, aggregate_vector_id, '')] = \
             multiprocessing.JoinableQueue()
@@ -697,8 +699,6 @@ def main():
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
-    m_manager = multiprocessing.Manager()
-    stitch_queue = m_manager.JoinableQueue()
     for bin_raster_path, raster_id, aggregate_vector_id in \
             stitch_raster_vector_feature_tuples:
         stitch_queue_raster_map[
