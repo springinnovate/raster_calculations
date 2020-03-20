@@ -1,5 +1,4 @@
 """Tracer script showing how to interact with CDF country database."""
-import bisect
 import logging
 import os
 import pickle
@@ -81,9 +80,9 @@ def main():
             SELECT
               feature_id, percentile_list, percentile0_list, cdf, cdfnodata0
             FROM job_status
-            WHERE raster_id=? and (feature_id='IDN' or feature_id='_GLOBAL')
+            WHERE raster_id=?
             ''',
-            WORK_DATABASE_PATH, execute='execute', argument_list=['realized_cultural_language_nathab_md5_8e517eaa7db482d1446be5b82152c79b'],
+            WORK_DATABASE_PATH, execute='execute', argument_list=[raster_id],
             fetch='all')
 
         percentile_map = {
@@ -158,6 +157,7 @@ def main():
                 csv_nodata0_percentile_file.write(
                     '\n%s,' % feature_id +
                     ','.join([str(x) for x in percentile_map[feature_id][1]]))
+
 
 if __name__ == '__main__':
     main()
