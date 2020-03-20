@@ -746,8 +746,8 @@ def main():
     align_lock = m_manager.Lock()
     worker_list = []
 
-    feature_worker_pool = multiprocessing.pool.Pool(NCPUS/2)
-    for worker_id in range(NCPUS/2):
+    feature_worker_pool = multiprocessing.pool.Pool(NCPUS//2)
+    for worker_id in range(NCPUS//2):
         country_worker_process = feature_worker_pool.apply_async(
             func=feature_worker,
             args=(
@@ -759,7 +759,7 @@ def main():
     feature_worker_pool.close()
 
     stitch_worker_list = []
-    for _ in range(NCPUS/2):
+    for _ in range(NCPUS//2):
         stitch_worker_process = multiprocessing.Process(
             target=stitch_worker,
             args=(lock_map, stitch_queue, raster_id_to_global_stitch_path_map,
