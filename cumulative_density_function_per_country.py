@@ -108,12 +108,14 @@ def country_nodata0_op(base_array, nodata):
 
 
 def stitch_manager(
-        lock_map, worker_pool, stitch_queue,
+        lock_map, cpu_semaphore, worker_pool, stitch_queue,
         raster_id_to_global_stitch_path_map):
     """Thread to manage jobs to fork off to stitch workers.
 
     Parameters:
         lock_map (dict): maps global raster paths to lock objects.
+        cpu_semaphore (bounded semaphore): acquire this when sending a job
+            the job should release it
         worker_pool (multiprocessing.Pool): send work to this pool
         stitch_queue (JoinableQueue): stitching orders come through here.
         raster_id_to_global_stitch_map_path (dict): used to
@@ -128,9 +130,12 @@ def stitch_manager(
             return
         LOGGER.debug('stitch manager got this payload: %s', str(payload))
         local_tile_raster_path, raster_aggregate_nodata_id_tuple = payload
+        cpu_semaphore.acquire()
         worker_pool.apply_async(
             func=stitch_raster,
-            args=(lock_map, payload, raster_id_to_global_stitch_path_map))
+            args=(
+                lock_map, cpu_semaphore, payload,
+                raster_id_to_global_stitch_path_map))
 
 
 def create_status_database(database_path):
@@ -785,10 +790,11 @@ def main():
         worker_list.append(country_worker_process)
         work_queue.put('STOP')  # a sentinal per process
 
+    cpu_semaphore = m_manager.BoundedSemaphore(NCPUS*2)
     stitch_manager_thread = threading.Thread(
         target=stitch_manager,
         args=(
-            lock_map, worker_pool, stitch_queue,
+            lock_map, cpu_semaphore, worker_pool, stitch_queue,
             raster_id_to_global_stitch_path_map))
     stitch_manager_thread.start()
 
@@ -798,7 +804,7 @@ def main():
 
     # don't stop stitching until all the fragments have been run
     stitch_queue.put('STOP')
-    LOGGER.debug('wait for worker_pool to complete')
+    LOGGER.debug('wait for stitch_manager to complete')
     stitch_manager.join()
     worker_pool.close()
     worker_pool.join()
@@ -909,11 +915,13 @@ def calculate_cdf(raster_path, percentile_list):
     return cdf_array
 
 
-def stitch_raster(lock_map, payload, raster_id_to_global_stitch_path_map):
+def stitch_raster(
+        lock_map, cpu_semaphore, payload, raster_id_to_global_stitch_path_map):
     """Stitch incoming country rasters into global raster.
 
     Parameters:
         lock_map (dict): maps global raster paths to locks so we don't
+        cpu_semaphore (BoundedSemaphore): release this when stitch is done
         payload (tuple): payloads come in as an alert that a sub raster
             is ready for stitching into the global raster. Payloads are of the
             form (bin_raster_path,(raster_id, aggregate_vector_id, nodataflag))
@@ -1009,6 +1017,7 @@ def stitch_raster(lock_map, payload, raster_id_to_global_stitch_path_map):
             local_tile_raster_path,
             raster_aggregate_nodata_id_tuple[0],
             raster_aggregate_nodata_id_tuple[1]])
+    cpu_semaphore.release()
 
 
 def new_raster_from_base(
