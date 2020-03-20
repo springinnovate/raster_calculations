@@ -799,6 +799,7 @@ def main():
     # don't stop stitching until all the fragments have been run
     stitch_queue.put('STOP')
     LOGGER.debug('wait for worker_pool to complete')
+    stitch_manager.join()
     worker_pool.close()
     worker_pool.join()
 
