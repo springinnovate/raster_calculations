@@ -150,7 +150,7 @@ def create_status_database(database_path):
 
 def feature_worker(
         work_queue, align_lock, aggregate_vector_id_to_path,
-        raster_id_to_path_map, stitch_queue_raster_map, worker_id):
+        raster_id_to_path_map, stitch_queue, worker_id):
     """Process work queue.
 
     Parameters:
@@ -164,9 +164,8 @@ def feature_worker(
             ids to vector paths for per-feature normalization.
         raster_id_to_path_map (dict): maps 'raster_id' to paths to rasters on
             disk.
-        stitch_queue_raster_map (dict): a map of
-            (raster_id, agg_id, 'nodata0' or '') to a unique queue where
-            a stitch worker on the other end will process it.
+        stitch_queue (JoinableQueue): a queue to put
+            (raster_id, agg_id, 'nodata0' or '') tuples in to stitch.
 
     """
     try:
@@ -349,14 +348,12 @@ def feature_worker(
                         raster_id, aggregate_vector_id, feature_id,
                         fieldname_id])
 
-                stitch_queue_raster_map[
-                    (raster_id, aggregate_vector_id, '')].put(
-                        (bin_raster_path,
-                            (raster_id, aggregate_vector_id, '')))
-                stitch_queue_raster_map[
-                    (raster_id, aggregate_vector_id, 'nodata0')].put(
-                        (bin_nodata0_raster_path,
-                            (raster_id, aggregate_vector_id, 'nodata0')))
+                stitch_queue.put(
+                    (bin_raster_path,
+                        (raster_id, aggregate_vector_id, '')))
+                stitch_queue.put(
+                    (bin_nodata0_raster_path,
+                        (raster_id, aggregate_vector_id, 'nodata0')))
 
             work_queue.task_done()
 
@@ -638,6 +635,8 @@ def main():
         'raster id agg vector tuples: %s', str(
             raster_id_agg_vector_tuples))
 
+    m_manager = multiprocessing.Manager()
+    lock_map = m_manager.dict()
     raster_id_to_global_stitch_path_map = {}
     # This loop sets up empty rasters for stitching, one per raster type
     # / aggregate id / regular/nodata
@@ -652,6 +651,7 @@ def main():
                     fieldname_id))
             global_stitch_raster_path = os.path.join(
                 WORKSPACE_DIR, '%s.tif' % global_stitch_raster_id)
+            lock_map[global_stitch_raster_path] = m_manager.Lock()
             LOGGER.debug(
                 'make a global stitch raster: %s',
                 global_stitch_raster_path)
@@ -689,15 +689,7 @@ def main():
         ''', WORK_DATABASE_PATH, execute='execute', argument_list=[],
         fetch='all')
 
-    m_manager = multiprocessing.Manager()
-    stitch_queue_raster_map = m_manager.dict()
-    for raster_id, aggregate_vector_id in raster_id_agg_vector_tuples:
-        stitch_queue_raster_map[(raster_id, aggregate_vector_id, '')] = \
-            m_manager.JoinableQueue()
-        stitch_queue_raster_map[
-            (raster_id, aggregate_vector_id, 'nodata0')] = (
-                m_manager.JoinableQueue())
-
+    stitch_queue = m_manager.JoinableQueue()
     # get any stitches that didn't finish on the last run
     stitch_raster_vector_feature_tuples = _execute_sqlite(
         '''
@@ -719,16 +711,14 @@ def main():
 
     for bin_raster_path, raster_id, aggregate_vector_id in \
             stitch_raster_vector_feature_tuples:
-        stitch_queue_raster_map[
-            (raster_id, aggregate_vector_id, '')].put(
-                (bin_raster_path, (raster_id, aggregate_vector_id, '')))
+        stitch_queue.put(
+            (bin_raster_path, (raster_id, aggregate_vector_id, '')))
 
     for bin_nodata0_raster_path, raster_id, aggregate_vector_id in \
             stitch_nodata0_raster_vector_feature_tuples:
-        stitch_queue_raster_map[
-            (raster_id, aggregate_vector_id, 'nodata0')].put(
-                (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
-                 'nodata0')))
+        stitch_queue.put(
+            (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
+             'nodata0')))
 
     # schedule work that hasn't been processed
     work_raster_vector_feature_tuples = _execute_sqlite(
@@ -756,25 +746,23 @@ def main():
     align_lock = m_manager.Lock()
     worker_list = []
 
-    feature_worker_pool = multiprocessing.pool.Pool(NCPUS)
-    for worker_id in range(NCPUS):
+    feature_worker_pool = multiprocessing.pool.Pool(NCPUS/2)
+    for worker_id in range(NCPUS/2):
         country_worker_process = feature_worker_pool.apply_async(
             func=feature_worker,
             args=(
                 work_queue, align_lock, aggregate_vector_id_to_path,
-                raster_id_to_path_map, stitch_queue_raster_map, worker_id),
+                raster_id_to_path_map, stitch_queue, worker_id),
             error_callback=error_callback)
         worker_list.append(country_worker_process)
         work_queue.put('STOP')  # a sentinal per process
     feature_worker_pool.close()
 
-    stitch_queue_raster_map[(raster_id, aggregate_vector_id, '')]
     stitch_worker_list = []
-    for raster_agg_nodata_tag_tuple, stitch_queue in \
-            stitch_queue_raster_map.items():
+    for _ in range(NCPUS/2):
         stitch_worker_process = multiprocessing.Process(
             target=stitch_worker,
-            args=(stitch_queue, raster_id_to_global_stitch_path_map,
+            args=(lock_map, stitch_queue, raster_id_to_global_stitch_path_map,
                   worker_id))
         stitch_worker_process.start()
         stitch_worker_list.append(stitch_worker_process)
@@ -785,10 +773,8 @@ def main():
     LOGGER.debug('work queue complete')
 
     # don't stop stitching until all the fragments have been run
-    for raster_agg_nodata_tag_tuple, stitch_queue in \
-            stitch_queue_raster_map.items():
-        stitch_queue.join()
-        stitch_queue.put('STOP')
+    stitch_queue.join()
+    stitch_queue.put('STOP')
 
     LOGGER.debug('wait for stitch queue to complete')
     for sitch_process in stitch_worker_list:
@@ -902,10 +888,11 @@ def calculate_cdf(raster_path, percentile_list):
 
 
 def stitch_worker(
-        stitch_queue, raster_id_to_global_stitch_path_map, worker_id):
+        lock_map, stitch_queue, raster_id_to_global_stitch_path_map, worker_id):
     """Stitch incoming country rasters into global raster.
 
     Parameters:
+        lock_map (dict): maps Lock objects to raster paths.
         stitch_queue (queue): payloads come in as an alert that a sub raster
             is ready for stitching into the global raster. Payloads are of the
             form (bin_raster_path,(raster_id, aggregate_vector_id, nodataflag))
@@ -947,35 +934,36 @@ def stitch_worker(
                 local_array, local_tile_info['nodata'][0])
             if valid_mask.size == 0:
                 continue
-            global_raster = gdal.OpenEx(
-                global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
+            with lock_map[global_stitch_raster_path]:
+                global_raster = gdal.OpenEx(
+                    global_stitch_raster_path, gdal.OF_RASTER | gdal.GA_Update)
 
-            LOGGER.debug(
-                'stitching this %s into this %s',
-                payload, global_stitch_raster_path)
-            global_band = global_raster.GetRasterBand(1)
-            global_array = global_band.ReadAsArray(
-                xoff=global_i, yoff=global_j,
-                win_xsize=local_array.shape[1],
-                win_ysize=local_array.shape[0])
-            global_array[valid_mask] = local_array[valid_mask]
-            win_ysize_write, win_xsize_write = global_array.shape
-            if win_ysize_write == 0 or win_xsize_write == 0:
                 LOGGER.debug(
-                    'got zeros on sizes: %d %d %s',
-                    win_ysize_write, win_xsize_write, payload)
-                continue
-            if global_i + win_xsize_write >= global_band.XSize:
-                win_xsize_write = int(global_band.XSize - global_i)
-            if global_j + win_ysize_write >= global_band.YSize:
-                win_ysize_write = int(global_band.YSize - global_j)
+                    'stitching this %s into this %s',
+                    payload, global_stitch_raster_path)
+                global_band = global_raster.GetRasterBand(1)
+                global_array = global_band.ReadAsArray(
+                    xoff=global_i, yoff=global_j,
+                    win_xsize=local_array.shape[1],
+                    win_ysize=local_array.shape[0])
+                global_array[valid_mask] = local_array[valid_mask]
+                win_ysize_write, win_xsize_write = global_array.shape
+                if win_ysize_write == 0 or win_xsize_write == 0:
+                    LOGGER.debug(
+                        'got zeros on sizes: %d %d %s',
+                        win_ysize_write, win_xsize_write, payload)
+                    continue
+                if global_i + win_xsize_write >= global_band.XSize:
+                    win_xsize_write = int(global_band.XSize - global_i)
+                if global_j + win_ysize_write >= global_band.YSize:
+                    win_ysize_write = int(global_band.YSize - global_j)
 
-            global_band.WriteArray(
-                global_array[0:win_ysize_write, 0:win_xsize_write],
-                xoff=global_i, yoff=global_j)
-            global_band.FlushCache()
-            global_band = None
-            global_raster = None
+                global_band.WriteArray(
+                    global_array[0:win_ysize_write, 0:win_xsize_write],
+                    xoff=global_i, yoff=global_j)
+                global_band.FlushCache()
+                global_band = None
+                global_raster = None
 
             # update the done queue
             if raster_aggregate_nodata_id_tuple[2] == '':
