@@ -128,7 +128,7 @@ def stitch_manager(
             return
         local_tile_raster_path, raster_aggregate_nodata_id_tuple = payload
         worker_pool.apply_async(
-            target=stitch_raster,
+            func=stitch_raster,
             args=(lock_map, payload, raster_id_to_global_stitch_path_map))
 
 
