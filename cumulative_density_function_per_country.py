@@ -725,7 +725,7 @@ def main():
     for bin_nodata0_raster_path, raster_id, aggregate_vector_id in \
             stitch_nodata0_raster_vector_feature_tuples:
         stitch_queue_raster_map[
-            (raster_id, aggregate_vector_id, 'nodata')].put(
+            (raster_id, aggregate_vector_id, 'nodata0')].put(
                 (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
                  'nodata0')))
 
