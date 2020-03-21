@@ -748,7 +748,6 @@ def main():
 
     for bin_nodata0_raster_path, raster_id, aggregate_vector_id in \
             stitch_nodata0_raster_vector_feature_tuples:
-        LOGGER.debug("putting this nodata to stitch queue: %s", str((bin_nodata0_raster_path, raster_id, aggregate_vector_id)))
         stitch_queue.put(
             (bin_nodata0_raster_path, (raster_id, aggregate_vector_id,
              'nodata0')))
