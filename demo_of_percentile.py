@@ -33,7 +33,7 @@ def main():
 
     #path = r"C:\Users\Becky\Documents\raster_calculations\realized_flood_storage.tif"
     #percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\flood_percentile_working_dir"
-    path = r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_fwfish_distrib_catch_clamped_md5_54954ae73276d02e1d1551c9ac63298c.tif"
+    path = r"C:\Users\Becky\Documents\cnc_project\binned_services_by_country\without_0s\terrestrial_bins_by-country_average_raster.tif"
     percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:
@@ -42,7 +42,7 @@ def main():
         pass
         #checks to see if the directory already exists, if it doesn't it makes it, if it does it doesn't do anything
     percentile_values_list = pygeoprocessing.raster_band_percentile(
-        (path, 1), percentile_working_dir, [0, 0.01, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 96, 97, 98, 99, 99.9, 100])
+        (path, 1), percentile_working_dir, list(range(0, 101, 1)))
     # (path,1) is indicating the first band in that "path" raster; the 2nd argument is the working dir; the third is the list of percentiles we want
     shutil.rmtree(percentile_working_dir)
     #this gets rid of that termporary directory
@@ -50,6 +50,9 @@ def main():
 
     return  # terminates at this point
 
+# [0, 0.1, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 96, 97, 98, 99, 99.9, 100]
+# binned_services_by_country\without_0s\realized_commercialtimber_forest_clamped0_by_country_md5_84d0335a35b8b50ef5ffc20e3c7dc6be.tif
+# [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8999999761581421, 3.200000047683716, 5.5, 7.699999809265137, 8.100000381469727, 8.5, 9.0, 9.5, 10.0, 10.0
 # realized_reeftourism_Modelled_Total_Dollar_Value_of_Reef_Tourism_USD_per_km2_md5_171a993b8ff40d0447f343dd014c72e0
 ##0, 0.01, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 96, 97, 98, 99, 99.9, 100
 # [0, 0,   0, 0, 0, 0, 0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   2, 4,   6,  7, 9,  9,  10, 10, 10, 10,   10]

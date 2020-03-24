@@ -68,19 +68,19 @@ WORK_MAP = {
             'countries_iso3_md5_6fb2431e911401992e6e56ddf0a9bcda.gpkg'),
         'fieldname_id': 'iso3',
         'raster_gs_pattern_list': [
-            'gs://shared-with-users/realized_services/terrestrial/*.tif',
+            #'gs://shared-with-users/realized_services/terrestrial/*.tif',
             'gs://shared-with-users/realized_services/terrestrial/new/*.tif'
             ]
     },
-    'eez': {
-        'vector_url':  (
-            'https://storage.googleapis.com/shared-with-users/'
-            'eez_iso_sov1_md5_d18f061b8628dc6da36067db7b485d3a.gpkg'),
-        'fieldname_id': 'ISO_SOV1',
-        'raster_gs_pattern_list': [
-            'gs://shared-with-users/realized_services/marine/*.tif'
-            ]
-    }
+    #'eez': {
+    #    'vector_url':  (
+    #        'https://storage.googleapis.com/shared-with-users/'
+    #        'eez_iso_sov1_md5_d18f061b8628dc6da36067db7b485d3a.gpkg'),
+    #    'fieldname_id': 'ISO_SOV1',
+    #    'raster_gs_pattern_list': [
+    #        'gs://shared-with-users/realized_services/marine/*.tif'
+    #        ]
+    #}
 }
 
 GLOBAL_ID = '_GLOBAL'

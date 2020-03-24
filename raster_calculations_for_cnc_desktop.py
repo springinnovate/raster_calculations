@@ -33,33 +33,14 @@ def main():
 
     # CNC calculations
 
-    masker_list = [
-         {
-            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)]+[210])[1:-1]),
-            'symbol_to_path_map': {
-                'raster': r"C:\Users\Becky\Documents\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif",
-            },
-            'target_nodata': -1,
-            'target_raster_path': "masked_all_nathab_wstreams_esa2015.tif",
-        },
-    ]
-    for masker in masker_list:
-       raster_calculations_core.evaluate_calculation(
-            masker, TASK_GRAPH, WORKSPACE_DIR)
-    
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-
     single_expression = {
-        'expression': 'service/10',
+        'expression': 'service * pop',
         'symbol_to_path_map': {
-            'service': r"C:\Users\Becky\Documents\raster_calculations\to_ave\reefsplus_coastalprotection_average_raster.tif",
+            'service': r"C:\Users\Becky\Documents\raster_calculations\average_raster.tif",
+            'pop': r"C:\Users\Becky\Documents\raster_calculations\valid_count_raster.tif",  
         },
         'target_nodata': -9999,
-        'target_raster_path': "realized_reefsplus_coastalprotectionbin.tif",
+        'target_raster_path': "sum_of_top90_rasters.tif",
         'target_pixel_size': (0.002777777777778, -0.002777777777778),
         'resample_method': 'average'
     }
@@ -71,80 +52,162 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
-    LOth_MM = 0.00001
-    clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
+   
+    N90 = 7.3
+    S90 = 9.8
+    P90 = 8.4
+    FF90 = 9.5
+    MF90 =  9.3
+    CT90 = 4.2
+    DT90 = 5.8 
+    FW90 = 6.2
+    F90 = 7.9
+    G90 = 4.9
+    CL90 = 6.1
+    MR90 = 4.4
+    NA90 = 8.2
+    RT90 = 3.9
+    CP90 = 2.7
+
+    top_values_list = [ 
         {
-            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'expression': f'(service>={N90}) + 0*(service<{N90})', 
             'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_commercialtimber_forest_md5_99153e7a8177fd7ed6bb75a5fdc426e5.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_nitrogenretention_bin.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_commercialtimber_forest_clamped.tif",
+            'target_raster_path': "realized_nitrogenretention_nathab_top90.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
         {
-            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'expression': f'(service>={S90}) + 0*(service<{S90})', 
             'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_domestictimber_forest_md5_3ee8a15ce8ed38b0710b8f6d74640b70.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_sedimentdeposition_bin.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_domestictimber_forest_clamped.tif",
+            'target_raster_path': "realized_sedimentdeposition_nathab_top90.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
         {
-            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'expression': f'(service>={P90}) + 0*(service<{P90})',
             'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_flood_nathab_md5_bf277802945a0a7067d2a90941e355e1.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_pollination_bin.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_flood_nathab_clamped.tif",
+            'target_raster_path': "realized_pollination_nathab_top90.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
         {
-            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'expression': f'(service>={FF90}) + 0*(service<{FF90})', 
             'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_fuelwood_forest_md5_e86706b0ebe0d296acac30db78f2c284.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_fwfish_bin.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_fuelwood_forest_clamped.tif",
+            'target_raster_path': "realized_fwfish_per_km2_top90_3e-2_13.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
         {
-            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
+            'expression': f'(service>={MF90}) + 0*(service<{MF90})', 
             'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_grazing_natnotforest_md5_fbc4907814187d1be75b35932617af65.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_marinefish_bin.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_grazing_natnotforest_clamped.tif",
+            'target_raster_path': "realized_marinefish_watson_2015_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={CT90}) + 0*(service<{CT90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_commercialtimber_bin.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_commercialtimber_forest_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={DT90}) + 0*(service<{DT90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_domestictimber_binf.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_domestictimber_forest_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={F90}) + 0*(service<{F90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_flood_bin.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_flood_nathab_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={FW90}) + 0*(service<{FW90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_fuelwood_bin.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fuelwood_forest_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={G90}) + 0*(service<{G90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_grazing_bin.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_grazing_natnotforest_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={CL90}) + 0*(service<{CL90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_cultural_language_bin.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_cultural_language_nathab_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={MR90}) + 0*(service<{MR90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_moisturerecycling_bin.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_moisturerecycling_nathab_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={NA90}) + 0*(service<{NA90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_natureaccess10_bin.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_natureaccess10_nathab_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={RT90}) + 0*(service<{RT90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_reeftourism_bin.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_reeftourism_top90.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>={CP90}) + 0*(service<{CP90})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\realized_coastalprotectionbin_plusbarrierreefs_md5_a3f43a2e60e5976799d257ad9561731f.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_coastalprotection_top90.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
     ]
 
-    for calculation in clamped_service_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-    
-    LOth_ffish = 0.00001
-    NNth_ffish = 1000
-    clamped_service_list = [ 
-        {
-            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + 0*(service<{LOth_ffish})', 
-            'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif",
-            },
-            'target_nodata': -9999,
-            'target_raster_path': "realized_fwfish_distrib_catch_0s_clamped1000.tif",
-            'target_pixel_size': (0.002777777777778, -0.002777777777778),
-        },
-    ]
-
-    for calculation in clamped_service_list:
+    for calculation in top_values_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
@@ -156,11 +219,11 @@ def main():
     single_expression = {
         'expression': 'service * pop',
         'symbol_to_path_map': {
-            'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\cv_pop_sum_md5_954b755a9300ceb03a284197672b3656.tif",
-            'pop': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\cv_service_sum_md5_0f86665de086aba2e16dca68ac859428.tif",  
+            'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\reefs\barrier_reef_service_average_raster_md5_e12c2928e16bdbad45ce4220d18a5889.tif",
+            'pop': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\reefs\barrier_reef_pop_average_raster_md5_8387777dc970a55e7b5f5949791cf1ef.tif",  
         },
         'target_nodata': -9999,
-        'target_raster_path': "realized_cv_service.tif",
+        'target_raster_path': "realized_coastalprotection_barrierreef.tif",
         'target_pixel_size': (0.002777777777778, -0.002777777777778),
         'resample_method': 'average'
     }
@@ -172,15 +235,16 @@ def main():
     TASK_GRAPH.close()
 
     return
+    
 
     single_expression = {
-        'expression': 'service * pop / 10',
+        'expression': 'service * pop',
         'symbol_to_path_map': {
-            'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\barrier_reef_service_average_raster_md5_e12c2928e16bdbad45ce4220d18a5889_eez__GLOBAL_bin_nodata0_raster_md5_c271e54f1b04174d3e620df344a52bd9.tif",
-            'pop': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\barrier_reef_pop_average_raster_md5_8387777dc970a55e7b5f5949791cf1ef_eez__GLOBAL_bin_nodata0_raster_md5_b36485a7d4f837804982e5e9272d34fe.tif",  
+            'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\cv_pop_sum_md5_954b755a9300ceb03a284197672b3656.tif",
+            'pop': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\cv_service_sum_md5_0f86665de086aba2e16dca68ac859428.tif",  
         },
         'target_nodata': -9999,
-        'target_raster_path': "realized_coastalprotectionbin_barrierreef.tif",
+        'target_raster_path': "realized_coastalprotection.tif",
         'target_pixel_size': (0.002777777777778, -0.002777777777778),
         'resample_method': 'average'
     }
@@ -190,6 +254,8 @@ def main():
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
+
+    return
 
     calculation_list = [ 
         {
@@ -222,6 +288,17 @@ def main():
             'target_raster_path': "realized_coastalprotectionbin.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
+        {
+            'expression': 'service * pop / 10',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\barrier_reef_service_average_raster_md5_e12c2928e16bdbad45ce4220d18a5889_eez__GLOBAL_bin_nodata0_raster_md5_c271e54f1b04174d3e620df344a52bd9.tif",
+                'pop': r"C:\Users\Becky\Documents\cnc_project\binned_services_global\barrier_reef_pop_average_raster_md5_8387777dc970a55e7b5f5949791cf1ef_eez__GLOBAL_bin_nodata0_raster_md5_b36485a7d4f837804982e5e9272d34fe.tif",  
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_coastalprotectionbin_barrierreef.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+            'resample_method': 'average'
+        }
 
     ]
 
@@ -261,6 +338,14 @@ def main():
             },
             'target_nodata': -1,
             'target_raster_path': "masked_nathab_forest_esa2015.tif",
+        },
+        {
+            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)]+[210])[1:-1]),
+            'symbol_to_path_map': {
+                'raster': r"C:\Users\Becky\Documents\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "masked_all_nathab_wstreams_esa2015.tif",
         },
     ]
     for masker in masker_list:
@@ -435,12 +520,12 @@ def main():
 
     return
 
-    
     NNth_nit = 322
     NNth_sed = 161
     NNth_poll = 982
     NNth_ffish = 75
-    LOth_ffish = 0.01
+    LOth_ffish = 0.03 # below this point contains less than 5% of the total fish catch globally
+    NNth_ffish = 13 # this is the 99.9th percentile 
     Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
     LOth_MM = 0.00001
     clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
@@ -474,10 +559,10 @@ def main():
         {
             'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + -9999*(service<{LOth_ffish})', 
             'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\per_km_2_realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_fwfish_distrib_catch_clamped.tif",
+            'target_raster_path': "realized_fwfish_per_km2_clamped_3e-2_13.tif",
             'target_pixel_size': (0.002777777777778, -0.002777777777778),
         },
         {

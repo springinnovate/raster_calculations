@@ -60,8 +60,7 @@ def divide_op(num_array, denom_array, nodata):
 
 if __name__ == '__main__':
     raster_path = (
-        'realized_fwfish_distrib_catch_0s_clamped1000_'
-        'md5_77c79f3e4366c743fd095ff0d1225d33.tif')
+        'realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif')
     target_raster = 'per_km_2_%s' % raster_path
 
     raster_info = pygeoprocessing.get_raster_info(raster_path)
