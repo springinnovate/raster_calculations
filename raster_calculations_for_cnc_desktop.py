@@ -33,6 +33,29 @@ def main():
 
     # CNC calculations
 
+    LOth_ffish = 0.001 # Min values are regression artifacts. Should be cut off at 10-1 tons per grid cell (~100 sq km). That’s 1 kg per sq km
+    NNth_ffish = 30 # Max cut-off should be 3000 tons per grid cell. That’s 30 tons per sq km. (In between the 99 and 99.9th percentiles once small values are excluded)
+    clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
+        {
+            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + -9999*(service<{LOth_ffish})', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\per_km_2_realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fwfish_per_km2_clamped_3e-2_13.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+    ]
+
+    for calculation in clamped_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     single_expression = {
         'expression': 'service * pop',
         'symbol_to_path_map': {
@@ -524,8 +547,8 @@ def main():
     NNth_sed = 161
     NNth_poll = 982
     NNth_ffish = 75
-    LOth_ffish = 0.03 # below this point contains less than 5% of the total fish catch globally
-    NNth_ffish = 13 # this is the 99.9th percentile 
+    LOth_ffish = 0.001 # Min values are regression artifacts. Should be cut off at 10-1 tons per grid cell (~100 sq km). That’s 1 kg per sq km
+    NNth_ffish = 30 # Max cut-off should be 3000 tons per grid cell. That’s 30 tons per sq km. (In between the 99 and 99.9th percentiles once small values are excluded)
     Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
     LOth_MM = 0.00001
     clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile

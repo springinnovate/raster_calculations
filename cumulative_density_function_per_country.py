@@ -44,7 +44,7 @@ def redefined_autoproxy(token, serializer, manager=None, authkey=None,
 # Updating AutoProxy definition in multiprocessing.managers package
 multiprocessing.managers.AutoProxy = redefined_autoproxy
 
-WORKSPACE_DIR = 'cdf_by_country'
+WORKSPACE_DIR = 'cdf_by_country_bck'
 ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshard')
 CHURN_DIR = os.path.join(WORKSPACE_DIR, 'churn')
 COUNTRY_WORKSPACES = os.path.join(WORKSPACE_DIR, 'country_workspaces')
