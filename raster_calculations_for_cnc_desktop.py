@@ -33,48 +33,6 @@ def main():
 
     # CNC calculations
 
-    LOth_ffish = 0.001 # Min values are regression artifacts. Should be cut off at 10-1 tons per grid cell (~100 sq km). That’s 1 kg per sq km
-    NNth_ffish = 30 # Max cut-off should be 3000 tons per grid cell. That’s 30 tons per sq km. (In between the 99 and 99.9th percentiles once small values are excluded)
-    clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
-        {
-            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + -9999*(service<{LOth_ffish})', 
-            'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\per_km_2_realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif",
-            },
-            'target_nodata': -9999,
-            'target_raster_path': "realized_fwfish_per_km2_clamped_3e-2_13.tif",
-            'target_pixel_size': (0.002777777777778, -0.002777777777778),
-        },
-    ]
-
-    for calculation in clamped_service_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-
-    single_expression = {
-        'expression': 'service * pop',
-        'symbol_to_path_map': {
-            'service': r"C:\Users\Becky\Documents\raster_calculations\average_raster.tif",
-            'pop': r"C:\Users\Becky\Documents\raster_calculations\valid_count_raster.tif",  
-        },
-        'target_nodata': -9999,
-        'target_raster_path': "sum_of_top90_rasters.tif",
-        'target_pixel_size': (0.002777777777778, -0.002777777777778),
-        'resample_method': 'average'
-    }
-
-    raster_calculations_core.evaluate_calculation(
-        single_expression, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
    
     N90 = 7.3
     S90 = 9.8
@@ -370,6 +328,14 @@ def main():
             'target_nodata': -1,
             'target_raster_path': "masked_all_nathab_wstreams_esa2015.tif",
         },
+        {
+           'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(10,31)])[1:-1]),
+            'symbol_to_path_map': {
+                'raster': r"C:\Users\Becky\Documents\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "agmask_esa2015.tif",
+        },
     ]
     for masker in masker_list:
        raster_calculations_core.evaluate_calculation(
@@ -380,6 +346,7 @@ def main():
     TASK_GRAPH.close()
 
     return
+
     masked_service_list = [
         {
             'expression': 'service*mask + 128*(1-mask)', #this sets all values not in the mask to nodata (in this case, 128)

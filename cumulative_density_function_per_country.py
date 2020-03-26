@@ -779,7 +779,7 @@ def main():
     worker_list = []
 
     worker_pool = multiprocessing.pool.Pool()
-    for worker_id in range(max(1, NCPUS//2)):
+    for worker_id in range(NCPUS//2):
         country_worker_process = worker_pool.apply_async(
             func=feature_worker,
             args=(
