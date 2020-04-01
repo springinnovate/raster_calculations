@@ -3,6 +3,7 @@ import glob
 import os
 import logging
 import sys
+import zipfile
 
 import ecoshard
 import taskgraph
@@ -22,6 +23,39 @@ logging.basicConfig(
         '%(name)s [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
+
+
+def download_and_unzip(url, target_dir, target_token_path=None):
+    """Download `url` to `target_dir` and touch `target_token_path`.
+
+    Parameters:
+        url (str): url to file to download
+        target_dir (str): path to a local directory to download and unzip the
+            file to. The contents will be unzipped into the same directory as
+            the zipfile.
+        target_token_path (str): If not None, a path a file to touch when
+            the unzip is complete. This parameter is added to work well with
+            the ecoshard library that expects a file to be created after
+            an operation is complete. It may be complicated to list the files
+            that are unzipped, so instead this file is created and contains
+            the timestamp of when this function completed.
+
+    Returns:
+        None.
+
+    """
+    zipfile_path = os.path.join(target_dir, os.path.basename(url))
+    LOGGER.info('download %s, to: %s', url, zipfile_path)
+    ecoshard.download_url(url, zipfile_path)
+
+    LOGGER.info('unzip %s', zipfile_path)
+    with zipfile.ZipFile(zipfile_path, 'r') as zip_ref:
+        zip_ref.extractall(target_dir)
+
+    if target_token_path:
+        with open(target_token_path, 'w') as touchfile:
+            touchfile.write(f'unzipped {zipfile_path}')
+    LOGGER.info('download an unzip for %s complete', zipfile_path)
 
 
 def main():
