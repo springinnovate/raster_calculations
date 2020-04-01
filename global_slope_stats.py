@@ -63,7 +63,7 @@ def main():
     task_graph = taskgraph.TaskGraph(CHURN_DIR, -1)
     dem_dir = os.path.join(CHURN_DIR, 'dem_dir')
     download_task = task_graph.add_task(
-        func=ecoshard.download_and_unzip,
+        func=download_and_unzip,
         args=(GLOBAL_DEM_ECOSHARD_URL, dem_dir),
         task_name='unzip and download dem')
     download_task.join()
