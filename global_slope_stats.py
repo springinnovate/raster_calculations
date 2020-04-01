@@ -60,8 +60,14 @@ def download_and_unzip(url, target_dir, target_token_path=None):
 
 def main():
     """Main."""
-    task_graph = taskgraph.TaskGraph(CHURN_DIR, -1)
     dem_dir = os.path.join(CHURN_DIR, 'dem_dir')
+    for dir_path in [WORKSPACE_DIR, CHURN_DIR, ECOSHARD_DIR, dem_dir]:
+        try:
+            os.makedirs(dir_path)
+        except OSError:
+            pass
+
+    task_graph = taskgraph.TaskGraph(CHURN_DIR, -1)
     download_task = task_graph.add_task(
         func=download_and_unzip,
         args=(GLOBAL_DEM_ECOSHARD_URL, dem_dir),
