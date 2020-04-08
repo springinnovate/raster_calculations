@@ -202,6 +202,4 @@ if __name__ == "__main__":
                         poly_field_name,
                         poly_feature.GetField(poly_field_name))
                 point_layer.CreateFeature(point_feature)
-                print('made it')
-                point_layer.CommitTransaction()
-                sys.exit()
+    point_layer.CommitTransaction()
