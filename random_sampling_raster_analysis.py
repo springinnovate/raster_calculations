@@ -195,7 +195,7 @@ if __name__ == "__main__":
     write_worker.start()
 
     test_worker_list = []
-    for _ in range(multiprocessing.cpu_count()):
+    for _ in range(multiprocessing.cpu_count()/2):
         test_worker_process = multiprocessing.Process(
             target=poly_test_worker,
             args=(
