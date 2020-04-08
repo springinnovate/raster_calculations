@@ -132,8 +132,7 @@ def poly_test_worker(work_queue, raster_path, poly_vector_path, result_queue):
                         raster_x >= n_cols or raster_y >= n_rows):
                     continue
                 raster_val = band.ReadAsArray(raster_x, raster_y, 1, 1)[0, 0]
-                if (numpy.isclose(raster_val, base_nodata) or
-                        numpy.isnan(raster_val)):
+                if (numpy.isclose(raster_val, base_nodata)):
                     continue
                 raster_val_list.append(raster_val)
                 point_geom_wkb_list.append(point_geom.wkb)
