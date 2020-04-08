@@ -32,6 +32,29 @@ def main():
     """Write your expression here."""
 
     # CNC calculations
+    
+    single_expression = {
+        'expression': 'averageraster*mask - raster2*(mask>1)',
+        'symbol_to_path_map': {
+            'raster2': r"C:\Users\Becky\Documents\raster_calculations\fertilizers\NitrogenApplication_Rate_md5_caee837fa0e881be0c36c1eba1dea44e.tif",
+            'averageraster': r"C:\Users\Becky\Documents\raster_calculations\fertilizer_average_raster.tif",
+            'mask': r"C:\Users\Becky\Documents\raster_calculations\fertilizer_valid_count_raster.tif",   
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "Intensified_NitrogenApplication_Rate_gapfilled.tif",
+        'target_pixel_size': (0.08333333333333332871, -0.08333333333333332871),
+        'resample_method': 'average'
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+    
 
     Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
     clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
@@ -155,6 +178,7 @@ def main():
          {
             # the %s is a placeholder for the string we're passing it using this function that lists every number in the range and takes away the [] of the list and turns it into a string
             'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(50,181)])[1:-1]),
+            #'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(10,200)]+[220])[1:-1]),
             'symbol_to_path_map': {
                 'raster': r"C:\Users\Becky\Documents\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif",
             },

@@ -80,7 +80,17 @@ WORK_MAP = {
         'raster_gs_pattern_list': [
             'gs://shared-with-users/realized_services/marine/new/*.tif'
             ]
-    }
+    },
+    #'trans_basins': {
+    #    'vector_url':  (
+    #        'https://storage.googleapis.com/'
+    #        'critical-natural-capital-ecoshards/'
+    #        'transboundary_river_basins_md5_19f79ce0cd996bbdb3757348bdbe450d.gpkg'),
+    #    'fieldname_id': 'bcode',
+    #    'raster_gs_pattern_list': [
+    #        'gs://shared-with-users/realized_services/terrestrial/new/*.tif'
+    #        ]
+    #},
 }
 
 GLOBAL_ID = '_GLOBAL'
