@@ -49,6 +49,7 @@ def write_results(
     point_layer_def = point_layer.GetLayerDefn()
 
     n_written = 0
+    point_layer.StartTransaction()
     while True:
         payload = result_queue.get()
         if payload == 'STOP':
@@ -56,6 +57,8 @@ def write_results(
             break
 
         if n_written % 100 == 0:
+            point_layer.CommitTransaction()
+            point_layer.StartTransaction()
             print(
                 'no less than %.2f%% complete' %
                 (n_written / feature_count * 100.0))
@@ -63,7 +66,6 @@ def write_results(
         feature_id, raster_val_list, point_geom_wkb_list = payload
         poly_feature = poly_layer.GetFeature(feature_id)
 
-        point_layer.StartTransaction()
         for raster_val, point_geom_wkb in zip(
                 raster_val_list, point_geom_wkb_list):
             geom = ogr.CreateGeometryFromWkb(point_geom_wkb)
@@ -75,7 +77,7 @@ def write_results(
                     poly_field_name,
                     poly_feature.GetField(poly_field_name))
             point_layer.CreateFeature(point_feature)
-        point_layer.CommitTransaction()
+    point_layer.CommitTransaction()
     poly_layer = None
     vector = None
     point_layer = None
@@ -195,7 +197,7 @@ if __name__ == "__main__":
     write_worker.start()
 
     test_worker_list = []
-    for _ in range(multiprocessing.cpu_count()/2):
+    for _ in range(multiprocessing.cpu_count()//2):
         test_worker_process = multiprocessing.Process(
             target=poly_test_worker,
             args=(
