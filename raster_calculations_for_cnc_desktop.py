@@ -8,6 +8,7 @@ import datetime
 import subprocess
 import raster_calculations_core
 from osgeo import gdal
+from osgeo import osr
 import taskgraph
 
 gdal.SetCacheMax(2**30)
@@ -32,17 +33,21 @@ def main():
     """Write your expression here."""
 
     # CNC calculations
-    
+
+    wgs84_srs = osr.SpatialReference()
+    wgs84_srs.ImportFromEPSG(4326)
+
     single_expression = {
-        'expression': 'averageraster*mask - raster2*(mask>1)',
+        'expression': 'mask*raster',
         'symbol_to_path_map': {
-            'raster2': r"C:\Users\Becky\Documents\raster_calculations\fertilizers\NitrogenApplication_Rate_md5_caee837fa0e881be0c36c1eba1dea44e.tif",
-            'averageraster': r"C:\Users\Becky\Documents\raster_calculations\fertilizer_average_raster.tif",
-            'mask': r"C:\Users\Becky\Documents\raster_calculations\fertilizer_valid_count_raster.tif",   
+            'mask': r"C:\Users\Becky\Dropbox\NatCap\projects\NASA GEOBON\data\CR_intersecting_wsheds_26917.tif",
+            'raster': r"C:\Users\Becky\Documents\ESACCI_LC_L4_LCCS_borrelli_sed_export_compressed_md5_19cd746cdeb63bd0ced4815071b252bf.tif",  
         },
         'target_nodata': -9999,
-        'target_raster_path': "Intensified_NitrogenApplication_Rate_gapfilled.tif",
-        'target_pixel_size': (0.08333333333333332871, -0.08333333333333332871),
+        'default_nan': -9999,
+        'target_raster_path': "ESA_sed_export_CR.tif",
+        'target_sr_wkt': wgs84_srs.ExportToWkt(), 
+        'target_pixel_size': (0.002777777777778, -0.002777777777778),
         'resample_method': 'average'
     }
 
@@ -54,6 +59,37 @@ def main():
 
     return
     
+#    single_expression = {
+#        'expression': '(raster3 > 0) + (raster4 > 0) + (raster5 > 0) + (raster6 > 0) + (raster7 > 0) + (raster11 > 0) + (raster12 > 0) + (raster13 > 0) + (raster15 > 0)',
+#        'symbol_to_path_map': {
+#            #'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_coastalprotection_barrierreef_md5_126320d42827adc0f7504d4693c67e18.tif",
+#            #'raster2': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_coastalprotection_md5_b8e0ec0c13892c2bf702c4d2d3e50536.tif",
+#            'raster3': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_commercialtimber_forest_clamped0_md5_24844213f0f65a6c0bedfebe2fbd089e.tif",
+#            'raster4': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_cultural_language_nathab_md5_8e517eaa7db482d1446be5b82152c79b.tif",
+#            'raster5': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_domestictimber_forest_clamped0_md5_dca99ceb7dd9f96d54b3fcec656d3180.tif",
+#            'raster6': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_flood_nathab_clamped0_md5_eb8fd58621e00c6aeb80f4483da1b35c.tif",
+#            'raster7': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_fuelwood_forest_clamped0_md5_4ee236f5400ac400c07642356dd358d1.tif",
+#            #'raster8': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_fwfish_per_km2_clamped_1e-3_30_md5_0b4455185988a9e2062a39b27910eb8b.tif",
+#            #'raster9': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_grazing_natnotforest_clamped0_md5_8eeb02139f0fabf552658f7641ab7576.tif",
+#            #'raster10': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_marinefish_watson_2010_2014_clamped_md5_167448a2c010fb2f20f9727b024efab8.tif",
+#            'raster11': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_natureaccess10_nathab_md5_af07e76ecea7fb5be0fa307dc7ff4eed.tif",
+#            'raster12': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_nitrogenretention_nathab_clamped_md5_fe63ffd7c6633f336c91241bbd47bddd.tif",
+#            'raster13': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_pollination_nathab_clamped_md5_c9486d6c8d55cea16d84ff4e129b005a.tif",
+#            #'raster14': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_reeftourism_Modelled_Total_Dollar_Value_md5_171a993b8ff40d0447f343dd014c72e0.tif",
+#            'raster15': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_sedimentdeposition_nathab_clamped_md5_30d4d6ac5ff4bca4b91a3a462ce05bfe.tif"  
+#        },
+#        'target_nodata': -9999,
+#        'default_nan': -9999,
+#        'target_raster_path': "zeroes_in_forest.tif"
+#    }
+#
+#    raster_calculations_core.evaluate_calculation(
+#        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+#
+#    TASK_GRAPH.join()
+#    TASK_GRAPH.close()
+#
+#    return
     
 
     Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
@@ -86,6 +122,7 @@ def main():
             'pop': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\reefs\barrier_reef_pop_average_raster_md5_8387777dc970a55e7b5f5949791cf1ef.tif",  
         },
         'target_nodata': -9999,
+        'default_nan': -9999,
         'target_raster_path': "realized_coastalprotection_barrierreef.tif",
         'target_pixel_size': (0.002777777777778, -0.002777777777778),
         'resample_method': 'average'
@@ -908,6 +945,30 @@ def main():
     TASK_GRAPH.close()
 
     return   
+
+
+    #NCI
+
+    single_expression = {
+        'expression': 'averageraster*mask - raster2*(mask>1)',
+        'symbol_to_path_map': {
+            'raster2': r"C:\Users\Becky\Documents\raster_calculations\fertilizers\NitrogenApplication_Rate_md5_caee837fa0e881be0c36c1eba1dea44e.tif",
+            'averageraster': r"C:\Users\Becky\Documents\raster_calculations\fertilizer_average_raster.tif",
+            'mask': r"C:\Users\Becky\Documents\raster_calculations\fertilizer_valid_count_raster.tif",   
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "Intensified_NitrogenApplication_Rate_gapfilled.tif",
+        'target_pixel_size': (0.08333333333333332871, -0.08333333333333332871),
+        'resample_method': 'average'
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
 
 

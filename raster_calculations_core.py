@@ -95,7 +95,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
     processed_raster_list_file_path = os.path.join(
         process_raster_churn_dir, 'processed_raster_list.pickle')
     LOGGER.debug(symbol_to_path_band_map)
-
+    
     target_sr_wkt = None
     if 'target_sr_wkt' in args:
         target_sr_wkt = args['target_sr_wkt']
@@ -356,18 +356,14 @@ def _preprocess_rasters(
     base_pixel_list = [info['pixel_size'] for info in base_info_list]
     base_raster_shape_list = [info['raster_size'] for info in base_info_list]
 
-    target_sr_wkt = None
     if len(set(base_projection_list)) != 1:
-        if target_sr_wkt is not None:
+        if target_sr_wkt is None:
             raise ValueError(
                 "Projections of base rasters are not equal and there "
                 "is no `target_sr_wkt` defined.\nprojection list: %s",
                 str(base_projection_list))
         else:
             LOGGER.info('projections are different')
-            target_srs = osr.SpatialReference()
-            target_srs.ImportFromWkt(target_sr_wkt)
-            target_sr_wkt = target_srs.ExportToWkt()
             resample_inputs = True
 
     if len(set(base_pixel_list)) != 1:
