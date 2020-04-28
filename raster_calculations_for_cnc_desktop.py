@@ -35,37 +35,195 @@ def main():
 
     # CNC calculations
     
-    wgs84_srs = osr.SpatialReference()
-    wgs84_srs.ImportFromEPSG(4326)
-
-    single_expression = {
-        'expression': 'mask*raster',
-        'symbol_to_path_map': {
-            'mask': r"C:\Users\Becky\Dropbox\NatCap\projects\NASA GEOBON\data\CR_intersecting_wsheds_26917.tif",
-            #'raster': r"C:\Users\Becky\Documents\ESACCI_LC_L4_LCCS_borrelli_sed_export_compressed_md5_19cd746cdeb63bd0ced4815071b252bf.tif", 
-            #'raster': r"C:\Users\Becky\Documents\n_export_baseline_napp_rate_global_md5_b210146a5156422041eb7128c147512f.tif" 
-            #'raster': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_nitrogenretention3s_10s_clamped.tif"
-            'raster': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_sedimentdeposition_md5_aa9ee6050c423b6da37f8c2723d9b513.tif"
+    #realized_coastalprotection_30s.tif
+    #realized_coastalprotection_barrierreef_30s.tif
+    #realized_commercialtimber_forest30s
+    #realized_cultural_language_nathab30s
+    #realized_domestictimber_forest30s
+    #realized_flood_nathab30s
+    #realized_fuelwood_forestshrub30s
+    #realized_fwfish_nathab30s
+    #realized_grazing_natnotforest30s
+    #realized_marinefish_watson_2010_2014_30s
+    #realized_moisturerecycling_nathab30s
+    #realized_natureaccess100_nathab30s
+    #realized_natureaccess10_nathab30s
+    #realized_nitrogenretention_nathab30s
+    #realized_pollination_nathab30s
+    #realized_reeftourism_30s
+    #realized_sedimentdeposition_nathab30s
+    
+    NNth_poll = 38
+    Max_lang = 43 #original map did not exceed 43 languages per degree grid cell; higher than that must be an error
+    LO = 0.001 # not contributing much below this point!
+    LOth_ffish = 0.001 # Min values are regression artifacts. Should be cut off at 10-1 tons per grid cell (~100 sq km). That’s 1 kg per sq km
+    NNth_ffish = 30 # Max cut-off should be 3000 tons per grid cell. That’s 30 tons per sq km. (In between the 99 and 99.9th percentiles once small values are excluded)
+    Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
+    LOth_MM = 0.001
+    clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
+        {
+            'expression': f'(service>{NNth_poll})*({NNth_poll})+(service<={NNth_poll})*(service>={LO})*service + -9999*(service<{LO})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_pollination_nathab30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_pollination_nathab30s_clamped.tif",
         },
-        'target_nodata': -9999,
-        'default_nan': -9999,
-        #'target_raster_path': "ESA_sed_export_CR.tif",
-        #'target_raster_path': "ESA_n_export_CR.tif",
-        #'target_raster_path': "ESA_n_retention_CR.tif",
-        'target_raster_path': "ESA_sed_retention_CR.tif",
-        'target_sr_wkt': wgs84_srs.ExportToWkt(), 
-        'target_pixel_size': (0.002777777777778, -0.002777777777778),
-        'resample_method': 'average'
-    }
+        #{
+        #    'expression': f'(service>{Max_lang})*(128) + (service<={Max_lang})*service', 
+        #    'symbol_to_path_map': {
+        #        'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_cultural_language_nathab30s.tif",
+        #    },
+        #    'target_nodata': 128,
+        #    'target_raster_path': "realized_cultural_language_nathab30s_clamped.tif",
+        #},
+        {
+            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + -9999*(service<{LOth_ffish})', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_fwfish_nathab30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fwfish_per_km230s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{Max_mfish})*({Max_mfish})+(service<={Max_mfish})*(service>={LO})*service+ -9999(service<{LO})', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_marinefish_watson_2010_2014_30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_marinefish_watson_2010_201430s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_commercialtimber_forest30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_commercialtimber_forest30s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_domestictimber_forest30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_domestictimber_forest30s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_flood_nathab30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_flood_nathab30s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_fuelwood_forestshrub30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_fuelwood_forest30s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_grazing_natnotforest30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_grazing_natnotforest30s_clamped.tif",
+        },
+    ]
 
-    raster_calculations_core.evaluate_calculation(
-        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+    for calculation in clamped_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
     return
-    
+
+
+    masked_service_list = [
+        {
+            'expression': 'service*mask + 128*(1-mask)', #this sets all values not in the mask to nodata (in this case, 128)
+            'symbol_to_path_map': {
+                'mask': r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015_30s.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\half_degree_grid_langa_19_dslv_density.tif",
+            },
+            'target_nodata': 128,
+            'target_raster_path': "realized_cultural_language_nathab30s.tif",
+            'target_pixel_size': (0.008333333333333333218, -0.008333333333333333218),
+            'resample_method': 'average',
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015_30s.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_sedimentdeposition_nathab_clamped_md5_30d4d6ac5ff4bca4b91a3a462ce05bfe.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_sedimentdeposition_nathab30s.tif",
+            'target_pixel_size': (0.008333333333333333218, -0.008333333333333333218),
+            'resample_method': 'average',
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015_30s.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_pollination_md5_443522f6688011fd561297e9a556629b.tif"
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_pollination_nathab30s.tif",
+            'target_pixel_size': (0.008333333333333333218, -0.008333333333333333218),
+            'resample_method': 'average',
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015_30s.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_nitrogenretention_downstream3s_10s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_nitrogenretention_nathab30s.tif",
+            'target_pixel_size': (0.008333333333333333218, -0.008333333333333333218),
+            'resample_method': 'average',
+        },
+        {
+            'expression': '((service<0)*(-9999)+(service>=0)*service)*mask + -9999*(1-mask)', #this both sets all negative values to nodata AND sets anything outside the mask to nodata
+            'symbol_to_path_map': {
+                'mask': r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015_30s.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_e_source_ratio_ann_mean.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999, # this is necessary because there are apparently nans in this list!
+            'target_raster_path': "realized_moisturerecycling_nathab30s.tif",
+            'target_pixel_size': (0.008333333333333333218, -0.008333333333333333218),
+            'resample_method': 'average',
+        },
+        {
+            'expression': 'service*mask + -9999*(1-mask)',
+            'symbol_to_path_map': {
+                'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015_30s.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\RealInflGStoragePop.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_flood_nathab30s.tif",
+            'target_pixel_size': (0.008333333333333333218, -0.008333333333333333218),
+            'resample_method': 'average',
+        },
+    ]
+
+    for calculation in masked_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
 
     masked_service_list = [
         {
@@ -194,7 +352,7 @@ def main():
             'expression': 'service*mask + -9999*(1-mask)',
             'symbol_to_path_map': {
                 'mask':  r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_wstreams_esa2015_30s.tif",
-                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_sedimentdeposition_downstream_md5_1613b12643898c1475c5ec3180836770.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_sedimentdeposition_nathab_clamped_md5_30d4d6ac5ff4bca4b91a3a462ce05bfe.tif",
             },
             'target_nodata': -9999,
             'target_raster_path': "realized_sedimentdeposition_nathab30s.tif",
@@ -288,6 +446,14 @@ def main():
     return
 
     # resampling of just one raster doesn't work in raster calculations, so just use pygeoprocessing directly
+    pygeoprocessing.warp_raster(
+        r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
+        (30/3600, -30/3600), 'masked_all_nathab_esa2015_30s.tif',
+        'mode'
+    )
+
+    TASK_GRAPH.join()
+
     pygeoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_wstreams_esa2015.tif",
         (30/3600, -30/3600), 'masked_all_nathab_wstreams_esa2015_30s.tif',
@@ -397,6 +563,14 @@ def main():
             'target_nodata': -1,
             'target_raster_path': "masked_all_nathab_wstreams_esa2015.tif",
         },
+        {
+            'expression': 'mask(raster, %s, invert=False)'%(str([]+[x for x in range(30,181)])[1:-1]),
+            'symbol_to_path_map': {
+                'raster': r"C:\Users\Becky\Documents\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif",
+            },
+            'target_nodata': -1,
+            'target_raster_path': "masked_all_nathab_esa2015.tif",
+        },
     ]
     for masker in masker_list:
        raster_calculations_core.evaluate_calculation(
@@ -438,20 +612,29 @@ def main():
 #
 #    return
 
+
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)
 
     single_expression = {
         'expression': 'mask*raster',
+        #'expression': '(service>=0)*(service<101)*service + (service>=101)*101 + (service<0)*0',
         'symbol_to_path_map': {
             'mask': r"C:\Users\Becky\Dropbox\NatCap\projects\NASA GEOBON\data\CR_intersecting_wsheds_26917.tif",
             #'raster': r"C:\Users\Becky\Documents\ESACCI_LC_L4_LCCS_borrelli_sed_export_compressed_md5_19cd746cdeb63bd0ced4815071b252bf.tif", 
-            'raster': r"C:\Users\Becky\Documents\n_export_baseline_napp_rate_global_md5_b210146a5156422041eb7128c147512f.tif" 
+            #'raster': r"C:\Users\Becky\Documents\n_export_baseline_napp_rate_global_md5_b210146a5156422041eb7128c147512f.tif" 
+            #'raster': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_nitrogenretention3s_10s_clamped.tif"
+            #'raster': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_sedimentdeposition_md5_aa9ee6050c423b6da37f8c2723d9b513.tif"
+            #'service':r"C:\Users\Becky\Documents\raster_calculations\ESA_sed_retention_CR.tif",
+            'raster': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cv_service_sum_md5_0f86665de086aba2e16dca68ac859428.tif",
         },
         'target_nodata': -9999,
         'default_nan': -9999,
         #'target_raster_path': "ESA_sed_export_CR.tif",
-        'target_raster_path': "ESA_n_export_CR.tif",
+        #'target_raster_path': "ESA_n_export_CR.tif",
+        #'target_raster_path': "ESA_n_retention_CR.tif",
+        #'target_raster_path': "ESA_sed_retention_CR.tif",
+        'target_raster_path': "ESA_WCMC_coastal_protection_CR.tif",
         'target_sr_wkt': wgs84_srs.ExportToWkt(), 
         'target_pixel_size': (0.002777777777778, -0.002777777777778),
         'resample_method': 'average'
@@ -464,8 +647,6 @@ def main():
     TASK_GRAPH.close()
 
     return
-
-
     
 
     Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
