@@ -59,30 +59,41 @@ def degrees_per_meter(max_lat, min_lat, n_pixels):
 
     return 1./meters_per_degree
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Calculate real slope.')
     parser.add_argument('dem_path', help='path to dem')
     parser.add_argument(
         'slope_path', help='output path to slope raster created by this call')
+    parser.add_argument(
+        '--dem_in_degrees', help='use this if dem SRS is in degrees',
+        action='store_true')
 
     args = parser.parse_args()
 
-    dem_info = pygeoprocessing.get_raster_info(args.dem_path)
-    bb = dem_info['bounding_box']
-    n_cols, n_rows = dem_info['raster_size']
+    if args.dem_in_degrees:
+        dem_info = pygeoprocessing.get_raster_info(args.dem_path)
+        bb = dem_info['bounding_box']
+        n_cols, n_rows = dem_info['raster_size']
 
-    # create meters to degree array
-    lng_m_to_d_array = degrees_per_meter(bb[3], bb[1], n_rows)
+        # create meters to degree array
+        lng_m_to_d_array = degrees_per_meter(bb[3], bb[1], n_rows)
 
-    work_dir = tempfile.mkdir(dir='.', prefix='slope_working_dir')
-    dem_in_degrees_raster_path = os.path.join(work_dir, 'dem_in_degrees.tif')
-    dem_vrt_nodata = -9999
-    pygeoprocessing.raster_calculator(
-        [(args.dem_path, 1), (dem_info['nodata'][0], 'raw'),
-         lng_m_to_d_array[:, None], (dem_vrt_nodata, 'raw')],
-        mult_op, dem_in_degrees_raster_path, gdal.GDT_Float32,
-        dem_vrt_nodata)
+        work_dir = tempfile.mkdtemp(dir='.', prefix='slope_working_dir')
+        dem_in_degrees_raster_path = os.path.join(
+            work_dir, 'dem_in_degrees.tif')
+        nodata = -9999
+        pygeoprocessing.raster_calculator(
+            [(args.dem_path, 1), (dem_info['nodata'][0], 'raw'),
+             lng_m_to_d_array[:, None], (nodata, 'raw')],
+            mult_op, dem_in_degrees_raster_path, gdal.GDT_Float32,
+            nodata)
+        dem_raster_path = dem_in_degrees_raster_path
+    else:
+        dem_raster_path = args.dem_path
 
     pygeoprocessing.calculate_slope(
-        (dem_in_degrees_raster_path, 1), args.slope_path)
-    shutil.rmtree(work_dir)
+        (dem_raster_path, 1), args.slope_path)
+
+    if args.dem_in_degrees:
+        shutil.rmtree(work_dir)
