@@ -33,7 +33,7 @@ def main():
 
     #path = r"C:\Users\Becky\Documents\raster_calculations\realized_flood_storage.tif"
     #percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\flood_percentile_working_dir"
-    path = r"C:\Users\Becky\Documents\raster_calculations\ESA_sed_retention_CR.tif"
+    path = r"C:\Users\Becky\Documents\IPBES off dropbox\lspop2017.tif"
     percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:

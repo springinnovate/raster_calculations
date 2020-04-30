@@ -60,41 +60,42 @@ def main():
     NNth_ffish = 30 # Max cut-off should be 3000 tons per grid cell. That’s 30 tons per sq km. (In between the 99 and 99.9th percentiles once small values are excluded)
     Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
     LOth_MM = 0.001
+
     clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
         {
-            'expression': f'(service>{NNth_poll})*({NNth_poll})+(service<={NNth_poll})*(service>={LO})*service + -9999*(service<{LO})',
+            'expression': f'(service>{NNth_poll})*({NNth_poll})+(service<={NNth_poll})*(service>={LO})*service + 0*(service<{LO})',
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_pollination_nathab30s.tif",
             },
             'target_nodata': -9999,
             'target_raster_path': "realized_pollination_nathab30s_clamped.tif",
         },
-        #{
-        #    'expression': f'(service>{Max_lang})*(128) + (service<={Max_lang})*service',
-        #    'symbol_to_path_map': {
-        #        'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_cultural_language_nathab30s.tif",
-        #    },
-        #    'target_nodata': 128,
-        #    'target_raster_path': "realized_cultural_language_nathab30s_clamped.tif",
-        #},
         {
-            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + -9999*(service<{LOth_ffish})',
+            'expression': f'(service>{Max_lang})*(128) + (service<={Max_lang})*service', 
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_cultural_language_nathab30s.tif",
+            },
+            'target_nodata': 128,
+            'target_raster_path': "realized_cultural_language_nathab30s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + 0*(service<{LOth_ffish})', 
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_fwfish_nathab30s.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_fwfish_per_km230s_clamped.tif",
+            'target_raster_path': "realized_fwfish_per_km2_30s_clamped.tif",
         },
         {
-            'expression': f'(service>{Max_mfish})*({Max_mfish})+(service<={Max_mfish})*(service>={LO})*service+ -9999(service<{LO})',
+            'expression': f'(service>{Max_mfish})*({Max_mfish})+(service<={Max_mfish})*(service>={LO})*service+ 0*(service<{LO})', 
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_marinefish_watson_2010_2014_30s.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_marinefish_watson_2010_201430s_clamped.tif",
+            'target_raster_path': "realized_marinefish_watson_2010_2014_30s_clamped.tif",
         },
         {
-            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_commercialtimber_forest30s.tif",
             },
@@ -102,7 +103,7 @@ def main():
             'target_raster_path': "realized_commercialtimber_forest30s_clamped.tif",
         },
         {
-            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_domestictimber_forest30s.tif",
             },
@@ -110,7 +111,7 @@ def main():
             'target_raster_path': "realized_domestictimber_forest30s_clamped.tif",
         },
         {
-            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_flood_nathab30s.tif",
             },
@@ -118,7 +119,7 @@ def main():
             'target_raster_path': "realized_flood_nathab30s_clamped.tif",
         },
         {
-            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_fuelwood_forestshrub30s.tif",
             },
@@ -126,12 +127,28 @@ def main():
             'target_raster_path': "realized_fuelwood_forest30s_clamped.tif",
         },
         {
-            'expression': f'(service>{LOth_MM})*service + -9999*(service<={LOth_MM})',
+            'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_grazing_natnotforest30s.tif",
             },
             'target_nodata': -9999,
             'target_raster_path': "realized_grazing_natnotforest30s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{LO})*service + 0*(service<={LO})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_natureaccess10_nathab30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_natureaccess10_nathab30s_clamped.tif",
+        },
+        {
+            'expression': f'(service>{LO})*service + 0*(service<={LO})',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_natureaccess100_nathab30s.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_natureaccess100_nathab30s_clamped.tif",
         },
     ]
 
