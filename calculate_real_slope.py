@@ -1,12 +1,22 @@
 """Calculate slope in any projection."""
 import argparse
+import logging
 import os
+import sys
 import tempfile
 
 from osgeo import gdal
 import pygeoprocessing
 import numpy
 import shutil
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(processName)s %(levelname)s '
+        '%(name)s [%(funcName)s:%(lineno)d] %(message)s'),
+    stream=sys.stdout)
+LOGGER = logging.getLogger(__name__)
 
 
 def mult_op(base_array, base_nodata, factor_array, target_nodata):
