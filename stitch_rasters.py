@@ -101,7 +101,8 @@ if __name__ == '__main__':
         target_bounding_box[3], 0.0, cell_size[1])
 
     target_raster = gtiff_driver.Create(
-        os.path.join('.', args.target_raster_path), n_cols, n_rows, 1, raster_info['datatype'],
+        os.path.join('.', args.target_raster_path), n_cols, n_rows, 1,
+        raster_info['datatype'],
         options=(
             'TILED=YES', 'BIGTIFF=YES', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
             'COMPRESS=LZW', 'SPARSE_OK=TRUE'))
