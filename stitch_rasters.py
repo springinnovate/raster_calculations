@@ -2,8 +2,10 @@
 import argparse
 import glob
 import logging
+import math
 import multiprocessing
 import os
+import sys
 import tempfile
 
 from osgeo import gdal
@@ -55,7 +57,8 @@ if __name__ == '__main__':
 
     temp_working_dir = tempfile.mkdtemp(dir='.')
 
-    task_graph = taskgraph.TaskGraph(temp_working_dir, n_workers=multiprocessing.cpu_count())
+    task_graph = taskgraph.TaskGraph(
+        temp_working_dir, n_workers=multiprocessing.cpu_count())
     target_bounding_box_list = []
     reprojected_raster_path_task_list = []
     for raster_path in raster_path_list:
@@ -88,17 +91,17 @@ if __name__ == '__main__':
 
     gtiff_driver = gdal.GetDriverByName('GTiff')
 
-    n_cols = int(
-        (target_bounding_box[2]-target_bounding_box[0]) / cell_size[0])
-    n_rows = int(
-        (target_bounding_box[3]-target_bounding_box[1]) / -cell_size[1])
+    n_cols = int(math.ceil(
+        (target_bounding_box[2]-target_bounding_box[0]) / cell_size[0]))
+    n_rows = int(math.ceil(
+        (target_bounding_box[3]-target_bounding_box[1]) / -cell_size[1]))
 
     geotransform = (
         target_bounding_box[0], cell_size[0], 0.0,
         target_bounding_box[3], 0.0, cell_size[1])
 
     target_raster = gtiff_driver.Create(
-        args.target_raster_path, n_cols, n_rows, 1, raster_info['datatype'],
+        os.path.join('.', args.target_raster_path), n_cols, n_rows, 1, raster_info['datatype'],
         options=(
             'TILED=YES', 'BIGTIFF=YES', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
             'COMPRESS=LZW', 'SPARSE_OK=TRUE'))
@@ -113,8 +116,6 @@ if __name__ == '__main__':
         args.target_raster_path, gdal.OF_RASTER | gdal.GA_Update)
     target_band = target_raster.GetRasterBand(1)
 
-    task_graph.close()
-
     for reprojected_raster, warp_task in reprojected_raster_path_task_list:
         warp_task.join()
         reprojected_info = pygeoprocessing.get_raster_info(reprojected_raster)
@@ -122,16 +123,21 @@ if __name__ == '__main__':
         reprojected_array = reprojected_raster.ReadAsArray()
         reprojected_raster = None
         xpos = int(
-            (target_bounding_box[0] - reprojected_info['bounding_box'][0]) /
+            (reprojected_info['bounding_box'][0] - target_bounding_box[0]) /
             cell_size[0])
         ypos = int(
-            (target_bounding_box[2] - reprojected_info['bounding_box'][2]) /
-            -cell_size[1])
+            (reprojected_info['bounding_box'][3] - target_bounding_box[3]) /
+            cell_size[1])
 
         try:
-            target_band.WriteArray(xpos, ypos, reprojected_array)
+            LOGGER.debug(f'write {reprojected_array.shape} at {xpos} {ypos}')
+            target_band.WriteArray(reprojected_array, xoff=xpos, yoff=ypos)
         except Exception:
             LOGGER.exception(
                 f"this array couldn't 'stitch: {reprojected_array}")
+    target_band = None
+    target_raster = None
 
+    task_graph.close()
     task_graph.join()
+    task_graph._terminate()
