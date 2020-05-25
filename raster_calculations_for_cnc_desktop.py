@@ -34,31 +34,128 @@ def main():
     """Write your expression here."""
 
     # CNC calculations
+    
+    single_expression = {
+        'expression':  'mask(raster, %s, invert=False)'%([210]),
+        'symbol_to_path_map': {
+            'raster': r"C:\Users\Becky\Documents\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif",
+        },
+        'target_nodata': -1,
+        'target_raster_path': 'masked_water.tif',
+    },
+    
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
 
-    #realized_coastalprotection_30s.tif
-    #realized_coastalprotection_barrierreef_30s.tif
-    #realized_commercialtimber_forest30s
-    #realized_cultural_language_nathab30s
-    #realized_domestictimber_forest30s
-    #realized_flood_nathab30s
-    #realized_fuelwood_forestshrub30s
-    #realized_fwfish_nathab30s
-    #realized_grazing_natnotforest30s
-    #realized_marinefish_watson_2010_2014_30s
-    #realized_moisturerecycling_nathab30s
-    #realized_natureaccess100_nathab30s
-    #realized_natureaccess10_nathab30s
-    #realized_nitrogenretention_nathab30s
-    #realized_pollination_nathab30s
-    #realized_reeftourism_30s
-    #realized_sedimentdeposition_nathab30s
+    TASK_GRAPH.join()
+
+    pygeoprocessing.warp_raster(
+        'masked_water.tif',
+        (30/3600, -30/3600), 'masked_water_30s.tif',
+        'mode'
+    )
+
+    TASK_GRAPH.join()
+
+    single_expression = {
+        'expression': 'service*mask + -9999*(1-mask)',
+        'symbol_to_path_map': {
+            'mask':  'masked_water_30s.tif',
+            'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\CORRECTED_realized_marinefish_watson_2010_2014.tif",
+        },
+        'target_nodata': -9999,
+        'target_raster_path': 'realized_marinefish_watson_2010_2014_corr_clip_30s.tif',
+        'target_pixel_size': (0.008333333333333333218, -0.008333333333333333218),
+        'resample_method': 'average',
+    },
+    
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    single_expression = {
+        'expression': '(raster1>=raster2)*raster1 + (raster1<raster2)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\raster_calculations\nci\ExtensificationNapp_allcrops_rainfedfootprint_gapfilled_observedNapp.tif",
+            'raster2': r"C:\Users\Becky\Downloads\ag_expansion_slope_max_exclusion_mask_md5_2ba6dde5131ef4de64baaa7cbefa2dc7.tif"
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "ag_expansion_slope_max_exclusion_mask_fixed.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+   
+    
+    single_expression = {
+        'expression': '(raster1>=raster2)*raster1 + (raster1<raster2)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Downloads\ag_intensification_slope_max_exclusion_mask_md5_afd63de0b91f938764d183b1bb459bc4.tif",
+            'raster2': r"C:\Users\Becky\Downloads\ag_expansion_slope_max_exclusion_mask_md5_2ba6dde5131ef4de64baaa7cbefa2dc7.tif"
+        },
+        'target_nodata': 255,
+        'target_raster_path': "ag_expansion_slope_max_exclusion_mask_fixed.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    wgs84_srs = osr.SpatialReference()
+    wgs84_srs.ImportFromEPSG(4326)
+
+
+    pygeoprocessing.warp_raster(
+        r"C:\Users\Becky\Documents\raster_calculations\ag_exclusion_mask.tif",
+        (10/3600, -10/3600), 'ag_exclusion_mask_10s.tif',
+        'mode', target_sr_wkt=wgs84_srs.ExportToWkt()
+    )
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster>=10)*1 + (raster<10)*0',
+        'symbol_to_path_map': {
+            'raster': r"C:\Users\Becky\Documents\raster_calculations\arcticdem_100m_slope.tif",
+        },
+        'target_nodata': -1,
+        'target_raster_path': "ag_exclusion_mask.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
 
     NNth_poll = 38
     Max_lang = 43 #original map did not exceed 43 languages per degree grid cell; higher than that must be an error
     LO = 0.001 # not contributing much below this point!
     LOth_ffish = 0.001 # Min values are regression artifacts. Should be cut off at 10-1 tons per grid cell (~100 sq km). That’s 1 kg per sq km
     NNth_ffish = 30 # Max cut-off should be 3000 tons per grid cell. That’s 30 tons per sq km. (In between the 99 and 99.9th percentiles once small values are excluded)
-    Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
+    #Max_mfish = 400 #this one's different because even though it's higher than the 99th percentile, there are some realistic values of up to 346 kg /km2
+    #NOTE: Rachel subsequently asked Reg Watson about this and he said it should NOT be clamped - if anything his upper values (of a few thousand) are underestimates
     LOth_MM = 0.001
 
     clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
@@ -86,14 +183,14 @@ def main():
             'target_nodata': -9999,
             'target_raster_path': "realized_fwfish_per_km2_30s_clamped.tif",
         },
-        {
-            'expression': f'(service>{Max_mfish})*({Max_mfish})+(service<={Max_mfish})*(service>={LO})*service+ 0*(service<{LO})', 
-            'symbol_to_path_map': {
-                'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_marinefish_watson_2010_2014_30s.tif",
-            },
-            'target_nodata': -9999,
-            'target_raster_path': "realized_marinefish_watson_2010_2014_30s_clamped.tif",
-        },
+    #    {
+    #        'expression': f'(service>{Max_mfish})*({Max_mfish})+(service<={Max_mfish})*(service>={LO})*service+ 0*(service<{LO})', 
+    #        'symbol_to_path_map': {
+    #            'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_marinefish_watson_2010_2014_30s.tif",
+    #        },
+    #        'target_nodata': -9999,
+    #        'target_raster_path': "realized_marinefish_watson_2010_2014_30s_clamped.tif",
+    #    },
         {
             'expression': f'(service>{LOth_MM})*service + 0*(service<={LOth_MM})',
             'symbol_to_path_map': {
@@ -416,9 +513,6 @@ def main():
         single_expression, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
 
     single_expression = {
         'expression': '(service>=0)*(service<186)*service + (service>=186)*186 + (service<0)*0',
