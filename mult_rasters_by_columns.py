@@ -89,7 +89,8 @@ def raster_rpn_calculator_op(*args_list):
         else:
             if isinstance(val, str):
                 LOGGER.debug(
-                    f"{val}, {info_dict[val]['index']}")
+                    f"{val}")
+                LOGGER.debug(f"{info_dict[val]}")
                 accumulator_stack.append(
                     args_list[2*info_dict[val]['index']][valid_mask])
             else:
