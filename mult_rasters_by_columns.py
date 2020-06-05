@@ -266,11 +266,14 @@ if __name__ == '__main__':
     raster_path_band_list = []
     LOGGER.debug(raster_symbol_list)
     LOGGER.debug(raster_symbol_to_info_map)
-    for raster_symbol in raster_symbol_list:
+    for index, raster_symbol in enumerate(raster_symbol_list):
         raster_path_band_list.append(
             (raster_symbol_to_info_map[raster_id]['aligned_path'], 1))
         raster_path_band_list.append(
             (raster_symbol_to_info_map[raster_id]['nodata'], 'raw'))
+        if index != raster_symbol_to_info_map[raster_id]['index']:
+            raise RuntimeError(f"indexes dont match: {index} {raster_symbol} {raster_symbol_to_info_map}")
+
     raster_path_band_list.append((args.target_nodata, 'raw'))
     raster_path_band_list.append((rpn_stack, 'raw'))
     raster_path_band_list.append((raster_symbol_to_info_map, 'raw'))
