@@ -56,7 +56,7 @@ if __name__ == '__main__':
     raster_symbol_list = []
     for row_index, row in lasso_df.iterrows():
         header = row[0]
-        LOGGER.debug(row)
+        LOGGER.debug(f'{row_index}: {row}')
         header_pos[header] = row_index
 
         lasso_val = row[1]
