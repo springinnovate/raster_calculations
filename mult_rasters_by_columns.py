@@ -58,6 +58,7 @@ def raster_rpn_calculator_op(*args_list):
         valid_mask &= ~numpy.isclose(args_list[index], args_list[index+1])
     rpn_stack = list(args_list[-2])
     info_dict = list(args_list[-1])
+    LOGGER.debug(info_dict)
 
     # process the rpn stack
     while len(rpn_stack) > 1:
