@@ -48,9 +48,7 @@ if __name__ == '__main__':
 
     LOGGER.info('parse lasso table path')
     lasso_table_path = args.lasso_table_path
-    lasso_df = pandas.read_csv(lasso_table_path)
-
-    target_df = pandas.DataFrame()
+    lasso_df = pandas.read_csv(lasso_table_path, header=None)
 
     header_pos = {}
     raster_symbol_list = []
