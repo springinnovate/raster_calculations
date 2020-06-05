@@ -279,9 +279,8 @@ if __name__ == '__main__':
     LOGGER.debug(rpn_stack)
 
     # wait for rasters to align
-    task_graph.join()
     task_graph.close()
-    task_graph._terminate()
+    task_graph.join()
 
     result_path = os.path.join(args.workspace_dir, 'result.tif')
     LOGGER.debug(raster_path_band_list)
