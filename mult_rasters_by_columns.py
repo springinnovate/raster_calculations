@@ -161,7 +161,7 @@ if __name__ == '__main__':
     # find the unique symbols in the expression
     raster_symbol_list = [
         x for x in set(rpn_stack)-set(OPERATOR_FN)
-        if not isinstance(x, float)]
+        if not isinstance(x, (int, float))]
 
     LOGGER.debug(raster_symbol_list)
 
