@@ -51,7 +51,7 @@ def raster_rpn_calculator_op(*args_list):
     Returns:
         evaluation of the RPN calculation
     """
-    n = len(args_list)-3
+    n = len(args_list)-4
     result = numpy.empty(args_list[0].shape, dtype=numpy.float32)
     result[:] = args_list[n]  # target nodata
     zero_nodata = args_list[n+4]
