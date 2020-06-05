@@ -64,7 +64,7 @@ if __name__ == '__main__':
             if '^' in product:
                 exponent_list.append(product.split('^'))
             else:
-                exponent_list.append((product[0], 1))
+                exponent_list.append((product, 1))
 
         LOGGER.debug(f'{lasso_val} * {exponent_list}')
 
