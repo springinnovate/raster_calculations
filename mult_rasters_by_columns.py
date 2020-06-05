@@ -105,7 +105,8 @@ if __name__ == '__main__':
     target_bounding_box = pygeoprocessing.merge_bounding_box_list(
         bounding_box_list, 'intersection')
 
-    LOGGER.info(f'smallest pixel size: {min_pixel_size}')
+    LOGGER.info(f'target pixel size: {min_pixel_size}')
+    LOGGER.info(f'target bounding box: {target_bounding_box}')
 
 
 def raster_model(*raster_nodata_term_order_list):
