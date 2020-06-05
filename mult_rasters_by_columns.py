@@ -57,7 +57,7 @@ def raster_rpn_calculator_op(*args_list):
     for index in range(0, n, 2):
         valid_mask &= ~numpy.isclose(args_list[index], args_list[index+1])
     rpn_stack = list(args_list[-2])
-    info_dict = list(args_list[-1])
+    info_dict = args_list[-1]
     LOGGER.debug(info_dict)
 
     # process the rpn stack
@@ -252,7 +252,7 @@ if __name__ == '__main__':
             (raster_symbol_to_info_map[raster_id]['nodata'], 'raw'))
     raster_path_band_list.append((args.target_nodata, 'raw'))
     raster_path_band_list.append((rpn_stack, 'raw'))
-    raster_path_band_list.append((raster_symbol_to_info_map, 'raw'))
+    raster_path_band_list.append((raster_symbol_to_info_map), 'raw')
 
     LOGGER.debug(rpn_stack)
 
