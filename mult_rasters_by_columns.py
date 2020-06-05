@@ -20,7 +20,7 @@ OPERATOR_FN = {
     '*': numpy.multiply,
     '^': numpy.power,
 }
-N_CPUS = multiprocessing.cpu_count()
+N_CPUS = -1 # multiprocessing.cpu_count()
 
 logging.basicConfig(
     level=logging.DEBUG,
