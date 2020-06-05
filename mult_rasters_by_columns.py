@@ -87,7 +87,7 @@ if __name__ == '__main__':
             raster_symbol_to_path_nodata_map[
                 raster_symbol] = (raster_path, raster_info['nodata'][0])
             min_size = min(
-                min_size, abs(raster_info['pixel_size']))
+                min_size, abs(raster_info['pixel_size'][0]))
             bounding_box_list.append(raster_info['bounding_box'])
 
     if missing_symbol_list:
