@@ -67,14 +67,16 @@ if __name__ == '__main__':
     lasso_df = pandas.read_csv(lasso_table_path, header=None)
 
     raster_symbol_list = []
+    # exponent list will have a list for each row in the CSV, then each
+    # list will have a tuple for each term in the row where the first element
+    # is the symbol and the second is the exponent. list is evaluated by first
+    # evaluating exponents, then products, then summing the result
     exponent_list = []
-    constant_list = []
     for row_index, row in lasso_df.iterrows():
         header = row[0]
         LOGGER.debug(f'{row_index}: {row}')
 
         lasso_val = row[1]
-        constant_list.append(lasso_val)
 
         product_list = header.split('*')
         for product in product_list:
@@ -87,7 +89,8 @@ if __name__ == '__main__':
             if symbol not in raster_symbol_list:
                 raster_symbol_list.append(symbol)
 
-        LOGGER.debug(f'{lasso_val} * {exponent_list}')
+        exponent_list.append((lasso_val, 1))
+        LOGGER.debug(f'{exponent_list}')
 
     raster_symbol_to_path_map = {}
     missing_symbol_list = []
@@ -156,7 +159,28 @@ if __name__ == '__main__':
             })
 
     LOGGER.info('construct raster calculator list')
-    LOGGER.debug(f'{exponent_list}, {constant_list}')
+    base_raster_path_band_const_list = []
+
+    # make a list of rasters/constants to pass to raster calculator as
+    # path/band tuples or val/raw tuples
+
+    # values that have been built into the raster_path_band_list will go in
+    # here with the value being the index it exists in the list
+    val_pos_map = {}
+
+    # this stack will be built up with operations or position indexes to
+    # evalute
+    rpn_stack = []
+    for product in exponent_list:
+        for term, exponent in product:
+            if exponent != 1:
+                rpn_stack.extend([term, exponent, '^'])
+            else:
+                rpn_stack.extend([term])
+        rpn_stack.extend((len(product)-1)*['*'])
+    rpn_stack.extend((len(exponent_list)-1)*['+'])
+
+    LOGGER.debug(rpn_stack)
 
     # wait for rasters to align
     task_graph.join()
@@ -164,7 +188,7 @@ if __name__ == '__main__':
     LOGGER.debug('all done')
 
 
-def raster_model(*raster_nodata_term_order_list):
+def raster_rpn_calculator(*term_list):
     """Calculate summation of product power terms.
 
     Args:
