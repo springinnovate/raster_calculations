@@ -64,7 +64,7 @@ def raster_rpn_calculator_op(*args_list):
     # process the rpn stack
     accumulator_stack = []
     while len(rpn_stack) > 1:
-        val = rpn_stack.pop_front()
+        val = rpn_stack.pop(0)
         if val in OPERATOR_FN:
             operator = val
             operand_b = accumulator_stack.pop()
@@ -80,7 +80,7 @@ def raster_rpn_calculator_op(*args_list):
             else:
                 accumulator_stack.append(val)
 
-    result[valid_mask] = accumulator_stack.pop_front()
+    result[valid_mask] = accumulator_stack.pop(0)
     if accumulator_stack:
         raise RuntimeError(
             f'accumulator_stack not empty: {accumulator_stack}')
