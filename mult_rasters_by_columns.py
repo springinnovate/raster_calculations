@@ -71,26 +71,26 @@ if __name__ == '__main__':
     # list will have a tuple for each term in the row where the first element
     # is the symbol and the second is the exponent. list is evaluated by first
     # evaluating exponents, then products, then summing the result
-    exponent_list = []
+    rpn_stack = []
     for row_index, row in lasso_df.iterrows():
+        product_exponent_list = []
         header = row[0]
         LOGGER.debug(f'{row_index}: {row}')
 
-        lasso_val = row[1]
+        lasso_val = float(row[1])
+        rpn_stack.append(lasso_val)
 
         product_list = header.split('*')
         for product in product_list:
             if '^' in product:
-                exponent_list.append(product.split('^'))
+                rpn_stack.extend(product.split('^'))
+                rpn_stack.append('^')
             else:
-                exponent_list.append((product, 1))
+                rpn_stack.append((product, 1))
+            rpn_stack.append('*')
 
-        for symbol, exponent in exponent_list:
-            if symbol not in raster_symbol_list:
-                raster_symbol_list.append(symbol)
-
-        exponent_list.append((lasso_val, 1))
-        LOGGER.debug(f'{exponent_list}')
+    LOGGER.debug(rpn_stack)
+    sys.exit(-1)
 
     raster_symbol_to_path_map = {}
     missing_symbol_list = []
