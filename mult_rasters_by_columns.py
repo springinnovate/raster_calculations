@@ -16,7 +16,7 @@ gdal.SetCacheMax(2**30)
 
 # treat this one column name as special for the y intercept
 INTERCEPT_COLUMN_ID = 'intercept'
-NCPUS = multiprocessing.cpu_count()
+N_CPUS = multiprocessing.cpu_count()
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -26,6 +26,8 @@ logging.basicConfig(
     stream=sys.stdout)
 
 LOGGER = logging.getLogger(__name__)
+logging.getLogger('taskgraph').setLevel(logging.INFO)
+
 
 if __name__ == '__main__':
 
@@ -64,17 +66,17 @@ if __name__ == '__main__':
     lasso_table_path = args.lasso_table_path
     lasso_df = pandas.read_csv(lasso_table_path, header=None)
 
-    header_pos = {}
     raster_symbol_list = []
+    exponent_list = []
+    constant_list = []
     for row_index, row in lasso_df.iterrows():
         header = row[0]
         LOGGER.debug(f'{row_index}: {row}')
-        header_pos[header] = row_index
 
         lasso_val = row[1]
+        constant_list.append(lasso_val)
 
         product_list = header.split('*')
-        exponent_list = []
         for product in product_list:
             if '^' in product:
                 exponent_list.append(product.split('^'))
@@ -87,7 +89,7 @@ if __name__ == '__main__':
 
         LOGGER.debug(f'{lasso_val} * {exponent_list}')
 
-    raster_symbol_to_path_nodata_map = {}
+    raster_symbol_to_path_map = {}
     missing_symbol_list = []
     min_size = sys.float_info.max
     bounding_box_list = []
@@ -98,8 +100,7 @@ if __name__ == '__main__':
             continue
         else:
             raster_info = pygeoprocessing.get_raster_info(raster_path)
-            raster_symbol_to_path_nodata_map[
-                raster_symbol] = (raster_path, raster_info['nodata'][0])
+            raster_symbol_to_path_map[raster_symbol] = raster_path
             min_size = min(
                 min_size, abs(raster_info['pixel_size'][0]))
             bounding_box_list.append(raster_info['bounding_box'])
@@ -113,7 +114,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     LOGGER.info(
-        f'raster info:\n{str(raster_symbol_to_path_nodata_map)}')
+        f'raster paths:\n{str(raster_symbol_to_path_map)}')
 
     if args.bounding_box:
         target_bounding_box = args.bounding_box
@@ -128,6 +129,39 @@ if __name__ == '__main__':
 
     LOGGER.info(f'target pixel size: {target_pixel_size}')
     LOGGER.info(f'target bounding box: {target_bounding_box}')
+
+    LOGGER.debug('align rasters, this might take a while')
+    task_graph = taskgraph.TaskGraph(args.workspace_dir, N_CPUS, 5.0)
+    align_dir = os.path.join(args.workspace_dir, 'aligned_rasters')
+    try:
+        os.makedirs(align_dir)
+    except OSError:
+        pass
+
+    # align rasters and cast to list because we'll rewrite
+    # raster_symbol_to_path_map object
+    for raster_id, raster_path in list(raster_symbol_to_path_map.items()):
+        raster_basename = os.path.splitext(os.path.basename(raster_path))[0]
+        aligned_raster_path = os.path.join(
+            align_dir,
+            f'{raster_basename}_{target_bounding_box}_{target_pixel_size}.tif')
+        task_graph.add_task(
+            func=pygeoprocessing.warp_raster,
+            args=(
+                raster_path, target_pixel_size, aligned_raster_path,
+                'near'),
+            kwargs={
+                'target_bb': target_bounding_box,
+                'working_dir': args.workspace_dir
+            })
+
+    LOGGER.info('construct raster calculator list')
+    LOGGER.debug(f'{exponent_list}, {constant_list}')
+
+    # wait for rasters to align
+    task_graph.join()
+    task_graph.close()
+    LOGGER.debug('all done')
 
 
 def raster_model(*raster_nodata_term_order_list):
