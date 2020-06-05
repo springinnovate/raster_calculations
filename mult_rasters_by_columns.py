@@ -257,6 +257,7 @@ if __name__ == '__main__':
     # wait for rasters to align
     task_graph.join()
     task_graph.close()
+    del task_graph
 
     result_path = os.path.join(args.workspace_dir, 'result.tif')
     pygeoprocessing.raster_calculator(
