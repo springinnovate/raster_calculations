@@ -264,6 +264,7 @@ if __name__ == '__main__':
 
     LOGGER.info('construct raster calculator raster path band list')
     raster_path_band_list = []
+    LOGGER.debug(raster_symbol_list)
     for raster_symbol in raster_symbol_list:
         raster_path_band_list.append(
             (raster_symbol_to_info_map[raster_id]['aligned_path'], 1))
