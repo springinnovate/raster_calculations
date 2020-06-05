@@ -56,7 +56,9 @@ def raster_rpn_calculator_op(*args_list):
     # build up valid mask where all pixel stacks are defined
     for index in range(0, n, 2):
         LOGGER.debug(f'{index}: check if {args_list[index]} is close to {args_list[index+1]}')
-        valid_mask &= ~numpy.isclose(args_list[index], args_list[index+1])
+        nodata_value = args_list[index+1]
+        if nodata_value is not None:
+            valid_mask &= ~numpy.isclose(args_list[index], args_list[index+1])
     rpn_stack = list(args_list[-2])
     info_dict = args_list[-1]
     LOGGER.debug(info_dict)
