@@ -75,11 +75,18 @@ if __name__ == '__main__':
         LOGGER.debug(f'{lasso_val} * {exponent_list}')
 
     raster_symbol_to_path_map = {}
+    missing_symbol_list = []
     for raster_symbol in raster_symbol_list:
         raster_path = os.path.join(args.data_dir, f'{raster_symbol}.tif')
         if not os.path.exists(raster_path):
-            LOGGER.error(f'cannot find {raster_path}, quitting')
-            sys.exit(-1)
+            missing_symbol_list.append(raster_path)
+    if missing_symbol_list:
+        LOGGER.error(
+            f'expected the following '
+            f'{"rasters" if len(missing_symbol_list) > 1 else "raster"} given '
+            f'the entries in the table, but could not find them locally:\n '
+            "\n".join(missing_symbol_list))
+        sys.exit(-1)
 
 
 def raster_model(*raster_nodata_term_order_list):
