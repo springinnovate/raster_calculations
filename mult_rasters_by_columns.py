@@ -16,6 +16,7 @@ gdal.SetCacheMax(2**30)
 
 # treat this one column name as special for the y intercept
 INTERCEPT_COLUMN_ID = 'intercept'
+OPERATOR_SET = set(['+', '*', '^'])
 N_CPUS = multiprocessing.cpu_count()
 
 logging.basicConfig(
@@ -101,7 +102,14 @@ if __name__ == '__main__':
             rpn_stack.append('+')
 
     LOGGER.debug(rpn_stack)
+
+    raster_symbol_set = [
+        x for x in set(rpn_stack)-OPERATOR_SET
+        if not isinstance(x, float)]
+
+    LOGGER.debug(raster_symbol_set)
     sys.exit(-1)
+
 
     raster_symbol_to_path_map = {}
     missing_symbol_list = []
