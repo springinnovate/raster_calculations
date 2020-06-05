@@ -33,6 +33,52 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.INFO)
 
 
+def raster_rpn_calculator_op(*args_list):
+    """Calculate RPN expression.
+
+    Args:
+        args_list (list): a length list of N+3 long where:
+            - the first N elements are array followed by nodata
+            - the N+1th element is the target nodata
+            - the N+2nd  element is an RPN stack containing either
+              symbols, numeric values, or an operator in OPERATOR_SET.
+            - the last value is a dict mapping the symbol to a dict with
+              "index" in it showing where index*2 location it is in the
+              args_list.
+
+    Returns:
+        evaluation of the RPN calculation
+    """
+    n = len(args_list)-3
+    result = numpy.empty(args_list[0].shape, dtype=numpy.float32)
+    result[:] = args_list[n]  # target nodata
+    valid_mask = numpy.ones(args_list[0].shape, dtype=numpy.bool)
+    # build up valid mask where all pixel stacks are defined
+    for index in range(0, n, 2):
+        valid_mask &= ~numpy.isclose(args_list[index], args_list[index+1])
+    rpn_stack = list(args_list[-2])
+    info_dict = list(args_list[-1])
+
+    # process the rpn stack
+    while len(rpn_stack) > 1:
+        operator = rpn_stack.pop()
+        operand_b = rpn_stack.pop()
+        operand_a = rpn_stack.pop()
+
+        # convert any symbols to array equivalent
+        if isinstance(operand_a, str):
+            operand_a = args_list[2*info_dict[operand_a]['index']][valid_mask]
+        if isinstance(operand_b, str):
+            # convert to array equivalent
+            operand_b = args_list[2*info_dict[operand_b]['index']][valid_mask]
+
+        val = OPERATOR_FN[operator](operand_a, operand_b)
+        rpn_stack.push(val)
+
+    result[valid_mask] = rpn_stack.pop()
+    return result
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='mult by columns script')
@@ -209,50 +255,9 @@ if __name__ == '__main__':
     # wait for rasters to align
     task_graph.join()
     task_graph.close()
+
+    result_path = os.path.join(args.workspace_dir, 'result.tif')
+    pygeoprocessing.raster_calculator(
+        raster_path_band_list, raster_rpn_calculator_op, result_path,
+        gdal.GDT_Float32, args.target_nodata)
     LOGGER.debug('all done')
-
-
-def raster_rpn_calculator(*args_list):
-    """Calculate RPN expression.
-
-    Args:
-        args_list (list): a length list of N+3 long where:
-            - the first N elements are array followed by nodata
-            - the N+1th element is the target nodata
-            - the N+2nd  element is an RPN stack containing either
-              symbols, numeric values, or an operator in OPERATOR_SET.
-            - the last value is a dict mapping the symbol to a dict with
-              "index" in it showing where index*2 location it is in the
-              args_list.
-
-    Returns:
-        evaluation of the RPN calculation
-    """
-    n = len(args_list)-3
-    result = numpy.empty(args_list[0].shape, dtype=numpy.float32)
-    result[:] = args_list[n]  # target nodata
-    valid_mask = numpy.ones(args_list[0].shape, dtype=numpy.bool)
-    # build up valid mask where all pixel stacks are defined
-    for index in range(0, n, 2):
-        valid_mask &= ~numpy.isclose(args_list[index], args_list[index+1])
-    rpn_stack = list(args_list[-2])
-    info_dict = list(args_list[-1])
-
-    # process the rpn stack
-    while len(rpn_stack) > 1:
-        operator = rpn_stack.pop()
-        operand_b = rpn_stack.pop()
-        operand_a = rpn_stack.pop()
-
-        # convert any symbols to array equivalent
-        if isinstance(operand_a, str):
-            operand_a = args_list[2*info_dict[operand_a]['index']][valid_mask]
-        if isinstance(operand_b, str):
-            # convert to array equivalent
-            operand_b = args_list[2*info_dict[operand_b]['index']][valid_mask]
-
-        val = OPERATOR_FN[operator](operand_a, operand_b)
-        rpn_stack.push(val)
-
-    result[valid_mask] = rpn_stack.pop()
-    return result
