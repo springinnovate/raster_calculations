@@ -86,6 +86,7 @@ def raster_rpn_calculator_op(*args_list):
             operand_a = accumulator_stack.pop()
             val = OPERATOR_FN[operator](operand_a, operand_b)
             accumulator_stack.append(val)
+            LOGGER.debug(f"this is the val that go appended {operator} {operand_b} {operand_a} {val}")
         else:
             if isinstance(val, str):
                 accumulator_stack.append(
