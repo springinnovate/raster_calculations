@@ -41,11 +41,11 @@ if __name__ == '__main__':
             'completion'))
 
     args = parser.parse_args()
-    # Justin said this was his reference
 
+    LOGGER.info('TODO: align rasters here')
+
+    LOGGER.info('parse lasso table path')
     lasso_table_path = args.lasso_table_path
-
-    print('reading')
     lasso_df = pandas.read_csv(lasso_table_path)
 
     target_df = pandas.DataFrame()
@@ -57,16 +57,18 @@ if __name__ == '__main__':
 
         lasso_val = row[1]
 
-        LOGGER.debug(f'{header}*{lasso_val}')
-        if '*' in header:
-            # add a new column
-            product_list = header.split('*')
-        if '^' in header:
-            raster_id, exponent = header.split('^')
+        LOGGER.debug(f'{lasso_val} * {header}')
+        product_list = header.split('*')
+        exponent_list = [
+            (raster_power_list[0], raster_power_list[1])
+            if '^' in header else (header, 1)
+            for raster_power_list in header.split('^')]
+
+        LOGGER.debug(f'{lasso_val} * {exponent_list}')
 
 
 def raster_model(*raster_nodata_term_order_list):
-    """Calculate summation of terms accounting for
+    """Calculate summation of product power terms.
 
     Args:
         raster_nodata_term_order_list (list): a series of 4 elements for each
