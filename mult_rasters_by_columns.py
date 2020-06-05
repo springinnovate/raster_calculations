@@ -82,7 +82,7 @@ if __name__ == '__main__':
             missing_symbol_list.append(raster_path)
     if missing_symbol_list:
         LOGGER.error(
-            f'expected the following '
+            f'\nexpected the following '
             f'{"rasters" if len(missing_symbol_list) > 1 else "raster"} given '
             f'the entries in the table, but could not find them locally:\n '
             "\n".join(missing_symbol_list))
