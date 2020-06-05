@@ -1,6 +1,7 @@
 """Demo of how to use pandas to multiply one table by another."""
 import argparse
 import os
+import multiprocessing
 
 from osgeo import gdal
 from osgeo import ogr
@@ -8,6 +9,10 @@ from osgeo import osr
 import pandas
 import pygeoprocessing
 import taskgraph
+
+gdal.SetCacheMax(2**30)
+
+NCPUS = multiprocessing.cpu_count()
 
 if __name__ == '__main__':
 
@@ -18,6 +23,12 @@ if __name__ == '__main__':
     parser.add_argument(
         '--data_dir', type=str, required=True,
         help='path to directory containing rasters in lasso table path')
+    parser.add_argument(
+        '--workspace_dir', type=str, required=True,
+        help=(
+            'path to output directory, will contain "result.tif" after '
+            'completion'))
+
     args = parser.parse_args()
     # Justin said this was his reference
 
