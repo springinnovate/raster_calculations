@@ -20,7 +20,7 @@ OPERATOR_FN = {
     '*': numpy.multiply,
     '^': numpy.power,
 }
-N_CPUS = -1 # multiprocessing.cpu_count()
+N_CPUS = multiprocessing.cpu_count()
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -182,25 +182,25 @@ if __name__ == '__main__':
     LOGGER.debug(rpn_stack)
 
     # find the unique symbols in the expression
-    raster_symbol_list = [
+    raster_id_list = [
         x for x in set(rpn_stack)-set(OPERATOR_FN)
         if not isinstance(x, (int, float))]
 
-    LOGGER.debug(raster_symbol_list)
+    LOGGER.debug(raster_id_list)
 
     # translate symbols into raster paths and get relevant raster info
-    raster_symbol_to_info_map = {}
-    missing_symbol_list = []
+    raster_id_to_info_map = {}
+    missing_id_list = []
     min_size = sys.float_info.max
     bounding_box_list = []
-    for index, raster_symbol in enumerate(raster_symbol_list):
-        raster_path = os.path.join(args.data_dir, f'{raster_symbol}.tif')
+    for index, raster_id in enumerate(raster_id_list):
+        raster_path = os.path.join(args.data_dir, f'{raster_id}.tif')
         if not os.path.exists(raster_path):
-            missing_symbol_list.append(raster_path)
+            missing_id_list.append(raster_path)
             continue
         else:
             raster_info = pygeoprocessing.get_raster_info(raster_path)
-            raster_symbol_to_info_map[raster_symbol] = {
+            raster_id_to_info_map[raster_id] = {
                 'path': raster_path,
                 'nodata': raster_info['nodata'][0],
                 'index': index,
@@ -209,16 +209,16 @@ if __name__ == '__main__':
                 min_size, abs(raster_info['pixel_size'][0]))
             bounding_box_list.append(raster_info['bounding_box'])
 
-    if missing_symbol_list:
+    if missing_id_list:
         LOGGER.error(
             f'expected the following '
-            f'{"rasters" if len(missing_symbol_list) > 1 else "raster"} given '
+            f'{"rasters" if len(missing_id_list) > 1 else "raster"} given '
             f'the entries in the table, but could not find them locally:\n'
-            + "\n".join(missing_symbol_list))
+            + "\n".join(missing_id_list))
         sys.exit(-1)
 
     LOGGER.info(
-        f'raster paths:\n{str(raster_symbol_to_info_map)}')
+        f'raster paths:\n{str(raster_id_to_info_map)}')
 
     if args.bounding_box:
         target_bounding_box = args.bounding_box
@@ -243,14 +243,14 @@ if __name__ == '__main__':
         pass
 
     # align rasters and cast to list because we'll rewrite
-    # raster_symbol_to_path_map object
-    for raster_id in raster_symbol_to_info_map:
-        raster_path = raster_symbol_to_info_map[raster_id]['path']
+    # raster_id_to_path_map object
+    for raster_id in raster_id_to_info_map:
+        raster_path = raster_id_to_info_map[raster_id]['path']
         raster_basename = os.path.splitext(os.path.basename(raster_path))[0]
         aligned_raster_path = os.path.join(
             align_dir,
             f'{raster_basename}_{target_bounding_box}_{target_pixel_size}.tif')
-        raster_symbol_to_info_map[raster_id]['aligned_path'] = \
+        raster_id_to_info_map[raster_id]['aligned_path'] = \
             aligned_raster_path
         task_graph.add_task(
             func=pygeoprocessing.warp_raster,
@@ -264,19 +264,19 @@ if __name__ == '__main__':
 
     LOGGER.info('construct raster calculator raster path band list')
     raster_path_band_list = []
-    LOGGER.debug(raster_symbol_list)
-    LOGGER.debug(raster_symbol_to_info_map)
-    for index, raster_symbol in enumerate(raster_symbol_list):
+    LOGGER.debug(raster_id_list)
+    LOGGER.debug(raster_id_to_info_map)
+    for index, raster_id in enumerate(raster_id_list):
         raster_path_band_list.append(
-            (raster_symbol_to_info_map[raster_id]['aligned_path'], 1))
+            (raster_id_to_info_map[raster_id]['aligned_path'], 1))
         raster_path_band_list.append(
-            (raster_symbol_to_info_map[raster_id]['nodata'], 'raw'))
-        if index != raster_symbol_to_info_map[raster_id]['index']:
-            raise RuntimeError(f"indexes dont match: {index} {raster_symbol} {raster_symbol_to_info_map}")
+            (raster_id_to_info_map[raster_id]['nodata'], 'raw'))
+        if index != raster_id_to_info_map[raster_id]['index']:
+            raise RuntimeError(f"indexes dont match: {index} {raster_id} {raster_id_to_info_map}")
 
     raster_path_band_list.append((args.target_nodata, 'raw'))
     raster_path_band_list.append((rpn_stack, 'raw'))
-    raster_path_band_list.append((raster_symbol_to_info_map, 'raw'))
+    raster_path_band_list.append((raster_id_to_info_map, 'raw'))
     raster_path_band_list.append((args.zero_nodata, 'raw'))
     LOGGER.debug(rpn_stack)
 
