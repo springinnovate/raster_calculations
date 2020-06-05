@@ -61,27 +61,26 @@ def raster_rpn_calculator_op(*args_list):
     LOGGER.debug(info_dict)
 
     # process the rpn stack
+    accumulator_stack = []
     while len(rpn_stack) > 1:
-        operator = rpn_stack.pop()
-        operand_b = rpn_stack.pop()
-        operand_a = rpn_stack.pop()
+        val = rpn_stack.pop_front()
+        if val in OPERATOR_FN:
+            operator = val
+            operand_b = accumulator_stack.pop()
+            operand_a = accumulator_stack.pop()
+            val = OPERATOR_FN[operator](operand_a, operand_b)
+            accumulator_stack.append(val)
+        else:
+            if isinstance(val, str):
+                accumulator_stack.append(
+                    args_list[2*info_dict[val]['index']][valid_mask])
+            else:
+                accumulator_stack.append(val)
 
-        LOGGER.debug(f'{operand_a}, {operator}, {operand_b}')
-
-        # convert any symbols to array equivalent
-        LOGGER.debug(f"{operand_a}, {info_dict[operand_a]['index']}")
-        if isinstance(operand_a, str):
-            operand_a = (
-                args_list[2*info_dict[operand_a]['index']])[valid_mask]
-        if isinstance(operand_b, str):
-            # convert to array equivalent
-            operand_b = (
-                args_list[2*info_dict[operand_a]['index']])[valid_mask]
-
-        val = OPERATOR_FN[operator](operand_a, operand_b)
-        rpn_stack.push(val)
-
-    result[valid_mask] = rpn_stack.pop()
+    result[valid_mask] = accumulator_stack.pop_front()
+    if accumulator_stack:
+        raise RuntimeError(
+            f'accumulator_stack not empty: {accumulator_stack}')
     return result
 
 
@@ -148,7 +147,7 @@ if __name__ == '__main__':
                     rpn_stack.extend(product.split('^'))
                     # cast the exponent to an integer so can operate directly
                     rpn_stack[-1] = int(rpn_stack[-1])
-                    # push teh ^ to exponentiate the last two operations
+                    # push the ^ to exponentiate the last two operations
                     rpn_stack.append('^')
                 else:
                     # otherwise it's a single value
