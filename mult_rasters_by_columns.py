@@ -280,8 +280,9 @@ if __name__ == '__main__':
     task_graph.close()
 
     result_path = os.path.join(args.workspace_dir, 'result.tif')
+    LOGGER.debug(raster_path_band_list)
     pygeoprocessing.raster_calculator(
         raster_path_band_list, raster_rpn_calculator_op, result_path,
         gdal.GDT_Float32, float(args.target_nodata))
     LOGGER.debug('all done')
-    task_graph._terminate()
+    #task_graph._terminate()
