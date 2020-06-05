@@ -59,10 +59,12 @@ if __name__ == '__main__':
 
         LOGGER.debug(f'{lasso_val} * {header}')
         product_list = header.split('*')
-        exponent_list = [
-            (header, 1) if '^' not in header else
-            (raster_power_list[0], raster_power_list[1])
-            for raster_power_list in header.split('^')]
+        exponent_list = []
+        for product in product_list:
+            if '^' in product:
+                exponent_list.append(product.split('^'))
+            else:
+                exponent_list.append((product[0], 1))
 
         LOGGER.debug(f'{lasso_val} * {exponent_list}')
 
