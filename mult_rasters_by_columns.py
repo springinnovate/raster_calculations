@@ -73,19 +73,30 @@ if __name__ == '__main__':
 
         LOGGER.debug(f'{lasso_val} * {exponent_list}')
 
-    raster_symbol_to_path_map = {}
+    raster_symbol_to_path_nodata_bb_pixel_size_map = {}
     missing_symbol_list = []
-    for raster_symbol in raster_symbol_list:
+    for raster_symbol in set(raster_symbol_list)-set([INTERCEPT_COLUMN_ID]):
         raster_path = os.path.join(args.data_dir, f'{raster_symbol}.tif')
         if not os.path.exists(raster_path):
             missing_symbol_list.append(raster_path)
+            continue
+        else:
+            raster_info = pygeoprocessing.get_raster_info(raster_path)
+            raster_symbol_to_path_nodata_bb_pixel_size_map[
+                raster_symbol].append((
+                    raster_path, raster_info['nodata'][0],
+                    raster_info['bounding_box'], raster_info['cell_size']))
+
     if missing_symbol_list:
         LOGGER.error(
             f'expected the following '
             f'{"rasters" if len(missing_symbol_list) > 1 else "raster"} given '
-            f'the entries in the table, but could not find them locally:\n '
+            f'the entries in the table, but could not find them locally:\n'
             + "\n".join(missing_symbol_list))
         sys.exit(-1)
+
+    LOGGER.info(
+        f'raster info:\n{str(raster_symbol_to_path_nodata_bb_pixel_size_map)}')
 
 
 def raster_model(*raster_nodata_term_order_list):
