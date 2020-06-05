@@ -6,17 +6,20 @@ import os
 import sys
 
 from osgeo import gdal
-from osgeo import ogr
-from osgeo import osr
 import pandas
 import pygeoprocessing
+import numpy
 import taskgraph
 
 gdal.SetCacheMax(2**30)
 
 # treat this one column name as special for the y intercept
 INTERCEPT_COLUMN_ID = 'intercept'
-OPERATOR_SET = set(['+', '*', '^'])
+OPERATOR_FN = {
+    '+': numpy.add,
+    '*': numpy.multiply,
+    '^': numpy.power,
+}
 N_CPUS = multiprocessing.cpu_count()
 
 logging.basicConfig(
@@ -58,46 +61,50 @@ if __name__ == '__main__':
         help=(
             'if present, treat nodata values as 0, if absent any nodata '
             'pixel in a stack will cause the output pixel to be nodata'))
+    parser.add_argument(
+        '--target_nodata', type=float, default=numpy.finfo('float32').min,
+        help='desired target nodata value')
 
     args = parser.parse_args()
 
-    LOGGER.info('TODO: align rasters here')
-
-    LOGGER.info('parse lasso table path')
+    LOGGER.info('parse lasso table path and build expression')
     lasso_table_path = args.lasso_table_path
     lasso_df = pandas.read_csv(lasso_table_path, header=None)
 
-    raster_symbol_list = []
-    # exponent list will have a list for each row in the CSV, then each
-    # list will have a tuple for each term in the row where the first element
-    # is the symbol and the second is the exponent. list is evaluated by first
-    # evaluating exponents, then products, then summing the result
+    # built a reverse polish notation stack for the operations and their order
+    # that they need to be executed in
     rpn_stack = []
     first_term = True
     for row_index, row in lasso_df.iterrows():
-        product_exponent_list = []
-
         header = row[0]
         if header == INTERCEPT_COLUMN_ID:
             # special case of the intercept, just push it
             rpn_stack.append(float(row[1]))
-            continue
+        else:
+            # it's an expression/coefficient row
+            LOGGER.debug(f'{row_index}: {row}')
+            coefficient = float(row[1])
+            # put on the coefficient first since it's there, we'll multiply
+            # it later
+            rpn_stack.append(coefficient)
 
-        LOGGER.debug(f'{row_index}: {row}')
-        lasso_val = float(row[1])
-        rpn_stack.append(lasso_val)
+            # split out all the multiplcation terms
+            product_list = header.split('*')
+            for product in product_list:
+                # for each multiplcation term split out an exponent if exists
+                if '^' in product:
+                    rpn_stack.extend(product.split('^'))
+                    # cast the exponent to an integer so can operate directly
+                    rpn_stack[-1] = int(rpn_stack[-1])
+                    # push teh ^ to exponentiate the last two operations
+                    rpn_stack.append('^')
+                else:
+                    # otherwise it's a single value
+                    rpn_stack.append(product)
+                # multiply this term and the last
+                rpn_stack.append('*')
 
-        product_list = header.split('*')
-        for product in product_list:
-            if '^' in product:
-                rpn_stack.extend(product.split('^'))
-                # cast the exponent to an integer
-                rpn_stack[-1] = int(rpn_stack[-1])
-                rpn_stack.append('^')
-            else:
-                rpn_stack.append(product)
-            rpn_stack.append('*')
-
+        # if it's not the first term we want to add the rest
         if first_term:
             first_term = False
         else:
@@ -105,26 +112,30 @@ if __name__ == '__main__':
 
     LOGGER.debug(rpn_stack)
 
-    raster_symbol_set = [
-        x for x in set(rpn_stack)-OPERATOR_SET
+    # find the unique symbols in the expression
+    raster_symbol_list = [
+        x for x in set(rpn_stack)-set(OPERATOR_FN)
         if not isinstance(x, float)]
 
-    LOGGER.debug(raster_symbol_set)
-    sys.exit(-1)
+    LOGGER.debug(raster_symbol_list)
 
-
-    raster_symbol_to_path_map = {}
+    # translate symbols into raster paths and get relevant raster info
+    raster_symbol_to_info_map = {}
     missing_symbol_list = []
     min_size = sys.float_info.max
     bounding_box_list = []
-    for raster_symbol in set(raster_symbol_list)-set([INTERCEPT_COLUMN_ID]):
+    for index, raster_symbol in enumerate(raster_symbol_list):
         raster_path = os.path.join(args.data_dir, f'{raster_symbol}.tif')
         if not os.path.exists(raster_path):
             missing_symbol_list.append(raster_path)
             continue
         else:
             raster_info = pygeoprocessing.get_raster_info(raster_path)
-            raster_symbol_to_path_map[raster_symbol] = raster_path
+            raster_symbol_to_info_map[raster_symbol] = {
+                'path': raster_path,
+                'nodata': raster_info['nodata'][0],
+                'index': index,
+            }
             min_size = min(
                 min_size, abs(raster_info['pixel_size'][0]))
             bounding_box_list.append(raster_info['bounding_box'])
@@ -138,7 +149,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     LOGGER.info(
-        f'raster paths:\n{str(raster_symbol_to_path_map)}')
+        f'raster paths:\n{str(raster_symbol_to_info_map)}')
 
     if args.bounding_box:
         target_bounding_box = args.bounding_box
@@ -164,11 +175,14 @@ if __name__ == '__main__':
 
     # align rasters and cast to list because we'll rewrite
     # raster_symbol_to_path_map object
-    for raster_id, raster_path in list(raster_symbol_to_path_map.items()):
+    for raster_id in raster_symbol_to_info_map:
+        raster_path = raster_symbol_to_info_map[raster_id]['path']
         raster_basename = os.path.splitext(os.path.basename(raster_path))[0]
         aligned_raster_path = os.path.join(
             align_dir,
             f'{raster_basename}_{target_bounding_box}_{target_pixel_size}.tif')
+        raster_symbol_to_info_map[raster_id]['aligned_path'] = \
+            aligned_raster_path
         task_graph.add_task(
             func=pygeoprocessing.warp_raster,
             args=(
@@ -179,27 +193,16 @@ if __name__ == '__main__':
                 'working_dir': args.workspace_dir
             })
 
-    LOGGER.info('construct raster calculator list')
-    base_raster_path_band_const_list = []
-
-    # make a list of rasters/constants to pass to raster calculator as
-    # path/band tuples or val/raw tuples
-
-    # values that have been built into the raster_path_band_list will go in
-    # here with the value being the index it exists in the list
-    val_pos_map = {}
-
-    # this stack will be built up with operations or position indexes to
-    # evalute
-    rpn_stack = []
-    for product in exponent_list:
-        for term, exponent in product:
-            if exponent != 1:
-                rpn_stack.extend([term, exponent, '^'])
-            else:
-                rpn_stack.extend([term])
-        rpn_stack.extend((len(product)-1)*['*'])
-    rpn_stack.extend((len(exponent_list)-1)*['+'])
+    LOGGER.info('construct raster calculator raster path band list')
+    raster_path_band_list = []
+    for raster_symbol in raster_symbol_list:
+        raster_path_band_list.append(
+            (raster_symbol_to_info_map[raster_id]['aligned_path'], 1))
+        raster_path_band_list.append(
+            (raster_symbol_to_info_map[raster_id]['nodata'], 'raw'))
+    raster_path_band_list.append((args.target_nodata, 'raw'))
+    raster_path_band_list.append((rpn_stack, 'raw'))
+    raster_path_band_list.append((raster_symbol_to_info_map, 'raw'))
 
     LOGGER.debug(rpn_stack)
 
@@ -209,19 +212,47 @@ if __name__ == '__main__':
     LOGGER.debug('all done')
 
 
-def raster_rpn_calculator(*term_list):
-    """Calculate summation of product power terms.
+def raster_rpn_calculator(*args_list):
+    """Calculate RPN expression.
 
     Args:
-        raster_nodata_term_order_list (list): a series of 4 elements for each
-            raster in the order:
-                * raster array slice
-                * raster nodata
-                * constant float term to multiply to this raster
-                * integer (n) order term to exponentiate the raster (r) (r**n)
-                * list of additional raster indexes to multiply this raster by
+        args_list (list): a length list of N+3 long where:
+            - the first N elements are array followed by nodata
+            - the N+1th element is the target nodata
+            - the N+2nd  element is an RPN stack containing either
+              symbols, numeric values, or an operator in OPERATOR_SET.
+            - the last value is a dict mapping the symbol to a dict with
+              "index" in it showing where index*2 location it is in the
+              args_list.
 
     Returns:
-        each term evaluated, then the sum of all the terms.
+        evaluation of the RPN calculation
     """
-    pass
+    n = len(args_list)-3
+    result = numpy.empty(args_list[0].shape, dtype=numpy.float32)
+    result[:] = args_list[n]  # target nodata
+    valid_mask = numpy.ones(args_list[0].shape, dtype=numpy.bool)
+    # build up valid mask where all pixel stacks are defined
+    for index in range(0, n, 2):
+        valid_mask &= ~numpy.isclose(args_list[index], args_list[index+1])
+    rpn_stack = list(args_list[-2])
+    info_dict = list(args_list[-1])
+
+    # process the rpn stack
+    while len(rpn_stack) > 1:
+        operator = rpn_stack.pop()
+        operand_b = rpn_stack.pop()
+        operand_a = rpn_stack.pop()
+
+        # convert any symbols to array equivalent
+        if isinstance(operand_a, str):
+            operand_a = args_list[2*info_dict[operand_a]['index']][valid_mask]
+        if isinstance(operand_b, str):
+            # convert to array equivalent
+            operand_b = args_list[2*info_dict[operand_b]['index']][valid_mask]
+
+        val = OPERATOR_FN[operator](operand_a, operand_b)
+        rpn_stack.push(val)
+
+    result[valid_mask] = rpn_stack.pop()
+    return result
