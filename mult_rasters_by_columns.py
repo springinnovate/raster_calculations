@@ -1,7 +1,9 @@
 """Demo of how to use pandas to multiply one table by another."""
 import argparse
-import os
+import logging
 import multiprocessing
+import os
+import sys
 
 from osgeo import gdal
 from osgeo import ogr
@@ -13,6 +15,15 @@ import taskgraph
 gdal.SetCacheMax(2**30)
 
 NCPUS = multiprocessing.cpu_count()
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
+        ' [%(funcName)s:%(lineno)d] %(message)s'),
+    stream=sys.stdout)
+
+LOGGER = logging.getLogger(__name__)
 
 if __name__ == '__main__':
 
@@ -35,53 +46,23 @@ if __name__ == '__main__':
     lasso_table_path = args.lasso_table_path
 
     print('reading')
-    base_table_df = pandas.read_csv(base_table_path)
     lasso_df = pandas.read_csv(lasso_table_path)
 
     target_df = pandas.DataFrame()
 
-    if args.point_cloud:
-        gpkg_driver = ogr.GetDriverByName('GPKG')
-        base_id = os.path.basename(os.path.splitext(base_table_path)[0])
-        vector = gpkg_driver.CreateDataSource(f'{base_id}.gpkg')
-        wgs84_srs = osr.SpatialReference()
-        wgs84_srs.ImportFromEPSG(4326)
-        layer = vector.CreateLayer(base_id, wgs84_srs, geom_type=ogr.wkbPoint)
-        layer_def = layer.GetLayerDefn()
-
     header_pos = {}
-    print('start lasso')
     for row_index, row in lasso_df.iterrows():
         header = row[0]
         header_pos[header] = row_index
 
-        if args.point_cloud:
-            field = ogr.FieldDefn(header, ogr.OFTReal)
-            layer.CreateField(field)
-
         lasso_val = row[1]
-        if header in base_table_df:
-            # modify that column
-            target_df[header] = base_table_df[header]*lasso_val
+
+        LOGGER.debug(f'{header}*{lasso_val}')
         if '*' in header:
             # add a new column
-            col_a, col_b = header.split('*')
-            target_df[header] = (
-                base_table_df[col_a] * base_table_df[col_b] * row[1])
+            product_list = header.split('*')
         if '^' in header:
-            col, power = header.split('^')
-            target_df[header] = base_table_df[col]**int(power)*lasso_val
-
-    # Add a "predicted" column
-    predicted_col = []
-    for _, row in target_df.iterrows():
-        # the "2:" don't include the coordates that are the first two columns
-        predicted_col.append(sum(row[2:]))
-
-    target_df['predicted'] = predicted_col
-    header_pos['predicted'] = len(header_pos)
-
-    print('writing')
+            raster_id, exponent = header.split('^')
 
 
 def raster_model(*raster_nodata_term_order_list):
