@@ -65,7 +65,7 @@ def raster_rpn_calculator_op(*args_list):
 
     # process the rpn stack
     accumulator_stack = []
-    while len(rpn_stack) > 1:
+    while rpn_stack:
         val = rpn_stack.pop(0)
         if val in OPERATOR_FN:
             operator = val
