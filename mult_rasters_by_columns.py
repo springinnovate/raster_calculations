@@ -14,6 +14,8 @@ import taskgraph
 
 gdal.SetCacheMax(2**30)
 
+# treat this one column name as special for the y intercept
+INTERCEPT_COLUMN_ID = 'intercept'
 NCPUS = multiprocessing.cpu_count()
 
 logging.basicConfig(
@@ -51,13 +53,13 @@ if __name__ == '__main__':
     target_df = pandas.DataFrame()
 
     header_pos = {}
+    raster_symbol_list = []
     for row_index, row in lasso_df.iterrows():
         header = row[0]
         header_pos[header] = row_index
 
         lasso_val = row[1]
 
-        LOGGER.debug(f'{lasso_val} * {header}')
         product_list = header.split('*')
         exponent_list = []
         for product in product_list:
@@ -66,7 +68,18 @@ if __name__ == '__main__':
             else:
                 exponent_list.append((product, 1))
 
+        for symbol, exponent in exponent_list:
+            if symbol not in raster_symbol_list:
+                raster_symbol_list.append(symbol)
+
         LOGGER.debug(f'{lasso_val} * {exponent_list}')
+
+    raster_symbol_to_path_map = {}
+    for raster_symbol in raster_symbol_list:
+        raster_path = os.path.join(args.data_dir, f'{raster_symbol}.tif')
+        if not os.path.exists(raster_path):
+            LOGGER.error(f'cannot find {raster_path}, quitting')
+            sys.exit(-1)
 
 
 def raster_model(*raster_nodata_term_order_list):
