@@ -259,5 +259,5 @@ if __name__ == '__main__':
     result_path = os.path.join(args.workspace_dir, 'result.tif')
     pygeoprocessing.raster_calculator(
         raster_path_band_list, raster_rpn_calculator_op, result_path,
-        gdal.GDT_Float32, args.target_nodata)
+        gdal.GDT_Float32, float(args.target_nodata))
     LOGGER.debug('all done')
