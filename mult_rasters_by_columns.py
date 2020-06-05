@@ -91,6 +91,8 @@ if __name__ == '__main__':
         for product in product_list:
             if '^' in product:
                 rpn_stack.extend(product.split('^'))
+                # cast the exponent to an integer
+                rpn_stack[-1] = int(rpn_stack[-1])
                 rpn_stack.append('^')
             else:
                 rpn_stack.append(product)
