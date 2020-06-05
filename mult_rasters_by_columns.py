@@ -67,10 +67,12 @@ def raster_rpn_calculator_op(*args_list):
 
         # convert any symbols to array equivalent
         if isinstance(operand_a, str):
-            operand_a = args_list[2*info_dict[operand_a]['index']][valid_mask]
+            operand_a = (
+                args_list[2*info_dict[operand_a]['index']])[valid_mask]
         if isinstance(operand_b, str):
             # convert to array equivalent
-            operand_b = args_list[2*info_dict[operand_b]['index']][valid_mask]
+            operand_b = (
+                args_list[2*info_dict[operand_a]['index']])[valid_mask]
 
         val = OPERATOR_FN[operator](operand_a, operand_b)
         rpn_stack.push(val)
