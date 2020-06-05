@@ -74,9 +74,14 @@ if __name__ == '__main__':
     rpn_stack = []
     for row_index, row in lasso_df.iterrows():
         product_exponent_list = []
-        header = row[0]
-        LOGGER.debug(f'{row_index}: {row}')
 
+        header = row[0]
+        if header == INTERCEPT_COLUMN_ID:
+            # special case of the intercept, just push it
+            rpn_stack.append(float(row[1]))
+            continue
+
+        LOGGER.debug(f'{row_index}: {row}')
         lasso_val = float(row[1])
         rpn_stack.append(lasso_val)
 
@@ -86,7 +91,7 @@ if __name__ == '__main__':
                 rpn_stack.extend(product.split('^'))
                 rpn_stack.append('^')
             else:
-                rpn_stack.append((product, 1))
+                rpn_stack.append(product)
             rpn_stack.append('*')
 
     LOGGER.debug(rpn_stack)
