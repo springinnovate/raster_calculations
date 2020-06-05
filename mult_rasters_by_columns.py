@@ -73,8 +73,10 @@ if __name__ == '__main__':
 
         LOGGER.debug(f'{lasso_val} * {exponent_list}')
 
-    raster_symbol_to_path_nodata_bb_pixel_size_map = {}
+    raster_symbol_to_path_nodata_map = {}
     missing_symbol_list = []
+    min_size = sys.float_info.max
+    bounding_box_list = []
     for raster_symbol in set(raster_symbol_list)-set([INTERCEPT_COLUMN_ID]):
         raster_path = os.path.join(args.data_dir, f'{raster_symbol}.tif')
         if not os.path.exists(raster_path):
@@ -82,10 +84,11 @@ if __name__ == '__main__':
             continue
         else:
             raster_info = pygeoprocessing.get_raster_info(raster_path)
-            raster_symbol_to_path_nodata_bb_pixel_size_map[
-                raster_symbol] = (
-                    raster_path, raster_info['nodata'][0],
-                    raster_info['bounding_box'], raster_info['pixel_size'])
+            raster_symbol_to_path_nodata_map[
+                raster_symbol] = (raster_path, raster_info['nodata'][0])
+            min_size = min(
+                min_size, abs(raster_info['pixel_size']))
+            bounding_box_list.append(raster_info['bounding_box'])
 
     if missing_symbol_list:
         LOGGER.error(
@@ -96,7 +99,13 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     LOGGER.info(
-        f'raster info:\n{str(raster_symbol_to_path_nodata_bb_pixel_size_map)}')
+        f'raster info:\n{str(raster_symbol_to_path_nodata_map)}')
+
+    min_pixel_size = (min_size, -min_size)
+    target_bounding_box = pygeoprocessing.merge_bounding_box_list(
+        bounding_box_list, 'intersection')
+
+    LOGGER.info(f'smallest pixel size: {min_pixel_size}')
 
 
 def raster_model(*raster_nodata_term_order_list):
