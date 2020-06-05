@@ -252,7 +252,7 @@ if __name__ == '__main__':
             (raster_symbol_to_info_map[raster_id]['nodata'], 'raw'))
     raster_path_band_list.append((args.target_nodata, 'raw'))
     raster_path_band_list.append((rpn_stack, 'raw'))
-    raster_path_band_list.append((raster_symbol_to_info_map), 'raw')
+    raster_path_band_list.append((raster_symbol_to_info_map, 'raw'))
 
     LOGGER.debug(rpn_stack)
 
