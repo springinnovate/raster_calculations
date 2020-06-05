@@ -98,6 +98,7 @@ def raster_rpn_calculator_op(*args_list):
     if accumulator_stack:
         raise RuntimeError(
             f'accumulator_stack not empty: {accumulator_stack}')
+    LOGGER.debug(f"this is the result {result}")
     return result
 
 
