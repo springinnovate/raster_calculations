@@ -41,6 +41,20 @@ if __name__ == '__main__':
         help=(
             'path to output directory, will contain "result.tif" after '
             'completion'))
+    parser.add_argument(
+        '--bounding_box', type=float, nargs=4,
+        help=(
+            "manual bounding box in the form of four consecutive floats: "
+            "min_lng, min_lat, max_lng, max_lat, ex: "
+            "-180.0, -58.3, 180.0, 81.5"))
+    parser.add_argument(
+        '--pixel_size', type=float,
+        help="desired target pixel size in raster units")
+    parser.add_argument(
+        '--zero_nodata', action='store_true',
+        help=(
+            'if present, treat nodata values as 0, if absent any nodata '
+            'pixel in a stack will cause the output pixel to be nodata'))
 
     args = parser.parse_args()
 
@@ -101,11 +115,18 @@ if __name__ == '__main__':
     LOGGER.info(
         f'raster info:\n{str(raster_symbol_to_path_nodata_map)}')
 
-    min_pixel_size = (min_size, -min_size)
-    target_bounding_box = pygeoprocessing.merge_bounding_box_list(
-        bounding_box_list, 'intersection')
+    if args.bounding_box:
+        target_bounding_box = args.bounding_box
+    else:
+        target_bounding_box = pygeoprocessing.merge_bounding_box_list(
+            bounding_box_list, 'intersection')
 
-    LOGGER.info(f'target pixel size: {min_pixel_size}')
+    if args.pixel_size:
+        target_pixel_size = (args.pixel_size, -args.pixel_size)
+    else:
+        target_pixel_size = (min_size, -min_size)
+
+    LOGGER.info(f'target pixel size: {target_pixel_size}')
     LOGGER.info(f'target bounding box: {target_bounding_box}')
 
 
