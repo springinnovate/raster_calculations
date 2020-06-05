@@ -66,7 +66,7 @@ def raster_rpn_calculator_op(*args_list):
         operand_a = rpn_stack.pop()
 
         # convert any symbols to array equivalent
-        LOGGER.debug(f'{operand_a}, {info_dict[operand_a]['index']}')
+        LOGGER.debug(f"{operand_a}, {info_dict[operand_a]['index']}")
         if isinstance(operand_a, str):
             operand_a = (
                 args_list[2*info_dict[operand_a]['index']])[valid_mask]
