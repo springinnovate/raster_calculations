@@ -37,14 +37,16 @@ def raster_rpn_calculator_op(*args_list):
     """Calculate RPN expression.
 
     Args:
-        args_list (list): a length list of N+3 long where:
+        args_list (list): a length list of N+4 long where:
             - the first N elements are array followed by nodata
             - the N+1th element is the target nodata
             - the N+2nd  element is an RPN stack containing either
               symbols, numeric values, or an operator in OPERATOR_SET.
-            - the last value is a dict mapping the symbol to a dict with
+            - N+3rd value is a dict mapping the symbol to a dict with
               "index" in it showing where index*2 location it is in the
               args_list.
+            - N+4th value is "zero nodata" if true then missing nodata are
+              treated as zeros unless the entire stack is nodata
 
     Returns:
         evaluation of the RPN calculation
@@ -52,16 +54,27 @@ def raster_rpn_calculator_op(*args_list):
     n = len(args_list)-3
     result = numpy.empty(args_list[0].shape, dtype=numpy.float32)
     result[:] = args_list[n]  # target nodata
-    valid_mask = numpy.ones(args_list[0].shape, dtype=numpy.bool)
+    zero_nodata = args_list[n+4]
+    if zero_nodata:
+        valid_mask = numpy.zeros(args_list[0].shape, dtype=numpy.bool)
+    else:
+        valid_mask = numpy.ones(args_list[0].shape, dtype=numpy.bool)
     # build up valid mask where all pixel stacks are defined
     for index in range(0, n, 2):
-        LOGGER.debug(f'{index}: check if {args_list[index]} is close to {args_list[index+1]}')
         nodata_value = args_list[index+1]
         if nodata_value is not None:
-            valid_mask &= ~numpy.isclose(args_list[index], args_list[index+1])
+            if zero_nodata:
+                local_valid_mask = ~numpy.isclose(
+                    args_list[index], args_list[index+1])
+                # set nodata to zero in antipation of having to use it
+                args_list[index][~local_valid_mask] = 0.0
+                valid_mask |= local_valid_mask
+                pass
+            else:
+                valid_mask &= \
+                    ~numpy.isclose(args_list[index], args_list[index+1])
     rpn_stack = list(args_list[-2])
     info_dict = args_list[-1]
-    LOGGER.debug(info_dict)
 
     # process the rpn stack
     accumulator_stack = []
@@ -71,8 +84,6 @@ def raster_rpn_calculator_op(*args_list):
             operator = val
             operand_b = accumulator_stack.pop()
             operand_a = accumulator_stack.pop()
-            LOGGER.debug(
-                f"{operator}({operand_a},{operand_b})")
             val = OPERATOR_FN[operator](operand_a, operand_b)
             accumulator_stack.append(val)
         else:
@@ -259,7 +270,7 @@ if __name__ == '__main__':
     raster_path_band_list.append((args.target_nodata, 'raw'))
     raster_path_band_list.append((rpn_stack, 'raw'))
     raster_path_band_list.append((raster_symbol_to_info_map, 'raw'))
-
+    raster_path_band_list.append((args.zero_nodata, 'raw'))
     LOGGER.debug(rpn_stack)
 
     # wait for rasters to align
