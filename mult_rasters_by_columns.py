@@ -54,7 +54,7 @@ def raster_rpn_calculator_op(*args_list):
     n = len(args_list)-4
     result = numpy.empty(args_list[0].shape, dtype=numpy.float32)
     result[:] = args_list[n]  # target nodata
-    zero_nodata = args_list[n+4]
+    zero_nodata = args_list[n+3]
     if zero_nodata:
         valid_mask = numpy.zeros(args_list[0].shape, dtype=numpy.bool)
     else:
