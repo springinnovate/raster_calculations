@@ -85,7 +85,7 @@ if __name__ == '__main__':
             raster_symbol_to_path_nodata_bb_pixel_size_map[
                 raster_symbol] = (
                     raster_path, raster_info['nodata'][0],
-                    raster_info['bounding_box'], raster_info['cell_size'])
+                    raster_info['bounding_box'], raster_info['pixel_size'])
 
     if missing_symbol_list:
         LOGGER.error(
