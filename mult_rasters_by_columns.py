@@ -72,6 +72,7 @@ if __name__ == '__main__':
     # is the symbol and the second is the exponent. list is evaluated by first
     # evaluating exponents, then products, then summing the result
     rpn_stack = []
+    first_term = True
     for row_index, row in lasso_df.iterrows():
         product_exponent_list = []
 
@@ -93,6 +94,11 @@ if __name__ == '__main__':
             else:
                 rpn_stack.append(product)
             rpn_stack.append('*')
+
+        if first_term:
+            first_term = False
+        else:
+            rpn_stack.append('+')
 
     LOGGER.debug(rpn_stack)
     sys.exit(-1)
