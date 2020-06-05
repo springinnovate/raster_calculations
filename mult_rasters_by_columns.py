@@ -54,6 +54,8 @@ def raster_rpn_calculator_op(*args_list):
     n = len(args_list)-4
     result = numpy.empty(args_list[0].shape, dtype=numpy.float32)
     result[:] = args_list[n]  # target nodata
+    rpn_stack = list(args_list[n+1])
+    info_dict = args_list[n+2]
     zero_nodata = args_list[n+3]
     if zero_nodata:
         valid_mask = numpy.zeros(args_list[0].shape, dtype=numpy.bool)
@@ -73,8 +75,6 @@ def raster_rpn_calculator_op(*args_list):
             else:
                 valid_mask &= \
                     ~numpy.isclose(args_list[index], args_list[index+1])
-    rpn_stack = list(args_list[-2])
-    info_dict = args_list[-1]
 
     # process the rpn stack
     accumulator_stack = []
@@ -88,9 +88,6 @@ def raster_rpn_calculator_op(*args_list):
             accumulator_stack.append(val)
         else:
             if isinstance(val, str):
-                LOGGER.debug(
-                    f"{val}")
-                LOGGER.debug(f"{info_dict[val]}")
                 accumulator_stack.append(
                     args_list[2*info_dict[val]['index']][valid_mask])
             else:
