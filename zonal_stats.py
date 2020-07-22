@@ -75,7 +75,7 @@ if __name__ == '__main__':
             for stat in stat_list:
                 table_file.write(f'{stats[stat]},')
             if stats['count'] > 0:
-                table_file.write(f'{stats["sum"]/stats['count']}')
+                table_file.write(f'{stats["sum"]/stats["count"]}')
             else:
                 table_file.write(f'NaN')
             table_file.write('\n')
