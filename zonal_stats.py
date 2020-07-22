@@ -36,6 +36,9 @@ if __name__ == '__main__':
 
     task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1)
 
+    LOGGER.info(
+        f'calculating zonal stats for {args.raster_path} '
+        f'on {args.vector_path}')
     zonal_stats_task = task_graph.add_task(
         func=pygeoprocessing.zonal_statistics,
         args=((args.raster_path, 1), args.vector_path),
@@ -59,15 +62,16 @@ if __name__ == '__main__':
         '-', '_').replace(':', '_').replace('.', '_').replace(' ', '_')
     stat_list = ['count', 'max', 'min', 'nodata_count', 'sum']
     table_path = f'zonal_stats_{time_str}.csv'
+    LOGGER.info(f'building table at {table_path}')
     with open(table_path, 'w') as table_file:
         table_file.write('fid,')
         if args.field_name:
             table_file.write(f'{args.field_name},')
         table_file.write(f'{",".join(stat_list)}\n')
-        for fid, stats in stat_dict.values():
+        for fid, stats in stat_dict.items():
             table_file.write(f'{fid},')
             if args.field_name:
-                table_file.write(f'{fid_to_field_val[args.field_name]},')
+                table_file.write(f'{fid_to_field_val[fid]},')
             for stat in stat_list:
                 table_file.write(f'{stats[stat]},')
             table_file.write('\n')
