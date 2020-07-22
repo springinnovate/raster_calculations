@@ -74,9 +74,8 @@ if __name__ == '__main__':
                 table_file.write(f'{fid_to_field_val[fid]},')
             for stat in stat_list:
                 table_file.write(f'{stats[stat]},')
-            valid_count = stats['count']-stats['nodata_count']
-            if valid_count > 0:
-                table_file.write(f'{stats["sum"]/valid_count}')
+            if stats['count'] > 0:
+                table_file.write(f'{stats["sum"]/stats['count']}')
             else:
                 table_file.write(f'NaN')
             table_file.write('\n')
