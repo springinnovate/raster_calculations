@@ -1,4 +1,6 @@
+"""Command line script wrapping pygeoprocessing.raster_stats."""
 import argparse
+import datetime
 import logging
 import pprint
 import sys
@@ -43,13 +45,30 @@ if __name__ == '__main__':
 
     stat_dict = zonal_stats_task.get()
     pp = pprint.PrettyPrinter(indent=4)
+    fid_to_field_val = {}
     if args.field_name:
         vector = gdal.OpenEx(args.vector_path, gdal.OF_VECTOR)
         layer = vector.GetLayer()
-        stat_dict = {
-            layer.GetFeature(fid).GetField(args.field_name): value
-            for fid, value in stat_dict.items()
+        fid_to_field_val = {
+            fid: layer.GetFeature(fid).GetField(args.field_name)
+            for fid in stat_dict
         }
-    LOGGER.info(
-        f'\nstats for {args.raster_path} on \n'
-        f'{args.vector_path}:\n{pp.pformat(stat_dict)}')
+        layer = None
+        vector = None
+    time_str = str(datetime.datetime.utcnow()).replace(
+        '-', '_').replace(':', '_').replace('.', '_').replace(' ', '_')
+    stat_list = ['count', 'max', 'min', 'nodata_count', 'sum']
+    table_path = f'zonal_stats_{time_str}.csv'
+    with open(table_path, 'w') as table_file:
+        table_file.write('fid,')
+        if args.field_name:
+            table_file.write(f'{args.field_name},')
+        table_file.write(f'{",".join(stat_list)}\n')
+        for fid, stats in stat_dict.values():
+            table_file.write(f'{fid},')
+            if args.field_name:
+                table_file.write(f'{fid_to_field_val[args.field_name]},')
+            for stat in stat_list:
+                table_file.write(f'{stats[stat]},')
+            table_file.write('\n')
+    LOGGER.info(f'all done, table at {table_path}')
