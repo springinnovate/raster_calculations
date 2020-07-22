@@ -67,12 +67,17 @@ if __name__ == '__main__':
         table_file.write('fid,')
         if args.field_name:
             table_file.write(f'{args.field_name},')
-        table_file.write(f'{",".join(stat_list)}\n')
+        table_file.write(f'{",".join(stat_list)},mean\n')
         for fid, stats in stat_dict.items():
             table_file.write(f'{fid},')
             if args.field_name:
                 table_file.write(f'{fid_to_field_val[fid]},')
             for stat in stat_list:
                 table_file.write(f'{stats[stat]},')
+            valid_count = stats['count']-stats['nodata_count']
+            if valid_count > 0:
+                table_file.write(f'{stats["sum"]/valid_count}')
+            else:
+                table_file.write(f'NaN')
             table_file.write('\n')
     LOGGER.info(f'all done, table at {table_path}')
