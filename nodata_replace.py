@@ -35,8 +35,6 @@ if __name__ == '__main__':
     parser.add_argument(
         'target_path', type=str, help='path to desired output target')
     parser.add_argument(
-        'target_path', type=str, help='path to desired output target')
-    parser.add_argument(
         '--overwrite', action='store_true',
         help='overwrite target raster if it exists')
 
