@@ -20,8 +20,12 @@ def replace_a_with_b(array_a, array_b, a_nodata, b_nodata):
     """Set array_a to array_b where array_a==nodata an array_b != nodata."""
     result = numpy.copy(array_a)
     valid_mask = (
-        numpy.isclose(array_a, a_nodata) &
-        ~numpy.isclose(array_b, b_nodata))
+        (numpy.isclose(array_a, a_nodata) |
+         numpy.isnan(array_a) |
+         numpy.isinf(array_a)) &
+        ~numpy.isclose(array_b, b_nodata) &
+        ~numpy.isnan(array_b) &
+        ~numpy.isinf(array_b))
     result[valid_mask] = array_b[valid_mask]
     return result
 
@@ -57,6 +61,6 @@ if __name__ == '__main__':
 
     pygeoprocessing.raster_calculator(
         [(args.raster_a_path, 1), (args.raster_b_path, 1),
-         (raster_a_info['nodata'][0], 'raw'),
-         (raster_b_info['nodata'][0], 'raw')], replace_a_with_b,
+         (a_nodata, 'raw'),
+         (b_nodata, 'raw')], replace_a_with_b,
         args.target_path, raster_a_info['datatype'], a_nodata)
