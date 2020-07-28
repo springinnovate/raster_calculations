@@ -21,12 +21,11 @@ def replace_a_with_b(array_a, array_b, a_nodata, b_nodata):
     result = numpy.copy(array_a)
     valid_mask = (
         (numpy.isclose(array_a, a_nodata) |
-         numpy.isnan(array_a) |
-         numpy.isinf(array_a)) &
+         numpy.isnan(array_a)) &
         ~numpy.isclose(array_b, b_nodata) &
-        ~numpy.isnan(array_b) &
-        ~numpy.isinf(array_b))
+        ~numpy.isnan(array_b))
     result[valid_mask] = array_b[valid_mask]
+    result[numpy.isnan(result)] = a_nodata
     return result
 
 
