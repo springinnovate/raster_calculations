@@ -35,47 +35,6 @@ def main():
 
     # CNC calculations
     
-    single_expression = {
-        'expression':  'mask(raster, %s, invert=False)'%([210]),
-        'symbol_to_path_map': {
-            'raster': r"C:\Users\Becky\Documents\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif",
-        },
-        'target_nodata': -1,
-        'target_raster_path': 'masked_water.tif',
-    },
-    
-    raster_calculations_core.evaluate_calculation(
-        single_expression, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-
-    pygeoprocessing.warp_raster(
-        'masked_water.tif',
-        (30/3600, -30/3600), 'masked_water_30s.tif',
-        'mode'
-    )
-
-    TASK_GRAPH.join()
-
-    single_expression = {
-        'expression': 'service*mask + -9999*(1-mask)',
-        'symbol_to_path_map': {
-            'mask':  'masked_water_30s.tif',
-            'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\CORRECTED_realized_marinefish_watson_2010_2014.tif",
-        },
-        'target_nodata': -9999,
-        'target_raster_path': 'realized_marinefish_watson_2010_2014_corr_clip_30s.tif',
-        'target_pixel_size': (0.008333333333333333218, -0.008333333333333333218),
-        'resample_method': 'average',
-    },
-    
-    raster_calculations_core.evaluate_calculation(
-        single_expression, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
 
 
     single_expression = {
