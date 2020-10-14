@@ -33,10 +33,10 @@ def evaluate_calculation(args, task_graph, workspace_dir):
         args['resample_method'] (str): one of
             'near|bilinear|cubic|cubicspline|lanczos|mode', if not defined
             defaults to 'near'.
-        args['target_sr_wkt'] (str): if defined reprojects all inputs into
-            this coordinate reference system defined in WKT. If not defined
-            uses the inputs' SRS, and if the inputs' SRS are different will
-            raise a ValueError.
+        args['target_projection_wkt'] (str): if defined reprojects all
+            inputs into this coordinate reference system defined in WKT. If
+            not defined uses the inputs' SRS, and if the inputs' SRS are
+            different will raise a ValueError.
         args['target_pixel_size'] (tuple): if defined resizes all inputs to
             have this target pixel size (x_len, y_len). If input pixels sizes
             are different will resize the input rasters using the
@@ -95,10 +95,10 @@ def evaluate_calculation(args, task_graph, workspace_dir):
     processed_raster_list_file_path = os.path.join(
         process_raster_churn_dir, 'processed_raster_list.pickle')
     LOGGER.debug(symbol_to_path_band_map)
-    
-    target_sr_wkt = None
-    if 'target_sr_wkt' in args:
-        target_sr_wkt = args['target_sr_wkt']
+
+    target_projection_wkt = None
+    if 'target_projection_wkt' in args:
+        target_projection_wkt = args['target_projection_wkt']
     target_pixel_size = None
     if 'target_pixel_size' in args:
         target_pixel_size = args['target_pixel_size']
@@ -111,7 +111,7 @@ def evaluate_calculation(args, task_graph, workspace_dir):
             [path[0] for path in symbol_to_path_band_map.values()],
             process_raster_churn_dir, processed_raster_list_file_path),
         kwargs={
-            'target_sr_wkt': target_sr_wkt,
+            'target_projection_wkt': target_projection_wkt,
             'target_pixel_size': target_pixel_size,
             'resample_method': resample_method},
         dependent_task_list=download_task_list,
@@ -317,7 +317,7 @@ def _make_logger_callback(message):
 
 def _preprocess_rasters(
         base_raster_path_list, churn_dir,
-        target_processed_raster_list_file_path, target_sr_wkt=None,
+        target_processed_raster_list_file_path, target_projection_wkt=None,
         target_pixel_size=None, resample_method='near'):
     """Process base raster path list so it can be used in raster calcs.
 
@@ -330,7 +330,7 @@ def _preprocess_rasters(
             for processed output list that contains the list of raster paths
             that can be used in raster calcs, note this may be the original
             list of rasters or they may have been created by this call.
-        target_sr_wkt (string): if not None, this is the desired
+        target_projection_wkt (string): if not None, this is the desired
             projection of the target rasters in Well Known Text format. If
             None and all symbol rasters have the same projection, that
             projection will be used. Otherwise a ValueError is raised
@@ -352,15 +352,34 @@ def _preprocess_rasters(
     base_info_list = [
         pygeoprocessing.get_raster_info(path)
         for path in base_raster_path_list]
-    base_projection_list = [info['projection'] for info in base_info_list]
+    base_projection_list = [info['projection_wkt'] for info in base_info_list]
     base_pixel_list = [info['pixel_size'] for info in base_info_list]
     base_raster_shape_list = [info['raster_size'] for info in base_info_list]
 
+    if target_pixel_size is not None:
+        same_pixel_sizes = True
+        pixel_sizes = [
+            info['pixel_size'] for info in base_info_list] + [
+            target_pixel_size]
+        for pixel_size_a in pixel_sizes[0:-1]:
+            for pixel_size_b in pixel_sizes[1:]:
+                if not all(numpy.isclose(pixel_size_a, pixel_size_b)):
+                    same_pixel_sizes = False
+    else:
+        same_pixel_sizes = True
+
+    if (len(set(base_raster_shape_list)) == 1 and same_pixel_sizes and
+            resample_method != 'near'):
+        raise ValueError(
+            f"there is a requested resample method of '{resample_method}' "
+            "but all the pixel sizes are the same, you probably meant to "
+            "leave off 'resample_method' as an argument.")
+
     if len(set(base_projection_list)) != 1:
-        if target_sr_wkt is None:
+        if target_projection_wkt is None:
             raise ValueError(
                 "Projections of base rasters are not equal and there "
-                "is no `target_sr_wkt` defined.\nprojection list: %s",
+                "is no `target_projection_wkt` defined.\nprojection list: %s",
                 str(base_projection_list))
         else:
             LOGGER.info('projections are different')
@@ -391,10 +410,17 @@ def _preprocess_rasters(
         operand_raster_path_list = [
             os.path.join(churn_dir, os.path.basename(path)) for path in
             base_raster_path_list]
-        pygeoprocessing.align_and_resize_raster_stack(
-            base_raster_path_list, operand_raster_path_list,
-            [resample_method]*len(base_raster_path_list),
-            target_pixel_size, 'intersection', target_sr_wkt=target_sr_wkt)
+        if not same_pixel_sizes:
+            pygeoprocessing.align_and_resize_raster_stack(
+                base_raster_path_list, operand_raster_path_list,
+                [resample_method]*len(base_raster_path_list),
+                target_pixel_size, 'intersection',
+                target_projection_wkt=target_projection_wkt)
+        else:
+            # no need to realign, just hard link it
+            for base, target in zip(
+                    base_raster_path_list, operand_raster_path_list):
+                os.link(base, target)
         result = operand_raster_path_list
     else:
         result = base_raster_path_list
