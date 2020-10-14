@@ -418,9 +418,11 @@ def _preprocess_rasters(
                 target_projection_wkt=target_projection_wkt)
         else:
             # no need to realign, just hard link it
-            for base, target in zip(
+            for base_path, target_path in zip(
                     base_raster_path_list, operand_raster_path_list):
-                os.link(base, target)
+                if os.path.exists(target_path):
+                    os.remove(target_path)
+                os.link(base_path, target_path)
         result = operand_raster_path_list
     else:
         result = base_raster_path_list
