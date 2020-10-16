@@ -369,6 +369,9 @@ def _preprocess_rasters(
     else:
         same_pixel_sizes = True
 
+    same_raster_sizes = (
+        len(set([info['raster_size'] for info in base_info_list])) == 1)
+
     if (len(set(base_raster_shape_list)) == 1 and same_pixel_sizes and
             resample_method != 'near'):
         raise ValueError(
@@ -411,7 +414,7 @@ def _preprocess_rasters(
         operand_raster_path_list = [
             os.path.join(churn_dir, os.path.basename(path)) for path in
             base_raster_path_list]
-        if not same_pixel_sizes:
+        if not same_pixel_sizes or not same_raster_sizes:
             pygeoprocessing.align_and_resize_raster_stack(
                 base_raster_path_list, operand_raster_path_list,
                 [resample_method]*len(base_raster_path_list),
