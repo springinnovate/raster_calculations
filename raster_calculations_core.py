@@ -1,21 +1,22 @@
 """Process a raster calculator plain text expression."""
-import tempfile
-import re
 import hashlib
-import pickle
-import time
-import os
 import logging
+import os
+import pickle
+import re
+import tempfile
+import time
 import urllib.request
 
-from retrying import retry
-from osgeo import osr
 from osgeo import gdal
+from retrying import retry
+import numpy
 import pygeoprocessing
 import pygeoprocessing.symbolic
-import numpy
 
 LOGGER = logging.getLogger(__name__)
+
+gdal.SetCacheMax(2**26)
 
 
 def evaluate_calculation(args, task_graph, workspace_dir):
@@ -239,7 +240,7 @@ def mask_raster_by_array(
 
     """
     raster_info = pygeoprocessing.get_raster_info(raster_path_band[0])
-    pygeoprocessing.raster_calculator(
+    pygeoprocessing.multiprocessing.raster_calculator(
         [raster_path_band,
          (raster_info['nodata'][raster_path_band[1]-1], 'raw'),
          (numpy.array(mask_array), 'raw'), (2, 'raw'), (invert, 'raw')],
