@@ -36,7 +36,7 @@ def main():
 
     single_expression = {
         'expression': 'raster1*raster2',
-        'symbol_to_path_map': { 
+        'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\unilever\scenarios\September\NEAREST_missingcarbon_biomass_per_ha_PNVESA-ESA2014_forestonly.tif",
             'raster2': r"C:\Users\Becky\Documents\unilever\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_pixel_area_land_mask.tif"
         },

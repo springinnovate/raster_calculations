@@ -28,3 +28,4 @@ if __name__ == '__main__':
        [(path_to_raster, 1)], churn_dir, output_directory,
        goal_met_cutoffs=[x/100 for x in range(5, 91, 5)],
        heap_buffer_size=2**26)
+
