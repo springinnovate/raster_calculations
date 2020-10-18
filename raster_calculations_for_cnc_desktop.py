@@ -34,17 +34,17 @@ def main():
     """Write your expression here."""
 
     # CNC calculations
-    
-
 
     single_expression = {
-        'expression': '(raster1>=raster2)*raster1 + (raster1<raster2)*raster2',
+        'expression': '(raster1>2)*raster2',
         'symbol_to_path_map': {
-            'raster1': r"C:\Users\Becky\Documents\raster_calculations\nci\ExtensificationNapp_allcrops_rainfedfootprint_gapfilled_observedNapp.tif",
-            'raster2': r"C:\Users\Becky\Downloads\ag_expansion_slope_max_exclusion_mask_md5_2ba6dde5131ef4de64baaa7cbefa2dc7.tif"
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\Total_C_v10_2km_optimization_output_2020_08_18\optimal_mask_0.65.tif"
         },
         'target_nodata': -9999,
-        'target_raster_path': "ag_expansion_slope_max_exclusion_mask_fixed.tif",
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'average',
+        'target_raster_path': "ctr90_C65_2km.tif",
     }
 
     raster_calculations_core.evaluate_calculation(
@@ -54,49 +54,24 @@ def main():
     TASK_GRAPH.close()
 
     return
-
-   
     
-    single_expression = {
-        'expression': '(raster1>=raster2)*raster1 + (raster1<raster2)*raster2',
-        'symbol_to_path_map': {
-            'raster1': r"C:\Users\Becky\Downloads\ag_intensification_slope_max_exclusion_mask_md5_afd63de0b91f938764d183b1bb459bc4.tif",
-            'raster2': r"C:\Users\Becky\Downloads\ag_expansion_slope_max_exclusion_mask_md5_2ba6dde5131ef4de64baaa7cbefa2dc7.tif"
-        },
-        'target_nodata': 255,
-        'target_raster_path': "ag_expansion_slope_max_exclusion_mask_fixed.tif",
-    }
-
-    raster_calculations_core.evaluate_calculation(
-        single_expression, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-
     wgs84_srs = osr.SpatialReference()
-    wgs84_srs.ImportFromEPSG(4326)
-
-
-    pygeoprocessing.warp_raster(
-        r"C:\Users\Becky\Documents\raster_calculations\ag_exclusion_mask.tif",
-        (10/3600, -10/3600), 'ag_exclusion_mask_10s.tif',
-        'mode', target_sr_wkt=wgs84_srs.ExportToWkt()
-    )
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
+    wgs84_srs.ImportFromEPSG(4326)    
 
     single_expression = {
-        'expression': '(raster>=10)*1 + (raster<10)*0',
+        'expression': '(raster2>-9999)*raster1',
         'symbol_to_path_map': {
-            'raster': r"C:\Users\Becky\Documents\raster_calculations\arcticdem_100m_slope.tif",
+            #'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\output_2km_masks\solution_111_tar_90_res_2km_carbon_0.tif",
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\output_2km_masks\solution_222_tar_90_res_2km.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_e_source_abs_ann_mean.tif"
         },
-        'target_nodata': -1,
-        'target_raster_path': "ag_exclusion_mask.tif",
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_sr_wkt': wgs84_srs.ExportToWkt(),
+        'target_pixel_size': (1.495833333333333348,1.5092592592592593),
+        'resample_method': 'mode',
+        #'target_raster_path': "solution_111_tar_90_res_2km_carbon_0_resampled15_mode.tif",
+        'target_raster_path': "solution_222_tar_90_res_2km_resampled15_mode.tif",
     }
 
     raster_calculations_core.evaluate_calculation(
@@ -106,6 +81,47 @@ def main():
     TASK_GRAPH.close()
 
     return
+
+    single_expression = {
+        'expression': '(raster1>2)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\Total_C_v10_2km_optimization_output_2020_08_18\optimal_mask_0.65.tif"
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'average',
+        'target_raster_path': "ctr90_C65_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>=0)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster2': r"C:\Users\Becky\Documents\raster_calculations\Total_C_v10_300m.tif"
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'average',
+        'target_raster_path': "Total_C_v10_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     
 
     NNth_poll = 38

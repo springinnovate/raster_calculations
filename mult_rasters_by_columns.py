@@ -99,7 +99,6 @@ def raster_rpn_calculator_op(*args_list):
             f'accumulator_stack not empty: {accumulator_stack}')
     return result
 
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='mult by columns script')
