@@ -35,6 +35,56 @@ def main():
 
     # CNC calculations
 
+    wgs84_srs = osr.SpatialReference()
+    wgs84_srs.ImportFromEPSG(4326)    
+
+    single_expression = {
+        'expression': '(raster2>-9999)*raster1',
+        'symbol_to_path_map': {
+            'raster1': r"solution_111_tar_80_res_2km_carbon_0.tif",
+            'raster2': r"realized_e_source_abs_ann_mean.tif"
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_projection_wkt': wgs84_srs.ExportToWkt(),
+        'target_pixel_size': (1.495833333333333348,1.5092592592592593),
+        'resample_method': 'average',
+        'target_raster_path': "top80_solution_1.5d_avg.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    wgs84_srs = osr.SpatialReference()
+    wgs84_srs.ImportFromEPSG(4326)    
+
+    single_expression = {
+        'expression': '(raster2>-9999)*raster1',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Dropbox\NatCap\projects\CI-CNC\Final figs\Fig1_green_blue\cntr_2km_nocarb_land2.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_e_source_abs_ann_mean.tif"
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_sr_wkt': wgs84_srs.ExportToWkt(),
+        'target_pixel_size': (1.495833333333333348,1.5092592592592593),
+        'resample_method': 'mode',
+        'target_raster_path': "cntr_2km_nocarb_land_resampled15_mode.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     single_expression = {
         'expression': '(raster1>2)*raster2',
         'symbol_to_path_map': {

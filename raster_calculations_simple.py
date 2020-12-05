@@ -1,4 +1,6 @@
-"""These calculations are for the Critical Natural Capital paper."""
+"""These calculations are just for fun."""
+# don't forget: conda activate py38_gdal312
+
 import glob
 import sys
 import os
@@ -34,17 +36,21 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+    wgs84_srs = osr.SpatialReference()
+    wgs84_srs.ImportFromEPSG(4326)    
+
     single_expression = {
-        'expression': 'raster1*raster2',
+        'expression': '(raster2>-9999)*raster1',
         'symbol_to_path_map': {
-            'raster1': r"C:\Users\Becky\Documents\unilever\scenarios\September\NEAREST_missingcarbon_biomass_per_ha_PNVESA-ESA2014_forestonly.tif",
-            'raster2': r"C:\Users\Becky\Documents\unilever\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_pixel_area_land_mask.tif"
+            'raster1': r"solution_111_tar_80_res_2km_carbon_0.tif",
+            'raster2': r"realized_e_source_abs_ann_mean.tif"
         },
-        'target_nodata': float(numpy.finfo(numpy.float32).min),
-        'default_nan': float(numpy.finfo(numpy.float32).min),
-        'target_pixel_size': (0.00277777780000000021,-0.00277777780000000021),
-        'resample_method': 'near',
-        'target_raster_path': "NEAREST_missingcarbon_biomass_per_PIXEL_PNVESA-ESA2014_forestonly.tif",
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_projection_wkt': wgs84_srs.ExportToWkt(),
+        'target_pixel_size': (1.495833333333333348,1.5092592592592593),
+        'resample_method': 'average',
+        'target_raster_path': "top80_solution_1.5d_avg.tif",
     }
 
     raster_calculations_core.evaluate_calculation(
@@ -53,6 +59,7 @@ def main():
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
+    return
 
 
 if __name__ == '__main__':
