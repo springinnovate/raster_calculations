@@ -52,7 +52,6 @@ def fill_by_convolution(
         None
     """
     try:
-        intermediate_file_list = []
         LOGGER.info(f'filling {base_raster_path}')
         # create working directory in the same directory as the target with
         # the same name as the target file so it can't be duplicated
@@ -75,7 +74,6 @@ def fill_by_convolution(
         base[n//2, n//2] = 1
         kernel_array = scipy.ndimage.filters.gaussian_filter(base, n/3)
         kernel_raster_path = os.path.join(working_dir, f'kernel_{basename}')
-        intermediate_file_list.append(kernel_raster_path)
         geotransform = base_raster_info['geotransform']
         pygeoprocessing.numpy_array_to_raster(
             kernel_array, None, base_raster_info['pixel_size'],
@@ -85,19 +83,16 @@ def fill_by_convolution(
         # scrub input raster
         sanitized_base_raster_path = os.path.join(
             working_dir, f'sanitized_{basename}')
-        intermediate_file_list.append(sanitized_base_raster_path)
         sanitize_raster(base_raster_path, sanitized_base_raster_path)
 
         # mask valid
         valid_raster_path = os.path.join(
             working_dir, f'sanitized_{basename}')
-        intermediate_file_list.append(valid_raster_path)
         pygeoprocessing.raster_calculator(
             [(base_raster_path, 1), (base_raster_info['nodata'][0], 'raw')],
             _mask_valid_op, valid_raster_path, gdal.GDT_Byte, None)
         mask_kernel_raster_path = os.path.join(
             working_dir, f'mask_kernel_{basename}')
-        intermediate_file_list.append(mask_kernel_raster_path)
         geotransform = base_raster_info['geotransform']
         mask_kernel_array = numpy.copy(kernel_array)
         mask_kernel_array[:] = 1
@@ -107,7 +102,6 @@ def fill_by_convolution(
             base_raster_info['projection_wkt'], mask_kernel_raster_path)
         coverage_raster_path = os.path.join(
             working_dir, f'coverage_{basename}')
-        intermediate_file_list.append(coverage_raster_path)
         pygeoprocessing.convolve_2d(
             (valid_raster_path, 1), (mask_kernel_raster_path, 1),
             coverage_raster_path,
@@ -119,7 +113,6 @@ def fill_by_convolution(
         # this raster will be filled with the entire convolution
         backfill_raster_path = os.path.join(
             working_dir, f'backfill_{basename}')
-        intermediate_file_list.append(backfill_raster_path)
         base_nodata = base_raster_info['nodata'][0]
         if base_nodata is None:
             target_datatype = gdal.GDT_Float64
@@ -144,11 +137,7 @@ def fill_by_convolution(
              (base_nodata, 'raw')], _fill_nodata_op,
             target_filled_raster_path,
             base_raster_info['datatype'], base_nodata)
-        for path in intermediate_file_list:
-            try:
-                os.remove(path)
-            except OSError:
-                LOGGER.warning(f'could not remove {path}')
+        shutil.rmtree(working_dir)
     except Exception:
         LOGGER.exception(
             f'error on fill by convolution {target_filled_raster_path}')
