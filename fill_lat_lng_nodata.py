@@ -85,6 +85,31 @@ def fill_by_convolution(
             working_dir, f'sanitized_{basename}')
         sanitize_raster(base_raster_path, sanitized_base_raster_path)
 
+        # mask valid
+        valid_raster_path = os.path.join(
+            working_dir, f'sanitized_{basename}')
+        pygeoprocessing.raster_calculator(
+            [(base_raster_path, 1), (base_raster_info['nodata'][0], 'raw')],
+            _mask_valid_op, valid_raster_path, gdal.GDT_Byte, None)
+        mask_kernel_raster_path = os.path.join(
+            working_dir, f'mask_kernel_{basename}')
+        geotransform = base_raster_info['geotransform']
+        mask_kernel_array = numpy.copy(kernel_array)
+        mask_kernel_array[:] = 1
+        pygeoprocessing.numpy_array_to_raster(
+            mask_kernel_array, None, base_raster_info['pixel_size'],
+            (geotransform[0], geotransform[3]),
+            base_raster_info['projection_wkt'], mask_kernel_raster_path)
+        coverage_raster_path = os.path.join(
+            working_dir, f'coverage_{basename}')
+        pygeoprocessing.convolve_2d(
+            (valid_raster_path, 1), (mask_kernel_raster_path, 1),
+            coverage_raster_path,
+            mask_nodata=False,
+            target_nodata=-1,
+            target_datatype=gdal.GDT_Byte,
+            working_dir=working_dir)
+
         # this raster will be filled with the entire convolution
         backfill_raster_path = os.path.join(
             working_dir, f'backfill_{basename}')
@@ -107,33 +132,41 @@ def fill_by_convolution(
         LOGGER.info(
             f'fill nodata of {base_raster_path} to {backfill_raster_path}')
         pygeoprocessing.raster_calculator(
-            [(base_raster_path, 1), (backfill_raster_path, 1),
+            [(base_raster_path, 1),
+             (backfill_raster_path, 1), (coverage_raster_path, 1),
              (base_nodata, 'raw')], _fill_nodata_op,
             target_filled_raster_path,
             base_raster_info['datatype'], base_nodata)
-
-        #shutil.rmtree(working_dir)
+        shutil.rmtree(working_dir)
     except Exception:
         LOGGER.exception(
             f'error on fill by convolution {target_filled_raster_path}')
         raise
 
 
-def _fill_nodata_op(base, fill, nodata):
+def _fill_nodata_op(base, fill, valid, nodata):
     result = numpy.copy(base)
+    valid_mask = valid > 0
     if nodata is not None:
-        nodata_mask = numpy.isclose(base, nodata)
-        result[nodata_mask] = fill[nodata_mask]
-    # zero out any negative values, this was to fix an issue where I was
-    # getting negative values on methane rasters.
-    # result[non_nodata_mask & (result < 0.0)] = 0.0
+        valid_mask &= numpy.isclose(base, nodata)
+    result[valid_mask] = fill[valid_mask]
     return result
 
 
-def _non_finite_to_fill(base_array, fill):
+def _non_finite_to_fill_op(base_array, fill):
     result = numpy.copy(base_array)
     result[~numpy.isfinite(base_array)] = fill
     return result
+
+
+def _mask_valid_op(base_array, nodata):
+    """Convert valid to True nodata/invalid to False."""
+    if nodata is not None:
+        valid_mask = ~numpy.isclose(base_array, nodata)
+    else:
+        valid_mask = numpy.ones(base_array.shape, dtype=numpy.bool)
+    valid_mask &= numpy.isfinite(base_array)
+    return valid_mask
 
 
 def sanitize_raster(base_raster_path, target_raster_path):
@@ -154,8 +187,9 @@ def sanitize_raster(base_raster_path, target_raster_path):
     if fill_value is None:
         fill_value = 0
     pygeoprocessing.raster_calculator(
-        [(base_raster_path, 1), (fill_value, 'raw')], _non_finite_to_fill,
-        target_raster_path, raster_info['datatype'], raster_info['nodata'][0])
+        [(base_raster_path, 1), (fill_value, 'raw')], _non_finite_to_fill_op,
+        target_raster_path, raster_info['datatype'],
+        raster_info['nodata'][0])
 
 
 if __name__ == '__main__':
