@@ -21,9 +21,11 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'))
 LOGGER = logging.getLogger(__name__)
 
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**27)
 
-if __name__ == '__main__':
+
+def main():
+    """Entry point."""
     parser = argparse.ArgumentParser(description='Ecoshard files.')
     parser.add_argument(
         '--target_projection_epsg', required=True,
@@ -40,17 +42,37 @@ if __name__ == '__main__':
     parser.add_argument(
         '--target_raster_path', required=True, help='Path to target raster.')
     parser.add_argument(
-        'raster_list', nargs='+',
-        help='List of rasters or wildcards')
+        '--raster_list', nargs='+',
+        help='List of rasters or wildcards to stitch.')
+    parser.add_argument(
+        '--raster_pattern', nargs='2', help=(
+            'Recursive directory search for raster pattern such that '
+            'the first argument is the directory to search and the second '
+            'is the filename pattern.'))
 
     args = parser.parse_args()
 
-    raster_path_list = [
-        raster_path for raster_glob in args.raster_list
-        for raster_path in glob.glob(raster_glob)
-        ]
+    if not args.raster_list != args.raster_pattern:
+        raise ValueError(
+            'only one of --raster_list or --raster_pattern must be '
+            'specified: \n'
+            f'args.raster_list={args.raster_list}\n'
+            f'args.raster_pattern={args.raster_pattern}\n')
 
-    print(raster_path_list)
+    if args.raster_list:
+        raster_path_list = (
+            raster_path for raster_glob in args.raster_list
+            for raster_path in glob.glob(raster_glob)
+            )
+    else:
+        base_dir = args.raster_pattern[0]
+        file_pattern = args.raster_pattern[1]
+        raster_path_list = (
+            raster_path for dir_path in os.walk(base_dir)
+            for raster_path in glob(os.path.join(base_dir, file_pattern)))
+
+    print(list(raster_path_list))
+    return
 
     target_projection = osr.SpatialReference()
     target_projection.ImportFromEPSG(int(args.target_projection_epsg))
@@ -142,3 +164,7 @@ if __name__ == '__main__':
     task_graph.close()
     task_graph.join()
     task_graph._terminate()
+
+
+if __name__ == '__main__':
+    main()
