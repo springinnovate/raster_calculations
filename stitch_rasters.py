@@ -1,11 +1,12 @@
 """Script to stitch arbitrary rasters together."""
 import argparse
 import glob
+import itertools
 import logging
 import math
 import multiprocessing
 import os
-import sys
+import shutil
 import tempfile
 
 from osgeo import gdal
@@ -20,7 +21,7 @@ logging.basicConfig(
         '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
         ' [%(funcName)s:%(lineno)d] %(message)s'))
 LOGGER = logging.getLogger(__name__)
-
+logging.getLogger('taskgraph').setLevel(logging.WARN)
 gdal.SetCacheMax(2**27)
 
 
@@ -45,10 +46,15 @@ def main():
         '--raster_list', nargs='+',
         help='List of rasters or wildcards to stitch.')
     parser.add_argument(
-        '--raster_pattern', nargs='2', help=(
+        '--raster_pattern', nargs=2, help=(
             'Recursive directory search for raster pattern such that '
             'the first argument is the directory to search and the second '
             'is the filename pattern.'))
+    parser.add_argument(
+        '--_n_limit', type=int,
+        help=(
+            'limit the number of stitches to this number, default is to '
+            'stitch all found rasters'))
 
     args = parser.parse_args()
 
@@ -67,12 +73,11 @@ def main():
     else:
         base_dir = args.raster_pattern[0]
         file_pattern = args.raster_pattern[1]
-        raster_path_list = (
-            raster_path for dir_path in os.walk(base_dir)
-            for raster_path in glob(os.path.join(base_dir, file_pattern)))
 
-    print(list(raster_path_list))
-    return
+        raster_path_list = itertools.islice(
+            (raster_path for walk_info in os.walk(base_dir)
+             for raster_path in glob.glob(os.path.join(
+                walk_info[0], file_pattern))), 0, args._n_limit)
 
     target_projection = osr.SpatialReference()
     target_projection.ImportFromEPSG(int(args.target_projection_epsg))
@@ -84,6 +89,7 @@ def main():
     target_bounding_box_list = []
     reprojected_raster_path_task_list = []
     for raster_path in raster_path_list:
+        LOGGER.debug(f'stitch {raster_path}')
         raster_info = pygeoprocessing.get_raster_info(raster_path)
         bounding_box = raster_info['bounding_box']
         target_bounding_box = pygeoprocessing.transform_bounding_box(
@@ -163,6 +169,9 @@ def main():
 
     task_graph.close()
     task_graph.join()
+
+    shutil.rmtree(temp_working_dir)
+
     task_graph._terminate()
 
 
