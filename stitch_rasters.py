@@ -6,12 +6,11 @@ import logging
 import math
 import multiprocessing
 import os
-import shutil
-import tempfile
 
 from osgeo import gdal
 from osgeo import osr
 import pygeoprocessing
+import numpy
 import taskgraph
 
 
@@ -82,10 +81,12 @@ def main():
     target_projection = osr.SpatialReference()
     target_projection.ImportFromEPSG(int(args.target_projection_epsg))
 
-    temp_working_dir = tempfile.mkdtemp(dir='.')
+    working_dir = (
+        'working_dir_'
+        f'{os.path.basename(os.path.splitext(args.target_raster_path)[0])}')
 
     task_graph = taskgraph.TaskGraph(
-        temp_working_dir, n_workers=multiprocessing.cpu_count())
+        working_dir, n_workers=multiprocessing.cpu_count())
     target_bounding_box_list = []
     reprojected_raster_path_task_list = []
     for raster_path in raster_path_list:
@@ -97,7 +98,7 @@ def main():
             target_projection.ExportToWkt())
         target_bounding_box_list.append(target_bounding_box)
         reprojected_raster_path = os.path.join(
-            temp_working_dir, os.path.basename(raster_path))
+            working_dir, os.path.basename(raster_path))
         cell_size = (
             float(args.target_cell_size), -float(args.target_cell_size))
         warp_task = task_graph.add_task(
@@ -107,7 +108,7 @@ def main():
                 reprojected_raster_path, args.resample_method),
             kwargs={
                 'target_projection_wkt': target_projection.ExportToWkt(),
-                'working_dir': temp_working_dir,
+                'working_dir': working_dir,
             },
             target_path_list=[reprojected_raster_path],
             task_name=f'reproject {os.path.basename(reprojected_raster_path)}')
@@ -160,7 +161,17 @@ def main():
 
         try:
             LOGGER.debug(f'write {reprojected_array.shape} at {xpos} {ypos}')
-            target_band.WriteArray(reprojected_array, xoff=xpos, yoff=ypos)
+            base_array = target_band.ReadAsArray(
+                xoff=xpos, yoff=ypos,
+                win_ysize=reprojected_array.shape[0],
+                win_xsize=reprojected_array.shape[1]
+                )
+            target_band.WriteArray(
+                numpy.where(
+                    numpy.isclose(
+                        reprojected_array, reprojected_info['nodata'][0]),
+                    base_array, reprojected_array),
+                    xoff=xpos, yoff=ypos)
         except Exception:
             LOGGER.exception(
                 f"this array couldn't 'stitch: {reprojected_array}")
@@ -169,8 +180,6 @@ def main():
 
     task_graph.close()
     task_graph.join()
-
-    shutil.rmtree(temp_working_dir)
 
     task_graph._terminate()
 
