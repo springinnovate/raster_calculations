@@ -21,7 +21,7 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'))
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
-gdal.SetCacheMax(2**27)
+gdal.SetCacheMax(2**26)
 
 
 def main():
@@ -152,10 +152,11 @@ def main():
     target_band = None
     target_raster = None
 
+    LOGGER.info('closing taskgraph')
     task_graph.close()
     task_graph.join()
-
     task_graph._terminate()
+    LOGGER.info('all done')
 
 
 def _stitch_into(
