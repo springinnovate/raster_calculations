@@ -142,6 +142,7 @@ def main():
 
     for reprojected_raster_path, warp_task in \
             reprojected_raster_path_task_list:
+        LOGGER.info(f'joining task for {reprojected_raster_path}')
         warp_task.join()
 
         _stitch_into(
