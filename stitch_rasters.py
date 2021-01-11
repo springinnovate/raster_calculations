@@ -86,7 +86,7 @@ def main():
         f'{os.path.basename(os.path.splitext(args.target_raster_path)[0])}')
 
     task_graph = taskgraph.TaskGraph(
-        working_dir, n_workers=multiprocessing.cpu_count())
+        working_dir, n_workers=0) #multiprocessing.cpu_count())
     target_bounding_box_list = []
     reprojected_raster_path_task_list = []
     for raster_path in raster_path_list:
