@@ -20,7 +20,7 @@ logging.basicConfig(
         '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
         ' [%(funcName)s:%(lineno)d] %(message)s'))
 LOGGER = logging.getLogger(__name__)
-logging.getLogger('taskgraph').setLevel(logging.WARN)
+logging.getLogger('taskgraph').setLevel(logging.DEBUG)
 gdal.SetCacheMax(2**26)
 
 
@@ -89,8 +89,14 @@ def main():
         working_dir, n_workers=0) #multiprocessing.cpu_count())
     target_bounding_box_list = []
     reprojected_raster_path_task_list = []
+    raster_path_set = set()
     for raster_path in raster_path_list:
         LOGGER.debug(f'stitch {raster_path}')
+        if raster_path in raster_path_set:
+            LOGGER.warning(f'{raster_path} already scheduled')
+            continue
+        LOGGER.debug(f'schedule {raster_path}')
+        raster_path_set.add(raster_path)
         raster_info = pygeoprocessing.get_raster_info(raster_path)
         bounding_box = raster_info['bounding_box']
         target_bounding_box = pygeoprocessing.transform_bounding_box(
