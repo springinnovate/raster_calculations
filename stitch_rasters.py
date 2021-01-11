@@ -139,42 +139,16 @@ def main():
     target_raster.SetGeoTransform(geotransform)
     target_band = target_raster.GetRasterBand(1)
     target_band.SetNoDataValue(raster_info['nodata'][0])
-    target_band = None
-    target_raster = None
 
-    target_raster = gdal.OpenEx(
-        args.target_raster_path, gdal.OF_RASTER | gdal.GA_Update)
-    target_band = target_raster.GetRasterBand(1)
-
-    for reprojected_raster, warp_task in reprojected_raster_path_task_list:
+    for reprojected_raster_path, warp_task in \
+            reprojected_raster_path_task_list:
         warp_task.join()
-        reprojected_info = pygeoprocessing.get_raster_info(reprojected_raster)
-        reprojected_raster = gdal.OpenEx(reprojected_raster, gdal.OF_RASTER)
-        reprojected_array = reprojected_raster.ReadAsArray()
-        reprojected_raster = None
-        xpos = int(
-            (reprojected_info['bounding_box'][0] - target_bounding_box[0]) /
-            cell_size[0])
-        ypos = int(
-            (reprojected_info['bounding_box'][3] - target_bounding_box[3]) /
-            cell_size[1])
 
-        try:
-            LOGGER.debug(f'write {reprojected_array.shape} at {xpos} {ypos}')
-            base_array = target_band.ReadAsArray(
-                xoff=xpos, yoff=ypos,
-                win_ysize=reprojected_array.shape[0],
-                win_xsize=reprojected_array.shape[1]
-                )
-            target_band.WriteArray(
-                numpy.where(
-                    numpy.isclose(
-                        reprojected_array, reprojected_info['nodata'][0]),
-                    base_array, reprojected_array),
-                    xoff=xpos, yoff=ypos)
-        except Exception:
-            LOGGER.exception(
-                f"this array couldn't 'stitch: {reprojected_array}")
+        _stitch_into(
+            reprojected_raster_path, cell_size,
+            target_bounding_box[0],
+            target_bounding_box[3], target_band)
+
     target_band = None
     target_raster = None
 
@@ -182,6 +156,49 @@ def main():
     task_graph.join()
 
     task_graph._terminate()
+
+
+def _stitch_into(
+        raster_path, cell_size, target_x_origin, target_y_origin,
+        target_band):
+    """Stitch raster path into target.
+
+    Args:
+        raster_path (str): path to raster to stitch into target
+        target_band (Band): path to existing raster to stitch into.
+
+    Returns:
+        None.
+    """
+    raster_info = pygeoprocessing.get_raster_info(raster_path)
+    nodata = raster_info['nodata'][0]
+
+    x_origin = int(
+        (raster_info['bounding_box'][0] - target_x_origin) / cell_size[0])
+    y_origin = int(
+        (raster_info['bounding_box'][3] - target_y_origin) / cell_size[1])
+    LOGGER.debug(f'stitch {raster_path} to {x_origin} {y_origin}')
+
+    try:
+        for offset_dict, block_array in pygeoprocessing.iterblocks(
+                (raster_path, 1)):
+            global_xoff = x_origin+offset_dict['xoff']
+            global_yoff = y_origin+offset_dict['yoff']
+            target_array = target_band.ReadAsArray(
+                xoff=global_xoff,
+                yoff=global_yoff,
+                win_xsize=offset_dict['win_xsize'],
+                win_ysize=offset_dict['win_ysize'],
+                )
+            target_band.WriteArray(
+                numpy.where(numpy.isclose(
+                    block_array, nodata), target_array, block_array),
+                xoff=x_origin+offset_dict['xoff'],
+                yoff=y_origin+offset_dict['yoff'])
+
+    except Exception:
+        LOGGER.exception(
+            f"this array couldn't 'stitch: {raster_path}")
 
 
 if __name__ == '__main__':
