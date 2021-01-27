@@ -76,6 +76,7 @@ def main():
     else:
         base_dir = args.raster_pattern[0]
         file_pattern = args.raster_pattern[1]
+        LOGGER.info(f'searching {base_dir} for {file_pattern}')
 
         raster_path_list = itertools.islice(
             (raster_path for walk_info in os.walk(base_dir)
