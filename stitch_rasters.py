@@ -85,12 +85,6 @@ def main():
     target_projection = osr.SpatialReference()
     target_projection.ImportFromEPSG(int(args.target_projection_epsg))
 
-    working_dir = (
-        'working_dir_'
-        f'{os.path.basename(os.path.splitext(args.target_raster_path)[0])}')
-
-    os.makedirs(working_dir, exist_ok=True)
-
     target_bounding_box_list = []
     raster_path_list = []
     raster_path_set = set()
