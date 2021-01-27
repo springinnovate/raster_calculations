@@ -1,17 +1,15 @@
 """Script to stitch arbitrary rasters together."""
 import argparse
+import ecoshard
 import glob
 import itertools
 import logging
 import math
-import multiprocessing
 import os
 
 from osgeo import gdal
 from osgeo import osr
 import pygeoprocessing
-import numpy
-import taskgraph
 
 
 logging.basicConfig(
@@ -55,6 +53,12 @@ def main():
             'limit the number of stitches to this number, default is to '
             'stitch all found rasters'))
 
+    parser.add_argument(
+        '--area_weight_m2_to_wgs84', type=bool, default=False,
+        help=(
+            'if true, rescales values to be proportional to area change '
+            'for wgs84 coordinates'))
+
     args = parser.parse_args()
 
     if not args.raster_list != args.raster_pattern:
@@ -85,10 +89,10 @@ def main():
         'working_dir_'
         f'{os.path.basename(os.path.splitext(args.target_raster_path)[0])}')
 
-    task_graph = taskgraph.TaskGraph(
-        working_dir, n_workers=0) #multiprocessing.cpu_count())
+    os.makedirs(working_dir, exist_ok=True)
+
     target_bounding_box_list = []
-    reprojected_raster_path_task_list = []
+    raster_path_list = []
     raster_path_set = set()
     for raster_path in raster_path_list:
         LOGGER.debug(f'stitch {raster_path}')
@@ -103,23 +107,6 @@ def main():
             bounding_box, raster_info['projection_wkt'],
             target_projection.ExportToWkt())
         target_bounding_box_list.append(target_bounding_box)
-        reprojected_raster_path = os.path.join(
-            working_dir, os.path.basename(raster_path))
-        cell_size = (
-            float(args.target_cell_size), -float(args.target_cell_size))
-        warp_task = task_graph.add_task(
-            func=pygeoprocessing.warp_raster,
-            args=(
-                raster_path, cell_size,
-                reprojected_raster_path, args.resample_method),
-            kwargs={
-                'target_projection_wkt': target_projection.ExportToWkt(),
-                'working_dir': working_dir,
-            },
-            target_path_list=[reprojected_raster_path],
-            task_name=f'reproject {os.path.basename(reprojected_raster_path)}')
-        reprojected_raster_path_task_list.append(
-            (reprojected_raster_path, warp_task))
 
     target_bounding_box = pygeoprocessing.merge_bounding_box_list(
         target_bounding_box_list, 'union')
@@ -127,13 +114,15 @@ def main():
     gtiff_driver = gdal.GetDriverByName('GTiff')
 
     n_cols = int(math.ceil(
-        (target_bounding_box[2]-target_bounding_box[0]) / cell_size[0]))
+        (target_bounding_box[2]-target_bounding_box[0]) /
+        args.target_cell_size))
     n_rows = int(math.ceil(
-        (target_bounding_box[3]-target_bounding_box[1]) / -cell_size[1]))
+        (target_bounding_box[3]-target_bounding_box[1]) /
+        args.target_cell_size))
 
     geotransform = (
-        target_bounding_box[0], cell_size[0], 0.0,
-        target_bounding_box[3], 0.0, cell_size[1])
+        target_bounding_box[0], args.target_cell_size, 0.0,
+        target_bounding_box[3], 0.0, -args.target_cell_size)
 
     target_raster = gtiff_driver.Create(
         os.path.join('.', args.target_raster_path), n_cols, n_rows, 1,
@@ -145,68 +134,19 @@ def main():
     target_raster.SetGeoTransform(geotransform)
     target_band = target_raster.GetRasterBand(1)
     target_band.SetNoDataValue(raster_info['nodata'][0])
-
-    for reprojected_raster_path, warp_task in \
-            reprojected_raster_path_task_list:
-        LOGGER.info(f'joining task for {reprojected_raster_path}')
-        warp_task.join()
-
-        _stitch_into(
-            reprojected_raster_path, cell_size,
-            target_bounding_box[0],
-            target_bounding_box[3], target_band)
-
     target_band = None
     target_raster = None
 
-    LOGGER.info('closing taskgraph')
-    task_graph.close()
-    task_graph.join()
-    task_graph._terminate()
+    LOGGER.info('calling stitch_rasters')
+    pygeoprocessing.stitch_rasters(
+        [(path, 1) for path in raster_path_list],
+        ['near']*len(raster_path_list),
+        args.target_raster_path,
+        area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
+
+    LOGGER.debug('build overviews...')
+    ecoshard.build_overviews(args.target_raster_path)
     LOGGER.info('all done')
-
-
-def _stitch_into(
-        raster_path, cell_size, target_x_origin, target_y_origin,
-        target_band):
-    """Stitch raster path into target.
-
-    Args:
-        raster_path (str): path to raster to stitch into target
-        target_band (Band): path to existing raster to stitch into.
-
-    Returns:
-        None.
-    """
-    raster_info = pygeoprocessing.get_raster_info(raster_path)
-    nodata = raster_info['nodata'][0]
-
-    x_origin = int(
-        (raster_info['bounding_box'][0] - target_x_origin) / cell_size[0])
-    y_origin = int(
-        (raster_info['bounding_box'][3] - target_y_origin) / cell_size[1])
-    LOGGER.debug(f'stitch {raster_path} to {x_origin} {y_origin}')
-
-    try:
-        for offset_dict, block_array in pygeoprocessing.iterblocks(
-                (raster_path, 1)):
-            global_xoff = x_origin+offset_dict['xoff']
-            global_yoff = y_origin+offset_dict['yoff']
-            target_array = target_band.ReadAsArray(
-                xoff=global_xoff,
-                yoff=global_yoff,
-                win_xsize=offset_dict['win_xsize'],
-                win_ysize=offset_dict['win_ysize'],
-                )
-            target_band.WriteArray(
-                numpy.where(numpy.isclose(
-                    block_array, nodata), target_array, block_array),
-                xoff=x_origin+offset_dict['xoff'],
-                yoff=y_origin+offset_dict['yoff'])
-
-    except Exception:
-        LOGGER.exception(
-            f"this array couldn't 'stitch: {raster_path}")
 
 
 if __name__ == '__main__':
