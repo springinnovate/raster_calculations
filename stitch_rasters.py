@@ -54,7 +54,7 @@ def main():
             'stitch all found rasters'))
 
     parser.add_argument(
-        '--area_weight_m2_to_wgs84', type=bool, default=False,
+        '--area_weight_m2_to_wgs84', action='store_true',
         help=(
             'if true, rescales values to be proportional to area change '
             'for wgs84 coordinates'))
