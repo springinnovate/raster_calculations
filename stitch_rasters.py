@@ -74,6 +74,7 @@ def main():
             f'args.raster_list={args.raster_list}\n'
             f'args.raster_pattern={args.raster_pattern}\n')
 
+    LOGGER.info('searching for matching files')
     if args.raster_list:
         raster_path_list = (
             raster_path for raster_glob in args.raster_list
@@ -93,14 +94,13 @@ def main():
     target_projection = osr.SpatialReference()
     target_projection.ImportFromEPSG(int(args.target_projection_epsg))
 
+    LOGGER.info('calculating target bounding box')
     target_bounding_box_list = []
     raster_path_set = set()
     for raster_path in raster_path_list:
-        LOGGER.debug(f'stitch {raster_path}')
         if raster_path in raster_path_set:
             LOGGER.warning(f'{raster_path} already scheduled')
             continue
-        LOGGER.debug(f'schedule {raster_path}')
         raster_path_set.add(raster_path)
         raster_info = pygeoprocessing.get_raster_info(raster_path)
         bounding_box = raster_info['bounding_box']
