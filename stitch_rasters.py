@@ -24,7 +24,10 @@ gdal.SetCacheMax(2**26)
 
 def main():
     """Entry point."""
-    parser = argparse.ArgumentParser(description='Ecoshard files.')
+    parser = argparse.ArgumentParser(
+        description=(
+            'Search for matching rasters to stitch into one big '
+            'raster.'))
     parser.add_argument(
         '--target_projection_epsg', required=True,
         help='EPSG code of target projection')
@@ -47,6 +50,9 @@ def main():
             'Recursive directory search for raster pattern such that '
             'the first argument is the directory to search and the second '
             'is the filename pattern.'))
+    parser.add_argument(
+        '--overlap_algorithm', default='replace', help=(
+            'can be one of etch|replace|add, default is replace'))
     parser.add_argument(
         '--_n_limit', type=int,
         help=(
@@ -78,16 +84,16 @@ def main():
         file_pattern = args.raster_pattern[1]
         LOGGER.info(f'searching {base_dir} for {file_pattern}')
 
-        raster_path_list = itertools.islice(
+        raster_path_list = list(itertools.islice(
             (raster_path for walk_info in os.walk(base_dir)
              for raster_path in glob.glob(os.path.join(
-                walk_info[0], file_pattern))), 0, args._n_limit)
+                walk_info[0], file_pattern))), 0, args._n_limit))
+        LOGGER.info(f'found {len(raster_path_list)} files that matched')
 
     target_projection = osr.SpatialReference()
     target_projection.ImportFromEPSG(int(args.target_projection_epsg))
 
     target_bounding_box_list = []
-    raster_path_list = []
     raster_path_set = set()
     for raster_path in raster_path_list:
         LOGGER.debug(f'stitch {raster_path}')
@@ -110,14 +116,14 @@ def main():
 
     n_cols = int(math.ceil(
         (target_bounding_box[2]-target_bounding_box[0]) /
-        args.target_cell_size))
+        float(args.target_cell_size)))
     n_rows = int(math.ceil(
         (target_bounding_box[3]-target_bounding_box[1]) /
-        args.target_cell_size))
+        float(args.target_cell_size)))
 
     geotransform = (
-        target_bounding_box[0], args.target_cell_size, 0.0,
-        target_bounding_box[3], 0.0, -args.target_cell_size)
+        target_bounding_box[0], float(args.target_cell_size), 0.0,
+        target_bounding_box[3], 0.0, -float(args.target_cell_size))
 
     target_raster = gtiff_driver.Create(
         os.path.join('.', args.target_raster_path), n_cols, n_rows, 1,
@@ -136,7 +142,8 @@ def main():
     pygeoprocessing.stitch_rasters(
         [(path, 1) for path in raster_path_list],
         ['near']*len(raster_path_list),
-        args.target_raster_path,
+        (args.target_raster_path, 1),
+        overlap_algorithm=args.overlap_algorithm,
         area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
 
     LOGGER.debug('build overviews...')
