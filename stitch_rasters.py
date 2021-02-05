@@ -94,6 +94,10 @@ def main():
     target_projection = osr.SpatialReference()
     target_projection.ImportFromEPSG(int(args.target_projection_epsg))
 
+    if len(raster_path_list) == 0:
+        raise RuntimeError(
+            f'no rasters were found with the pattern "{file_pattern}"')
+
     LOGGER.info('calculating target bounding box')
     target_bounding_box_list = []
     raster_path_set = set()
