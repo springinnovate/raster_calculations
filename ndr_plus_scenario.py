@@ -97,7 +97,6 @@ SCENARIOS = {
         'fertilizer_id': 'ag_load_ssp3',
         'biophysical_table_id': 'esa_aries_rs3',
     },
-    {
     'pnv_driverssp3': {
         'lulc_id': 'pnv_esa_iis',
         'precip_id': 'worldclim_ssp3',
