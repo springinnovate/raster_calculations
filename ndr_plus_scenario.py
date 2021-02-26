@@ -66,7 +66,7 @@ ECOSHARDS = {
     'worldclim_ssp3': f'{ECOSHARD_PREFIX}ipbes-ndr-ecoshard-data/precip_scenarios/he60pr50_md5_829fbd47b8fefb064ae837cbe4d9f4be.tif',
     # LULCs:
     'esacci-lc-l4-lccs-map-300m-p1y-2015-v2.0.7': f'{ECOSHARD_PREFIX}ipbes-ndr-ecoshard-data/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif',
-    'pnv_esa_iis': f'{ECOSHARD_PREFIX}ipbes-ndr-ecoshard-data/ESACCI_PNV_iis_OA_ESAclasses_max_md5_e6575db589abb52c683d44434d428d80.tif',
+    'pnv_esa_iis': f'{ECOSHARD_PREFIX}ipbes-ndr-ecoshard-data/ESACCI_PNV_iis_OA_ESAclasses_max_e6575_wgs84_md5_4ecb67a08d2db707bffc11f3fb0a5821.tif',
     'extensification_bmps_irrigated': f'{ECOSHARD_PREFIX}nci-ecoshards/scenarios050420/extensification_bmps_irrigated_md5_7f5928ea3dcbcc55b0df1d47fbeec312.tif',
     'extensification_bmps_rainfed': f'{ECOSHARD_PREFIX}nci-ecoshards/scenarios050420/extensification_bmps_rainfed_md5_5350b6acebbff75bb71f27830098989f.tif',
     'extensification_current_practices': f'{ECOSHARD_PREFIX}nci-ecoshards/scenarios050420/extensification_current_practices_md5_cbe24876a57999e657b885cf58c4981a.tif',

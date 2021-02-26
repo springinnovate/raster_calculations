@@ -37,6 +37,17 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+   # here's a snippet that will reproject it to the esa bounding box and size: 
+    esa_info = pygeoprocessing.get_raster_info("ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif")
+    base_raster_path = r"ESACCI_PNV_iis_OA_ESAclasses_max_md5_e6575db589abb52c683d44434d428d80.tif"
+    target_raster_path = '%s_wgs84%s' % os.path.splitext(base_raster_path)
+    pygeoprocessing.warp_raster(
+        base_raster_path, esa_info['pixel_size'], target_raster_path,
+        'near', target_projection_wkt=esa_info['projection_wkt'],
+        target_bb=esa_info['bounding_box'])
+
+    return
+
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)
 
