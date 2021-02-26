@@ -106,6 +106,9 @@ def evaluate_calculation(args, task_graph, workspace_dir):
     resample_method = 'near'
     if 'resample_method' in args:
         resample_method = args['resample_method']
+    bounding_box_mode = 'intersection'
+    if 'bounding_box_mode' in args:
+        bounding_box_mode = args['bounding_box_mode']
     preprocess_task = task_graph.add_task(
         func=_preprocess_rasters,
         args=(
@@ -114,7 +117,8 @@ def evaluate_calculation(args, task_graph, workspace_dir):
         kwargs={
             'target_projection_wkt': target_projection_wkt,
             'target_pixel_size': target_pixel_size,
-            'resample_method': resample_method},
+            'resample_method': resample_method,
+            'bounding_box_mode': bounding_box_mode},
         dependent_task_list=download_task_list,
         target_path_list=[processed_raster_list_file_path],
         task_name='preprocess rasters for %s' % args['target_raster_path'])
@@ -319,7 +323,8 @@ def _make_logger_callback(message):
 def _preprocess_rasters(
         base_raster_path_list, churn_dir,
         target_processed_raster_list_file_path, target_projection_wkt=None,
-        target_pixel_size=None, resample_method='near'):
+        target_pixel_size=None, resample_method='near',
+        bounding_box_mode='intersection'):
     """Process base raster path list so it can be used in raster calcs.
 
     Parameters:
@@ -343,10 +348,14 @@ def _preprocess_rasters(
         resample_method (str): if the symbol rasters need to be resized for
             any reason, this method is used. The value can be one of:
             "near|bilinear|cubic|cubicspline|lanczos|average|mode|max".
+        bounding_box_mode (string): one of "union", "intersection", or
+            a sequence of floats of the form [minx, miny, maxx, maxy] in the
+            target projection coordinate system.  Depending
+            on the value, output extents are defined as the union,
+            intersection, or the explicit bounding box.
 
-    Returns:
-
-
+    Return:
+        ``None``
     """
     resample_inputs = False
 
@@ -418,8 +427,9 @@ def _preprocess_rasters(
             pygeoprocessing.align_and_resize_raster_stack(
                 base_raster_path_list, operand_raster_path_list,
                 [resample_method]*len(base_raster_path_list),
-                target_pixel_size, 'intersection',
-                target_projection_wkt=target_projection_wkt)
+                target_pixel_size, bounding_box_mode,
+                target_projection_wkt=target_projection_wkt,
+                )
         else:
             # no need to realign, just hard link it
             for base_path, target_path in zip(
