@@ -35,6 +35,108 @@ def main():
 
     # CNC calculations
 
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\ctr90_moisture61_2km.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\ctr90_C65_2km.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "ctr90_moisture61_C65_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>2)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster2': r"C:\Users\Becky\Documents\raster_calculations\moisture_top39.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "ctr90_moisture61_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>4.55)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_moisturerecycling_nathab30s.tif",
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "moisture_top39.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    raster_calculation_list = [
+        {
+            'expression': 'raster1>0.9',
+            'symbol_to_path_map': { 
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\output_CBD\food_water_average_raster.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "food_water_mask.tif",
+        },
+        {
+            'expression': 'raster1>0.9',
+            'symbol_to_path_map': { 
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\output_CBD\food_hazards_average_raster.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "food_hazards_mask.tif",
+        },
+        {
+            'expression': 'raster1>0.9',
+            'symbol_to_path_map': { 
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\output_CBD\hazards_water_average_raster.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "hazards_water_mask.tif",
+        },
+        {
+            'expression': 'raster1>0.9',
+            'symbol_to_path_map': { 
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\output_CBD\food_water_hazards_average_raster.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "food_water_hazards_mask.tif",
+        },
+    ]
+
+    for calculation in raster_calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)    
 
@@ -559,6 +661,7 @@ def main():
 
     return
 
+    
 
     single_expression = {
         'expression': 'load - export',

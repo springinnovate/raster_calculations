@@ -41,6 +41,7 @@ def main():
 
     sinusoidal_raster1_path = 'solution_111_tar_80_res_2km_carbon_0.tif'
     raster_2_path = 'realized_e_source_abs_ann_mean.tif'
+    raster_3_path = '1.5d_ha_per_pixel.tif'
     raster2_info = pygeoprocessing.get_raster_info(raster_2_path)
     target_pixel_size = (1.495833333333333348, 1.5092592592592593)
     resample_method = 'average'
@@ -59,17 +60,18 @@ def main():
     warp_raster_task.join()
 
     single_expression = {
-        'expression': '(raster2>-9999)*raster1',
+        'expression': '(raster2>-9999)*raster1*raster3',
         'symbol_to_path_map': {
             'raster1': projected_raster1_path,
             'raster2': raster_2_path,
+            'raster3': raster_3_path,
         },
         'target_nodata': -9999,
         'default_nan': -9999,
         'target_projection_wkt': wgs84_srs.ExportToWkt(),
         'target_pixel_size': target_pixel_size,
         'resample_method': resample_method,
-        'target_raster_path': "top80_solution_1.5d_avg.tif",
+        'target_raster_path': "top80_solution_area_1.5d.tif",
     }
 
     raster_calculations_core.evaluate_calculation(

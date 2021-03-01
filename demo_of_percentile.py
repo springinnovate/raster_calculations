@@ -31,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    path = r"C:\Users\Becky\Documents\carbon_edge_model\error_regression_baccini_biomass.tif"
+    path = r"C:\Users\Becky\Documents\cnc_project\original_rasters\crit_realized_e_source_ratio_ann_mean.tif"
     percentile_working_dir = r"C:\Users\Becky\Documents\raster_calculations\percentile_working_dir"
     #makes a temporary directory because there's a shitton of rasters to find out the percentiles
     try:
