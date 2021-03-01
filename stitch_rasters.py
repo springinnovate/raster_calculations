@@ -145,7 +145,7 @@ def main():
     LOGGER.info('calling stitch_rasters')
     pygeoprocessing.stitch_rasters(
         [(path, 1) for path in raster_path_list],
-        ['near']*len(raster_path_list),
+        [args.resample_method]*len(raster_path_list),
         (args.target_raster_path, 1),
         overlap_algorithm=args.overlap_algorithm,
         area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
