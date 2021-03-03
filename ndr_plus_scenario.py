@@ -150,7 +150,7 @@ def stitch_worker(
             continue
 
         worker_list = []
-        for stitch_path, raster_list in [
+        for target_stitch_raster_path, raster_list in [
                 (stitch_export_raster_path, export_raster_list),
                 (stitch_modified_load_raster_path,
                  modified_load_raster_list)]:
@@ -159,7 +159,7 @@ def stitch_worker(
                 args=(
                     raster_list,
                     ['near']*len(raster_list),
-                    stitch_path),
+                    (target_stitch_raster_path, 1)),
                 kwargs={
                     'overlap_algorithm': 'add',
                     'area_weight_m2_to_wgs84': True})
