@@ -36,8 +36,47 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+   
+    # mean value of ssp3: 0.49802045465938
+    # mean value of current: 2.9183045296182
 
-   # here's a snippet that will reproject it to the esa bounding box and size: 
+    raster_calculation_list = [
+        {
+            'expression': '(raster1/2.9183045296182)',
+            'symbol_to_path_map': {
+                'raster1': "MSL_Map_MERGED_Global_AVISO_NoGIA_Adjust_md5_3072845759841d0b2523d00fe9518fee.tif",
+            },
+            'target_nodata': float(numpy.finfo(numpy.float32).min),
+            'target_raster_path': "MSL_Map_MERGED_Global_AVISO_NoGIA_Adjust_meannorm.tif",
+        },
+        {
+            'expression': '(raster1/0.49802045465938)',
+            'symbol_to_path_map': {
+                'raster1': "slr_rcp60_md5_99ccaf1319d665b107a9227f2bbbd8b6_wgs84.tif",
+            },
+            'target_nodata': float(numpy.finfo(numpy.float32).min),
+            'target_raster_path': "slr_rcp60_wgs84_meannorm.tif",
+        },
+    ]
+
+    for calculation in raster_calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    esa_info = pygeoprocessing.get_raster_info("MSL_Map_MERGED_Global_AVISO_NoGIA_Adjust_md5_3072845759841d0b2523d00fe9518fee.tif")
+    base_raster_path = r"slr_rcp60_md5_99ccaf1319d665b107a9227f2bbbd8b6.tif"
+    target_raster_path = '%s_wgs84%s' % os.path.splitext(base_raster_path)
+    pygeoprocessing.warp_raster(
+        base_raster_path, esa_info['pixel_size'], target_raster_path,
+        'near', target_projection_wkt=esa_info['projection_wkt'],
+        target_bb=esa_info['bounding_box'])
+
+    return
+
+    # here's a snippet that will reproject it to the esa bounding box and size: 
     esa_info = pygeoprocessing.get_raster_info("ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif")
     base_raster_path = r"ESACCI_PNV_iis_OA_ESAclasses_max_md5_e6575db589abb52c683d44434d428d80.tif"
     target_raster_path = '%s_wgs84%s' % os.path.splitext(base_raster_path)
@@ -77,7 +116,7 @@ def main():
     return
 
     single_expression = {
-        'expression': '(raster1/raster2)*raster3*(raster2>0) + (raster2==0)*raster3',
+        'expression': '(raster1/raster2)*raster3*(raster2>0) + (raster2==0)*raster3', #I don't know why this produces negative nodata values
         'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Downloads\ssp3_2050_md5_b0608d53870b9a7e315bf9593c43be86.tif",
             'raster2': r"C:\Users\Becky\Downloads\ssp1_2010_md5_5edda6266351ccc7dbd587c89fa2ab65.tif",
@@ -94,6 +133,24 @@ def main():
         single_expression, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
+
+    single_expression = { 
+        'expression': '(raster1>=0)*raster1',
+        'symbol_to_path_map': {
+            'raster1': "lspop_ssp3.tif",
+        },
+        'target_nodata': 2147483647,
+        'default_nan': 2147483647,
+        'target_raster_path': "lspop_ssp3_noneg.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
     TASK_GRAPH.close()
 
     return
