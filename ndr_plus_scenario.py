@@ -18,6 +18,8 @@ import pandas
 import pygeoprocessing
 import taskgraph
 
+gdal.SetCacheMax(2**27)
+
 logging.basicConfig(
     level=logging.DEBUG,
     format=(
