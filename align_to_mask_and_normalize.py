@@ -176,8 +176,8 @@ def main():
         if mask_flag:
             mask_raster_path = os.path.join(
                 MASK_DIR,
-                f'%s{MASKED_SUFFIX}%s' % os.path.basename(
-                    warped_raster_path))
+                f'%s{MASKED_SUFFIX}%s' % os.path.splitext(os.path.basename(
+                    warped_raster_path)))
             last_task = task_graph.add_task(
                 func=mask_raster,
                 args=(target_path, mask_ecoshard_path, mask_raster_path),
