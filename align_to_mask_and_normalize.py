@@ -126,7 +126,11 @@ def main():
         ecoshard_url = os.path.join(ECOSHARD_URL_PREFIX, ecoshard_base)
         target_path = os.path.join(ECOSHARD_DIR, ecoshard_base)
         LOGGER.debug(f'download {ecoshard_url} to {target_path}')
-        ecoshard.download_url(ecoshard_url, target_path)
+        task_graph.add_task(
+            func=ecoshard.download_url,
+            args=(ecoshard_url, target_path),
+            target_path_list=[target_path],
+            task_name=f'download {target_path}')
         if per_area_flag:
             wgs84_density_raster_path = os.path.join(
                 PERAREA_DIR, f'%s{PERAREA_SUFFIX}%s' % os.path.splitext(
