@@ -1,10 +1,14 @@
 """Align given rasters to given bounding box and projection."""
 import logging
+import os
+import shutil
+import sys
 
-from pygeoprocessing.geoprocessing import _create_latitude_m2_area_column
 from osgeo import gdal
-import pygeoprocessing
+from pygeoprocessing.geoprocessing import _create_latitude_m2_area_column
+import ecoshard
 import numpy
+import pygeoprocessing
 
 gdal.SetCacheMax(2**27)
 
@@ -47,8 +51,9 @@ WORKSPACE_DIR = 'workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')
 ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshards')
 MASK_DIR = os.path.join(WORKSPACE_DIR, 'mask')
+WARPED_DIR = os.path.join(WORKSPACE_DIR, 'warped')
 
-for dir_path in [WORKSPACE_DIR, PERAREA_DIR, ECOSHARD_DIR, MASK_DIR]:
+for dir_path in [WORKSPACE_DIR, PERAREA_DIR, ECOSHARD_DIR, MASK_DIR, WARPED_DIR]:
     os.makedirs(dir_path, exist_ok=True)
 
 
@@ -118,7 +123,7 @@ def main():
                 PERAREA_DIR, f'%s{PERAREA_SUFFIX}%s' % os.path.splitext(
                     ecoshard_url))
             _convert_to_density(
-                base_wgs84_raster_path, wgs84_density_raster_path)
+                target_path, wgs84_density_raster_path)
             target_path = wgs84_density_raster_path
         warped_raster_path = os.path.join(
             WARPED_DIR,
@@ -128,7 +133,7 @@ def main():
             target_path, mask_raster_info['pixel_size'],
             warped_raster_path,
             'near', target_bb=mask_raster_info['bounding_box'],
-            mask_raster_info['projection_wkt'])
+            target_projection_wkt=mask_raster_info['projection_wkt'])
         target_path = warped_raster_path
         if mask_flag:
             mask_raster_path = os.path.join(
@@ -137,6 +142,9 @@ def main():
                     warped_raster_path))
             mask_raster(target_path, mask_ecoshard_path, mask_raster_path)
             target_path = mask_raster_path
+        shutil.copyfile(
+            target_path, os.path.join(
+                WORKSPACE_DIR, os.path.basename(target_path)))
 
 
 if __name__ == '__main__':
