@@ -22,6 +22,7 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
+logging.getLogger('taskgraph').setLevel(logging.WARNG)
 
 MASK_ECOSHARD_URL = (
     'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/'
@@ -33,7 +34,7 @@ ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-e
 RASTER_LIST = [
     ('realized_coastalprotection_barrierreef_md5_126320d42827adc0f7504d4693c67e18.tif', False, True),
     ('realized_coastalprotection_md5_b8e0ec0c13892c2bf702c4d2d3e50536.tif', True, True),
-    ('realized_coastalprotection_md5_b8e0ec0c13892c2bf702c4d2d3e50536.tif', False, True),
+    ('realized_coastalprotection_offshore_md5_eb4442a845be0b5ae5c0fa219be62fe0.tif', False, True),
     ('realized_commercialtimber_forest_clamped0_md5_24844213f0f65a6c0bedfebe2fbd089e.tif', True, False),
     ('realized_domestictimber_forest_clamped0_md5_dca99ceb7dd9f96d54b3fcec656d3180.tif', True, False),
     ('realized_flood_nathab_clamped0_md5_eb8fd58621e00c6aeb80f4483da1b35c.tif', True, False),
@@ -46,6 +47,7 @@ RASTER_LIST = [
     ('realized_reeftourism_Modelled_Total_Dollar_Value_md5_171a993b8ff40d0447f343dd014c72e0.tif', False, True),
     ('realized_sedimentdeposition_nathab_clamped_md5_30d4d6ac5ff4bca4b91a3a462ce05bfe.tif', True, True),
     ('Vulnerable_C_2018.tif', True, False),
+    ('realized_moisturerecycling_nathab30s_md5_6c97073919f952545349efcc95d4ea7f.tif', True, False)
     ]
 
 WARPED_SUFFIX = '_WARPED'
