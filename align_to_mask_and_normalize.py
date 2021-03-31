@@ -9,6 +9,7 @@ from pygeoprocessing.geoprocessing import _create_latitude_m2_area_column
 import ecoshard
 import numpy
 import pygeoprocessing
+import taskgraph
 
 gdal.SetCacheMax(2**27)
 
@@ -107,9 +108,14 @@ def _convert_to_density(
 
 def main():
     """Entry point."""
+    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1)
     mask_ecoshard_path = os.path.join(
-        WORKSPACE_DIR, os.path.basename(MASK_ECOSHARD_URL))
-    ecoshard.download_url(MASK_ECOSHARD_URL, mask_ecoshard_path)
+        ECOSHARD_DIR, os.path.basename(MASK_ECOSHARD_URL))
+    task_graph.add_task(
+        func=ecoshard.download_url,
+        args=(MASK_ECOSHARD_URL, mask_ecoshard_path),
+        target_path_list=[mask_ecoshard_path],
+        task_id=f'download {mask_ecoshard_path}')
 
     # used to set the target
     mask_raster_info = pygeoprocessing.get_raster_info(mask_ecoshard_path)
@@ -117,6 +123,7 @@ def main():
     for ecoshard_base, mask_flag, per_area_flag in RASTER_LIST:
         ecoshard_url = os.path.join(ECOSHARD_URL_PREFIX, ecoshard_base)
         target_path = os.path.join(ECOSHARD_DIR, ecoshard_base)
+        LOGGER.debug(f'download {ecoshard_url} to {target_path}')
         ecoshard.download_url(ecoshard_url, target_path)
         if per_area_flag:
             wgs84_density_raster_path = os.path.join(
@@ -145,6 +152,9 @@ def main():
         shutil.copyfile(
             target_path, os.path.join(
                 WORKSPACE_DIR, os.path.basename(target_path)))
+
+    task_graph.close()
+    task_graph.join()
 
 
 if __name__ == '__main__':
