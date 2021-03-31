@@ -67,7 +67,8 @@ for dir_path in [WORKSPACE_DIR, PERAREA_DIR, ECOSHARD_DIR, MASK_DIR, WARPED_DIR]
 def copy_and_rehash_final_file(base_raster_path, target_dir):
     target_md5_free_path = os.path.join(
         target_dir,
-        re.sub('(.*)md5_[0-9a-f]+_(.*)', r"\1\2", base_raster_path))
+        re.sub('(.*)md5_[0-9a-f]+_(.*)', r"\1\2", os.path.basename(
+            base_raster_path)))
     shutil.copyfile(base_raster_path, target_md5_free_path)
     ecoshard.hash_file(target_md5_free_path, rename=True)
 
