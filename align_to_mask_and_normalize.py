@@ -1,5 +1,6 @@
 """Align given rasters to given bounding box and projection."""
 import logging
+import multiprocessing
 import os
 import re
 import shutil
@@ -111,14 +112,16 @@ def _convert_to_density(
 
 def main():
     """Entry point."""
-    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1)
+    task_graph = taskgraph.TaskGraph(
+        WORKSPACE_DIR, multiprocessing.cpu_count(), 5.0)
     mask_ecoshard_path = os.path.join(
         ECOSHARD_DIR, os.path.basename(MASK_ECOSHARD_URL))
-    task_graph.add_task(
+    download_mask_task = task_graph.add_task(
         func=ecoshard.download_url,
         args=(MASK_ECOSHARD_URL, mask_ecoshard_path),
         target_path_list=[mask_ecoshard_path],
         task_name=f'download {mask_ecoshard_path}')
+    download_mask_task.join()
 
     # used to set the target
     mask_raster_info = pygeoprocessing.get_raster_info(mask_ecoshard_path)
@@ -127,7 +130,7 @@ def main():
         ecoshard_url = os.path.join(ECOSHARD_URL_PREFIX, ecoshard_base)
         target_path = os.path.join(ECOSHARD_DIR, ecoshard_base)
         LOGGER.debug(f'download {ecoshard_url} to {target_path}')
-        task_graph.add_task(
+        last_task = task_graph.add_task(
             func=ecoshard.download_url,
             args=(ecoshard_url, target_path),
             target_path_list=[target_path],
@@ -136,25 +139,41 @@ def main():
             wgs84_density_raster_path = os.path.join(
                 PERAREA_DIR, f'%s{PERAREA_SUFFIX}%s' % os.path.splitext(
                     os.path.basename(target_path)))
-            _convert_to_density(
-                target_path, wgs84_density_raster_path)
+            last_task = task_graph.add_task(
+                func=_convert_to_density,
+                args=(target_path, wgs84_density_raster_path),
+                target_path_list=[wgs84_density_raster_path],
+                task_name=f'convert to density: {wgs84_density_raster_path}',
+                dependent_task_list=[last_task])
             target_path = wgs84_density_raster_path
         warped_raster_path = os.path.join(
             WARPED_DIR,
             f'%s{WARPED_SUFFIX}%s' % os.path.splitext(
                 os.path.basename(target_path)))
-        pygeoprocessing.warp_raster(
-            target_path, mask_raster_info['pixel_size'],
-            warped_raster_path,
-            'near', target_bb=mask_raster_info['bounding_box'],
-            target_projection_wkt=mask_raster_info['projection_wkt'])
+        last_task = task_graph.add_task(
+            func=pygeoprocessing.warp_raster,
+            args=(
+                target_path, mask_raster_info['pixel_size'],
+                warped_raster_path,
+                'near'),
+            kwargs={
+                'target_bb': mask_raster_info['bounding_box'],
+                'target_projection_wkt': mask_raster_info['projection_wkt']},
+            target_path_list=warped_raster_path,
+            task_name=f'warp raster {warped_raster_path}',
+            dependent_task_list=[last_task])
         target_path = warped_raster_path
         if mask_flag:
             mask_raster_path = os.path.join(
                 MASK_DIR,
                 f'%s{MASKED_SUFFIX}%s' % os.path.basename(
                     warped_raster_path))
-            mask_raster(target_path, mask_ecoshard_path, mask_raster_path)
+            last_task = task_graph.add_task(
+                func=mask_raster,
+                args=(target_path, mask_ecoshard_path, mask_raster_path),
+                target_path_list=[mask_raster_path],
+                task_name=f'mask raster to {mask_raster_path}',
+                dependent_task_list=[last_task])
             target_path = mask_raster_path
 
         target_md5_free_path = os.path.join(
