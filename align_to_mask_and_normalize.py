@@ -40,7 +40,7 @@ RASTER_LIST = [
     ('realized_flood_nathab_clamped0_md5_eb8fd58621e00c6aeb80f4483da1b35c.tif', True, False),
     ('realized_fuelwood_forest_clamped0_md5_4ee236f5400ac400c07642356dd358d1.tif', True, False),
     ('realized_fwfish_per_km2_clamped_1e-3_30_md5_0b4455185988a9e2062a39b27910eb8b.tif', True, False),
-    ('realized_grazing_natFalsetforest_clamped0_md5_8eeb02139f0fabf552658f7641ab7576.tif', True, False),
+    ('realized_grazing_natnotforest_clamped0_md5_8eeb02139f0fabf552658f7641ab7576.tif', True, False),
     ('realized_marinefish_watson_2010_2014_clamped_md5_167448a2c010fb2f20f9727b024efab8.tif', True, False),
     ('realized_nitrogenretention_nathab_clamped_md5_fe63ffd7c6633f336c91241bbd47bddd.tif', True, True),
     ('realized_pollination_nathab_clamped_md5_c9486d6c8d55cea16d84ff4e129b005a.tif', True, True),
