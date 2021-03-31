@@ -60,7 +60,8 @@ ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshards')
 MASK_DIR = os.path.join(WORKSPACE_DIR, 'mask')
 WARPED_DIR = os.path.join(WORKSPACE_DIR, 'warped')
 
-for dir_path in [WORKSPACE_DIR, PERAREA_DIR, ECOSHARD_DIR, MASK_DIR, WARPED_DIR]:
+for dir_path in [
+        WORKSPACE_DIR, PERAREA_DIR, ECOSHARD_DIR, MASK_DIR, WARPED_DIR]:
     os.makedirs(dir_path, exist_ok=True)
 
 
