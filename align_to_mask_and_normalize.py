@@ -1,6 +1,7 @@
 """Align given rasters to given bounding box and projection."""
 import logging
 import os
+import re
 import shutil
 import sys
 
@@ -155,9 +156,12 @@ def main():
                     warped_raster_path))
             mask_raster(target_path, mask_ecoshard_path, mask_raster_path)
             target_path = mask_raster_path
-        shutil.copyfile(
-            target_path, os.path.join(
-                WORKSPACE_DIR, os.path.basename(target_path)))
+
+        target_md5_free_path = os.path.join(
+            WORKSPACE_DIR,
+            re.sub('(.*)md5_[0-9a-f]+_(.*)', r"\1\2", target_path))
+        shutil.copyfile(target_path, target_md5_free_path)
+        ecoshard.hash_file(target_md5_free_path, rename=True)
 
     task_graph.close()
     task_graph.join()
