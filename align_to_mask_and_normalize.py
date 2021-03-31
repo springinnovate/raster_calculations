@@ -21,10 +21,11 @@ logging.basicConfig(
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
 
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/'
-MASK_ECOSHARD_URL = os.path.join(
-    ECOSHARD_URL_PREFIX,
+MASK_ECOSHARD_URL = (
+    'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/'
     'global_people_access_lspop_2017_URCA_rural_360.0m_md5_14991c229634505edd5ff3f1944acda1.tif')
+
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_service_ecoshards/truncated_masked'
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
 RASTER_LIST = [
