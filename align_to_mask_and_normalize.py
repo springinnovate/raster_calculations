@@ -115,7 +115,7 @@ def main():
         func=ecoshard.download_url,
         args=(MASK_ECOSHARD_URL, mask_ecoshard_path),
         target_path_list=[mask_ecoshard_path],
-        task_id=f'download {mask_ecoshard_path}')
+        task_name=f'download {mask_ecoshard_path}')
 
     # used to set the target
     mask_raster_info = pygeoprocessing.get_raster_info(mask_ecoshard_path)
