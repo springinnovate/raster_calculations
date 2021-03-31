@@ -144,7 +144,7 @@ def main():
             func=ecoshard.download_url,
             args=(ecoshard_url, target_path),
             target_path_list=[target_path],
-            task_name=f'download {target_path}')
+            task_name=f'download {ecoshard_url} to {target_path}')
         if per_area_flag:
             wgs84_density_raster_path = os.path.join(
                 PERAREA_DIR, f'%s{PERAREA_SUFFIX}%s' % os.path.splitext(
