@@ -64,6 +64,14 @@ for dir_path in [WORKSPACE_DIR, PERAREA_DIR, ECOSHARD_DIR, MASK_DIR, WARPED_DIR]
     os.makedirs(dir_path, exist_ok=True)
 
 
+def copy_and_rehash_final_file(base_raster_path, target_dir):
+    target_md5_free_path = os.path.join(
+        target_dir,
+        re.sub('(.*)md5_[0-9a-f]+_(.*)', r"\1\2", base_raster_path))
+    shutil.copyfile(base_raster_path, target_md5_free_path)
+    ecoshard.hash_file(target_md5_free_path, rename=True)
+
+
 def mask_raster(base_raster_path, mask_raster_path, target_raster_path):
     """Mask base by mask setting nodata to nodata otherwise passthrough."""
     mask_nodata = pygeoprocessing.get_raster_info(
@@ -178,11 +186,11 @@ def main():
                 dependent_task_list=[last_task])
             target_path = mask_raster_path
 
-        target_md5_free_path = os.path.join(
-            WORKSPACE_DIR,
-            re.sub('(.*)md5_[0-9a-f]+_(.*)', r"\1\2", target_path))
-        shutil.copyfile(target_path, target_md5_free_path)
-        ecoshard.hash_file(target_md5_free_path, rename=True)
+        task_graph.add_task(
+            func=copy_and_rehash_final_file,
+            args=(target_path, WORKSPACE_DIR),
+            task_name=f'copy and reshash final target_path',
+            dependent_task_list=[last_task])
 
     task_graph.close()
     task_graph.join()
