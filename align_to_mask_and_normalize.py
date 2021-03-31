@@ -83,7 +83,7 @@ def mask_raster(base_raster_path, mask_raster_path, target_raster_path):
     def _mask_op(base_array, mask_array):
         result = numpy.copy(base_array)
         nodata_mask = numpy.isclose(mask_array, mask_nodata)
-        result[nodata_mask] = mask_nodata
+        result[nodata_mask] = base_nodata
         return result
 
     pygeoprocessing.raster_calculator(
