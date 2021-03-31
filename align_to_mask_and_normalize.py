@@ -134,7 +134,7 @@ def main():
         if per_area_flag:
             wgs84_density_raster_path = os.path.join(
                 PERAREA_DIR, f'%s{PERAREA_SUFFIX}%s' % os.path.splitext(
-                    ecoshard_url))
+                    os.path.basename(target_path)))
             _convert_to_density(
                 target_path, wgs84_density_raster_path)
             target_path = wgs84_density_raster_path
