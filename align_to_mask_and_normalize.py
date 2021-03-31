@@ -19,6 +19,7 @@ logging.basicConfig(
         '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
         ' [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
+LOGGER = logging.getLogger(__name__)
 
 ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/'
 MASK_ECOSHARD_URL = os.path.join(
