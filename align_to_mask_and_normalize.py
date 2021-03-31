@@ -169,7 +169,7 @@ def main():
             kwargs={
                 'target_bb': mask_raster_info['bounding_box'],
                 'target_projection_wkt': mask_raster_info['projection_wkt']},
-            target_path_list=warped_raster_path,
+            target_path_list=[warped_raster_path],
             task_name=f'warp raster {warped_raster_path}',
             dependent_task_list=[last_task])
         target_path = warped_raster_path
