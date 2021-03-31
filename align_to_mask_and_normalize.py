@@ -22,7 +22,7 @@ logging.basicConfig(
         ' [%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
-logging.getLogger('taskgraph').setLevel(logging.WARNG)
+logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = (
     'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/'
