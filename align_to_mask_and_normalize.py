@@ -7,6 +7,7 @@ import shutil
 import sys
 
 from osgeo import gdal
+from osgeo import osr
 from pygeoprocessing.geoprocessing import _create_latitude_m2_area_column
 import ecoshard
 import numpy
@@ -65,7 +66,26 @@ for dir_path in [
     os.makedirs(dir_path, exist_ok=True)
 
 
+def warp_raster(base_raster_path, mask_raster_path, target_raster_path):
+    """Warp raster to exemplar's bounding box, cell size, and projection."""
+    base_projection_wkt = pygeoprocessing.get_raster_info(
+        base_raster_path)['projection_wkt']
+    if base_projection_wkt is None:
+        # assume its wgs84 if not defined
+        LOGGER.warn(
+            f'{base_raster_path} has undefined projection, assuming WGS84')
+        base_projection_wkt = osr.SRS_WKT_WGS84_LAT_LONG
+    mask_raster_info = pygeoprocessing.get_raster_info(mask_raster_path)
+    pygeoprocessing.warp_raster(
+        base_raster_path, mask_raster_info['pixel_size'],
+        target_raster_path, 'near',
+        base_projection_wkt=base_projection_wkt,
+        target_bb=mask_raster_info['bounding_box'],
+        target_projection_wkt=mask_raster_info['projection_wkt'])
+
+
 def copy_and_rehash_final_file(base_raster_path, target_dir):
+    """Copy base to target and replace hash with current hash."""
     target_md5_free_path = os.path.join(
         target_dir,
         re.sub('(.*)md5_[0-9a-f]+_(.*)', r"\1\2", os.path.basename(
@@ -133,10 +153,6 @@ def main():
         args=(MASK_ECOSHARD_URL, mask_ecoshard_path),
         target_path_list=[mask_ecoshard_path],
         task_name=f'download {mask_ecoshard_path}')
-    download_mask_task.join()
-
-    # used to set the target
-    mask_raster_info = pygeoprocessing.get_raster_info(mask_ecoshard_path)
 
     for ecoshard_base, mask_flag, per_area_flag in RASTER_LIST:
         ecoshard_url = os.path.join(ECOSHARD_URL_PREFIX, ecoshard_base)
@@ -146,6 +162,7 @@ def main():
             func=ecoshard.download_url,
             args=(ecoshard_url, target_path),
             target_path_list=[target_path],
+            dependent_task_list=[download_mask_task],
             task_name=f'download {ecoshard_url} to {target_path}')
         if per_area_flag:
             wgs84_density_raster_path = os.path.join(
@@ -162,15 +179,10 @@ def main():
             WARPED_DIR,
             f'%s{WARPED_SUFFIX}%s' % os.path.splitext(
                 os.path.basename(target_path)))
+
         last_task = task_graph.add_task(
-            func=pygeoprocessing.warp_raster,
-            args=(
-                target_path, mask_raster_info['pixel_size'],
-                warped_raster_path,
-                'near'),
-            kwargs={
-                'target_bb': mask_raster_info['bounding_box'],
-                'target_projection_wkt': mask_raster_info['projection_wkt']},
+            func=warp_raster,
+            args=(target_path, mask_ecoshard_path, warped_raster_path),
             target_path_list=[warped_raster_path],
             task_name=f'warp raster {warped_raster_path}',
             dependent_task_list=[last_task])
