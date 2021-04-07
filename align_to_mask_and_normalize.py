@@ -33,29 +33,28 @@ ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-e
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
 RASTER_LIST = [
-    ('realized_fwfish_per_km2_clamped_1e-3_30_md5_0b4455185988a9e2062a39b27910eb8b.tif', False, False),
+    ('realized_coastalprotection_barrierreef_md5_126320d42827adc0f7504d4693c67e18.tif', False, True),
+    ('realized_coastalprotection_md5_b8e0ec0c13892c2bf702c4d2d3e50536.tif', True, True),
+    ('realized_coastalprotection_offshore_md5_eb4442a845be0b5ae5c0fa219be62fe0.tif', False, True),
+    ('realized_commercialtimber_forest_clamped0_md5_24844213f0f65a6c0bedfebe2fbd089e.tif', True, False),
+    ('realized_domestictimber_forest_clamped0_md5_dca99ceb7dd9f96d54b3fcec656d3180.tif', True, False),
+    ('realized_flood_nathab_clamped0_md5_eb8fd58621e00c6aeb80f4483da1b35c.tif', True, False),
+    ('realized_fuelwood_forest_clamped0_md5_4ee236f5400ac400c07642356dd358d1.tif', True, False),
+    ('realized_fwfish_per_km2_clamped_1e-3_30_md5_0b4455185988a9e2062a39b27910eb8b.tif', True, False),
+    ('realized_grazing_natnotforest_clamped0_md5_8eeb02139f0fabf552658f7641ab7576.tif', True, False),
     ('realized_marinefish_watson_2010_2014_clamped_md5_167448a2c010fb2f20f9727b024efab8.tif', False, False),
-    #('realized_coastalprotection_barrierreef_md5_126320d42827adc0f7504d4693c67e18.tif', False, True),
-    #('realized_coastalprotection_md5_b8e0ec0c13892c2bf702c4d2d3e50536.tif', True, True),
-    #('realized_coastalprotection_offshore_md5_eb4442a845be0b5ae5c0fa219be62fe0.tif', False, True),
-    #('realized_commercialtimber_forest_clamped0_md5_24844213f0f65a6c0bedfebe2fbd089e.tif', True, False),
-    #('realized_domestictimber_forest_clamped0_md5_dca99ceb7dd9f96d54b3fcec656d3180.tif', True, False),
-    #('realized_flood_nathab_clamped0_md5_eb8fd58621e00c6aeb80f4483da1b35c.tif', True, False),
-    #('realized_fuelwood_forest_clamped0_md5_4ee236f5400ac400c07642356dd358d1.tif', True, False),
-    #('realized_fwfish_per_km2_clamped_1e-3_30_md5_0b4455185988a9e2062a39b27910eb8b.tif', True, False),
-    #('realized_grazing_natnotforest_clamped0_md5_8eeb02139f0fabf552658f7641ab7576.tif', True, False),
-    #('realized_marinefish_watson_2010_2014_clamped_md5_167448a2c010fb2f20f9727b024efab8.tif', True, False),
-    #('realized_nitrogenretention_nathab_clamped_md5_fe63ffd7c6633f336c91241bbd47bddd.tif', True, True),
-    #('realized_pollination_nathab_clamped_md5_c9486d6c8d55cea16d84ff4e129b005a.tif', True, True),
-    #('realized_reeftourism_Modelled_Total_Dollar_Value_md5_171a993b8ff40d0447f343dd014c72e0.tif', False, True),
-    #('realized_sedimentdeposition_nathab_clamped_md5_30d4d6ac5ff4bca4b91a3a462ce05bfe.tif', True, True),
-    #('Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif', True, False),
-    #('realized_moisturerecycling_nathab30s_md5_6c97073919f952545349efcc95d4ea7f.tif', True, False)
+    ('realized_nitrogenretention_nathab_clamped_md5_fe63ffd7c6633f336c91241bbd47bddd.tif', True, True),
+    ('realized_pollination_nathab_clamped_md5_c9486d6c8d55cea16d84ff4e129b005a.tif', True, True),
+    ('realized_reeftourism_Modelled_Total_Dollar_Value_md5_171a993b8ff40d0447f343dd014c72e0.tif', False, True),
+    ('realized_sedimentdeposition_nathab_clamped_md5_30d4d6ac5ff4bca4b91a3a462ce05bfe.tif', True, True),
+    ('Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif', True, False),
+    ('realized_moisturerecycling_nathab30s_md5_6c97073919f952545349efcc95d4ea7f.tif', True, False),
     ]
 
 WARPED_SUFFIX = '_WARPED'
 MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
+RESAMPLE_MODE = 'average'
 
 WORKSPACE_DIR = 'workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')
@@ -68,7 +67,7 @@ for dir_path in [
     os.makedirs(dir_path, exist_ok=True)
 
 
-def warp_raster(base_raster_path, mask_raster_path, target_raster_path):
+def warp_raster(base_raster_path, mask_raster_path, resample_mode, target_raster_path):
     """Warp raster to exemplar's bounding box, cell size, and projection."""
     base_projection_wkt = pygeoprocessing.get_raster_info(
         base_raster_path)['projection_wkt']
@@ -80,7 +79,7 @@ def warp_raster(base_raster_path, mask_raster_path, target_raster_path):
     mask_raster_info = pygeoprocessing.get_raster_info(mask_raster_path)
     pygeoprocessing.warp_raster(
         base_raster_path, mask_raster_info['pixel_size'],
-        target_raster_path, 'near',
+        target_raster_path, resample_mode,
         base_projection_wkt=base_projection_wkt,
         target_bb=mask_raster_info['bounding_box'],
         target_projection_wkt=mask_raster_info['projection_wkt'])
@@ -184,7 +183,9 @@ def main():
 
         last_task = task_graph.add_task(
             func=warp_raster,
-            args=(target_path, mask_ecoshard_path, warped_raster_path),
+            args=(
+                target_path, mask_ecoshard_path, RESAMPLE_MODE,
+                warped_raster_path),
             target_path_list=[warped_raster_path],
             task_name=f'warp raster {warped_raster_path}',
             dependent_task_list=[last_task])
