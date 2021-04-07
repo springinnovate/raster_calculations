@@ -178,7 +178,7 @@ def main():
             target_path = wgs84_density_raster_path
         warped_raster_path = os.path.join(
             WARPED_DIR,
-            f'%s{WARPED_SUFFIX}%s' % os.path.splitext(
+            f'%s{WARPED_SUFFIX}_{RESAMPLE_MODE}%s' % os.path.splitext(
                 os.path.basename(target_path)))
 
         last_task = task_graph.add_task(
