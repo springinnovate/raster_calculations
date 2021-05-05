@@ -1,4 +1,7 @@
 """These calculations are for the Critical Natural Capital paper."""
+#cd C:\Users\Becky\Documents\raster_calculations
+#conda activate py38_gdal312
+
 import glob
 import sys
 import os
@@ -34,6 +37,376 @@ def main():
     """Write your expression here."""
 
     # CNC calculations
+    
+    masked_service_list = [
+        {
+            'expression': 'service*mask', 
+            'symbol_to_path_map': {
+                'mask': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\EEZ_mask_0027.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_coastalprotection_md5_b8e0ec0c13892c2bf702c4d2d3e50536.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_coastalprotection_offshore.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+    ]
+
+    for calculation in masked_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>=8)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\Urban-Rural Catchment Areas_md5_942ffae026b526a1044680e28ef58b89.tif",
+            'raster2':r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
+        },
+        'target_nodata': -1,
+        'target_pixel_size': (0.0083333333, 0.0083333333),
+        'resample_method': 'near',
+        'target_raster_path': "lspop_2017_URCA_rural.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+    single_expression = {
+        'expression': '(raster1<8)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\Urban-Rural Catchment Areas_md5_942ffae026b526a1044680e28ef58b89.tif",
+            'raster2':r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
+        },
+        'target_nodata': -1,
+        'target_pixel_size': (0.0083333333, 0.0083333333),
+        'resample_method': 'near',
+        'target_raster_path': "lspop_2017_URCA_urban.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    #unfortunately the VuC is nodata in a bunch of places where we have CNA. So need to go back and nodata_replace copy b to where a is nodata:
+    # python nodata_replace.py [raster_a_path] [raster_b_path] [target_path]
+    # python nodata_replace.py "C:\Users\Becky\Documents\cnc_project\overlap\ctr90_outside_VuC_2km.tif" "C:\Users\Becky\Documents\cnc_project\optimization\ctr90_2km_VuCextent.tif" "full_cntr90_outside_VuC_2km.tif"
+    # so actually we need to go back and fill all the nodata in the Vulnerable Carbon layer with 0's instead of nodata
+    # python nodata_replace.py "C:\Users\Becky\Documents\cnc_project\supporting_layers\carbon\VuC_top90_2km.tif" "C:\Users\Becky\Documents\cnc_project\supporting_layers\carbon\landmask_0s_2km_VuCextent.tif" "VuC_top90_2km_0s.tif"
+    # python nodata_replace.py "C:\Users\Becky\Documents\cnc_project\overlap\moisture_top90_2km_ext.tif" "C:\Users\Becky\Documents\cnc_project\supporting_layers\landmask_0s_2km_moisturextent.tif" "moisture_top90_2km_0s.tif"
+
+
+    single_expression = {
+        'expression': '(raster1>0)*(raster2<1)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_esa2015_md5_50debbf5fba6dbdaabfccbc39a9b1670.tif",
+            'raster2':r"C:\Users\Becky\Documents\cnc_project\supporting_layers\landmask_0s_2km.tif",
+        },
+        'target_nodata': -1,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "natural_assets_wostreams_300m_to_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    wgs84_srs = osr.SpatialReference()
+    wgs84_srs.ImportFromEPSG(4326)    
+
+    single_expression = {
+        'expression': '(raster1>0)*(raster2<1)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_carb_wgs.tif",
+            'raster2':r"C:\Users\Becky\Documents\cnc_project\supporting_layers\landmask_0s_2km.tif",
+        },
+        'target_nodata': -1,
+        'target_projection_wkt': wgs84_srs.ExportToWkt(),
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "natural_assets_full_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>0)*(raster2<1)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
+            'raster2':r"C:\Users\Becky\Documents\cnc_project\supporting_layers\landmask_0s_2km.tif",
+        },
+        'target_nodata': -1,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "natural_assets_300m_to_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    single_expression = {
+        'expression': '(raster1==1)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\nonoverlapping_ctr90_moisture_VuC_2km_0s.tif",
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "ctr90_outside_VuC_moisture_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1<1)*(raster4>2)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\ctr90_VuCtop90_2km_0s.tif",
+            'raster4': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "ctr90_outside_VuC_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1<1)*(raster2<1)*(raster3<1)*(raster4>2) + 2*(raster1<1)*(raster2<1)*(raster3<1)*raster5 + 3*(raster1<1)*(raster2<1)*(raster3<1)*raster6 ',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\ctr90_VuCtop90_2km_0s.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\ctr90_moisturetop90_2km_0s.tif",
+            'raster3': r"C:\Users\Becky\Documents\cnc_project\overlap\ctr90_moisture_VuC_2km_0s.tif",
+            'raster4': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster5': r"C:\Users\Becky\Documents\cnc_project\overlap\moisture_top90_2km_0s.tif",
+            'raster6': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\carbon\VuC_top90_2km_0s.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "nonoverlapping_ctr90_moisture_VuC_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\ctr90_VuCtop90_2km_0s.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\ctr90_moisturetop90_2km_0s.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "ctr90_moisture_VuC_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>2)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\moisture_top90_2km_0s.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "ctr90_moisturetop90_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>2)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\carbon\VuC_top90_2km_0s.tif",
+        },
+        'target_nodata': 66535,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "ctr90_VuCtop90_2km_0s.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1<2)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\nonoverlapping_ctr90_moisture_VuC_2km.tif",
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "ctr90_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    single_expression = {
+        'expression': '(raster1>2)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\moisture_top90.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "ctr90_moisturetop90_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+
+    single_expression = {
+        'expression': '(raster1>2.61)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_moisturerecycling_nathab30s.tif",
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "moisture_top90.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster2>=0)*raster1',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\raster_calculations\VuC_top90.tif",
+            'raster2': r"C:\Users\Becky\Documents\raster_calculations\ctr90_VuCtop90_2km.tif",
+        },
+        'target_nodata': 66535,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "VuC_top90_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+    single_expression = {
+        'expression': '(raster1>2)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\prioritiz-2km-country\cntr_2km_nocarb.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\carbon\VuC_top90.tif",
+        },
+        'target_nodata': 66535,
+        'target_pixel_size': (0.021319, 0.021319),
+        'resample_method': 'near',
+        'target_raster_path': "ctr90_VuCtop90_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>37)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\carbon\Vulnerable_C_Total_2018.tif",
+        },
+        'target_nodata': 65535,
+        'target_raster_path': "VuC_top90.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     single_expression = {
         'expression': 'raster1*raster2',
@@ -384,7 +757,6 @@ def main():
     TASK_GRAPH.close()
 
     return
-
 
     masked_service_list = [
         {
