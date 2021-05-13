@@ -22,7 +22,7 @@ def sum_raster(raster_path):
             valid_array = block_array != nodata
         else:
             valid_array = slice(-1)
-        running_sum = numpy.sum(block_array[valid_array])
+        running_sum += numpy.sum(block_array[valid_array])
     return running_sum
 
 
