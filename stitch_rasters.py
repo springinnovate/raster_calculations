@@ -76,7 +76,7 @@ def main():
 
     LOGGER.info('searching for matching files')
     if args.raster_list:
-        raster_path_list = (
+        raster_path_list = list(
             raster_path for raster_glob in args.raster_list
             for raster_path in glob.glob(raster_glob)
             )
