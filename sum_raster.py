@@ -40,8 +40,12 @@ if __name__ == '__main__':
         for raster_path in glob.glob(raster_glob)
         )
 
-    for raster_path in raster_path_list:
-        LOGGER.info(f'***summing {raster_path} please wait...')
-        LOGGER.info(f'{sum_raster(raster_path)} is the sum')
+    with open('sum_report.csv', 'w') as sum_file:
+        sum_file.write('filename,sum\n')
+        for raster_path in raster_path_list:
+            LOGGER.info(f'***summing {raster_path} please wait...')
+            raster_sum = sum_raster(raster_path)
+            LOGGER.info(f'{raster_sum} is the sum')
+            sum_file.write(f'{raster_path},{raster_sum}\n')
 
     LOGGER.info('all done')
