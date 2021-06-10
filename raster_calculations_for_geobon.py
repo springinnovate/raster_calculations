@@ -41,6 +41,27 @@ def main():
 #############GEOBON###########################
 
     single_expression = {
+        'expression': '(raster1>0)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cnc_cv\normalized_pop_on_hab\total_pop_masked_by_10m_md5_ef02b7ee48fa100f877e3a1671564be2.tif",
+            'raster2': r"C:\Users\Becky\Documents\raster_calculations\lspop2000_md5_79a872e3480c998a4a8bfa28feee228c.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_pixel_size': (0.0083333333333333,-0.0083333333333333),
+        'resample_method': 'near',
+        'target_raster_path': "total_pop_masked_by_10m_2000.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
         'expression': 'raster1*raster2',
         'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\geobon\CV\pnv_lspop2017\cv_value_pnv_md5_3e1680fd99db84773e1473289958e0ac.tif",

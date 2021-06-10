@@ -38,15 +38,267 @@ def main():
 
     # CNC calculations
     
+    #to find nodata value: 
+    #gdalinfo [raster path]
+
+    NNth_fl = 12445
+    clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
+        {
+            'expression': f'(service>{NNth_fl})*{NNth_fl} + (service<={NNth_fl})*(service>=0)*service + -9999*(service<0)', #sets anything above the 99th percentile value to that value, anything negative to nodata
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_floodmitigation_attn_50km_nathab_md5_3cbadb2d1b4207f029a264e090783c6d.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_floodmitigation_attn_50km_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+    ]
+
+    for calculation in clamped_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'service*mask + (mask<1)*-9999', 
+            'symbol_to_path_map': {
+                'mask': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\service\realized_floodmitigation_attn_500km_md5_1b659e3fd93e5f0b6aac396245258517.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_floodmitigation_attn_500km_nathab.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+        {
+            'expression': 'service*mask + (mask<1)*-9999', 
+            'symbol_to_path_map': {
+                'mask': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\service\realized_floodmitigation_attn_50km_md5_029cbd998fc4464cf04861cf58dddc1d.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_floodmitigation_attn_50km_nathab.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'service*benes', 
+            'symbol_to_path_map': {
+                'benes': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_nitrogenretention_nci_unmasked_md5_09425dff042ea8dbb94a8d1977be472a.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_nitrogenretention_unmasked_attn_500k.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+        {
+            'expression': 'service*benes', 
+            'symbol_to_path_map': {
+                'benes': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_50000.0_compressed_overviews_md5_ddbc9006bbfb21ef681a42bf78046b69.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_nitrogenretention_nci_unmasked_md5_09425dff042ea8dbb94a8d1977be472a.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_nitrogenretention_unmasked_attn_50k.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    calculation_list = [
+#        {
+#            'expression': 'raster1*raster2', 
+#            'symbol_to_path_map': {
+#                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
+#                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_50000.0_compressed_overviews_md5_ddbc9006bbfb21ef681a42bf78046b69.tif",
+#            },
+#            'target_nodata': -9999,
+#            'target_raster_path': "realized_nitrogenretention_attn_50km.tif",
+#            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+#            'resample_method': 'near',
+#        },
+#        {
+#            'expression': 'raster1*raster2', 
+#            'symbol_to_path_map': {
+#                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
+#                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_50000.0_compressed_overviews_md5_ddbc9006bbfb21ef681a42bf78046b69.tif",
+#            },
+#            'target_nodata': -9999,
+#            'target_raster_path': "realized_sedimentdeposition_attn_50km.tif",
+#            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+#            'resample_method': 'near',
+#        },
+#        {
+#            'expression': 'raster1*raster2', 
+#            'symbol_to_path_map': {
+#                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
+#                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
+#            },
+#            'target_nodata': -9999,
+#            'target_raster_path': "realized_nitrogenretention_attn_500km.tif",
+#            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+#            'resample_method': 'near',
+#        },
+#        {
+#            'expression': 'raster1*raster2', 
+#            'symbol_to_path_map': {
+#                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
+#                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
+#            },
+#            'target_nodata': -9999,
+#            'target_raster_path': "realized_sedimentdeposition_attn_500km.tif",
+#            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+#            'resample_method': 'near',
+#        },
+        {
+            'expression': 'raster1*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_floodmitigation_PotInflGStorage.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_floodplain_500000.0_compressed_overviews_md5_2ce1f378646fcfe8c9ddf98bd6212d03.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_floodmitigation_attn_500km.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+        {
+            'expression': 'raster1*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_floodmitigation_PotInflGStorage.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_floodplain_50000.0_compressed_overviews_md5_6c604be0fc0d87225dd81adeeb4b67a3.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_floodmitigation_attn_50km.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+        
+        #{
+        #    'expression': 'raster1*raster2', 
+        #    'symbol_to_path_map': {
+        #        'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
+        #        'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_compressed_overviews_md5_32c17fb4ab0eb2b1fe193839dbc7e85b.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_raster_path': "realized_nitrogenretention_0attn.tif",
+        #    'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+        #    'resample_method': 'near',
+        #},
+        #{
+        #    'expression': 'raster1*raster2', 
+        #    'symbol_to_path_map': {
+        #        'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
+        #        'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_compressed_overviews_md5_32c17fb4ab0eb2b1fe193839dbc7e85b.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_raster_path': "realized_sedimentdeposition_0attn.tif",
+        #    'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+        #    'resample_method': 'near',
+        #},
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster1*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_0.9999_normalized_compressed_overviews_md5_afbbfe893a6fb155aa6fffc54c6e8b69.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_nitrogenretention_attn_0.9999.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+        {
+            'expression': 'raster1*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_0.9999_normalized_compressed_overviews_md5_afbbfe893a6fb155aa6fffc54c6e8b69.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_sedimentdeposition_attn_0.9999.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+        {
+            'expression': 'raster1*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_0.999_compressed_overviews_md5_d15639dbfd5914f44c59642c459b6ced.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_nitrogenretention_attn_0.999.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+        {
+            'expression': 'raster1*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_0.999_compressed_overviews_md5_d15639dbfd5914f44c59642c459b6ced.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_sedimentdeposition_attn_0.999.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+
     masked_service_list = [
         {
             'expression': 'service*mask', 
             'symbol_to_path_map': {
-                'mask': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\EEZ_mask_0027.tif",
-                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\realized_coastalprotection_md5_b8e0ec0c13892c2bf702c4d2d3e50536.tif",
+                'mask': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8.tif",
+                'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_coastalprotection_norm_md5_485aef1d6c412bde472bdaa1393100d7.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "realized_coastalprotection_offshore.tif",
+            'target_raster_path': "realized_coastalprotection_norm_offshore.tif",
             'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
             'resample_method': 'near',
         },
@@ -60,6 +312,280 @@ def main():
     TASK_GRAPH.close()
 
     return
+
+    single_expression = {
+        'expression': '(raster1>0)*raster1*(raster2>0)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cnc_cv\global_cv_pop_md5_d7af43a2656b44838f01796f523fb696.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cnc_cv\global_cv_value_md5_0f6c1b3a2904d7de5c263490814c4a44.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.0027777777777777778, -0.0027777777777777778),
+        'resample_method': 'near',
+        'target_raster_path': "realized_coastalprotection_norm.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    expression_list = [
+        {
+            'expression': 'raster1*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_0403ac4f961b259a89c013d939c39463.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_normalized_compressed_overviews_md5_0da01aaa9d5d03c652a03b64afde24f8.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_nitrogenretention_norm.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+        {
+            'expression': 'raster1*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_normalized_compressed_overviews_md5_0da01aaa9d5d03c652a03b64afde24f8.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_sedimentdeposition_norm.tif",
+            'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
+            'resample_method': 'near',
+        },
+    ]
+
+    for calculation in expression_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\MarkMulligansLayer\acc_gr_storage_ratio__lt_10_globally.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\floodplains\downstream_bene_floodplain_hab_normalized_compressed_overviews_md5_07d02a635bc908fed74d0a6e73152dc6.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.0027777777777777778, -0.0027777777777777778),
+        'resample_method': 'near',
+        'target_raster_path': "realized_floodmitigation_norm.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    #first make this mask. then upload it to a bucket. then use align to mask and normalize to reproject it in Eckert 2km.
+    #then use that mask to remask/project all of the layers in align to mask and normalize. do Mark's both ways
+
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce.tif",
+        },
+        'target_nodata': 0,
+        'target_pixel_size': (0.0027777777777777778, -0.0027777777777777778),
+        'resample_method': 'near',
+        'target_raster_path': "masked_all_nathab_wstreams_esa2015_nodata.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    
+
+    #99.9th percentiles of the new layers (NCI nitrogen retention and new normalized pollination)
+    NNth_nit = 2325 
+    NNth_poll = 48
+    NNth_fl = 31755
+    clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
+        {
+            'expression': f'(service>{NNth_fl})*{NNth_fl} + (service<={NNth_fl})*(service>=0)*service + -9999*(service<0)', #sets anything above the 99th percentile value to that value, anything negative to nodata
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\realized_floodmitigation_attn_500km_nathab_md5_bc788aea3fd99c82ef38b51693fc2ed5.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_floodmitigation_attn_500km_nathab.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{NNth_nit})*{NNth_nit} + (service<={NNth_nit})*(service>=0)*service + -9999*(service<0)', #sets anything above the 99th percentile value to that value, anything negative to nodata
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\potential_nitrogenretention_nci_nathab.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "potential_nitrogenretention_nci_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+        {
+            'expression': f'(service>{NNth_poll})*({NNth_poll})+(service<={NNth_poll})*(service>=0)*service + -9999*(service<0)',
+            'symbol_to_path_map': {
+                'service': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\needed_clamping\norm_ppl_fed_within_2km_per_pixel_mask_to_hab_compressed_md5_e32a0dd59de79a8dfc0d34dc08c18c41.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "realized_pollination_norm_nathab_clamped.tif",
+            'target_pixel_size': (0.002777777777778, -0.002777777777778),
+        },
+    ]
+
+    for calculation in clamped_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    single_expression = {
+        'expression': 'raster2/raster1',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\MarkMulligansLayer\acc_gr_storage_ratio__lt_10_globally.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\MarkMulligansLayer\RealInflGStoragePop.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'default_inf': -9999,
+        'target_pixel_size': (0.0833333333333333, -0.0833333333333333),
+        'resample_method': 'near',
+        'target_raster_path': "backcalculated_MM_downstreambenes.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>0)*raster1*(raster2>0)*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cnc_cv\global_cv_pop_md5_d7af43a2656b44838f01796f523fb696.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cnc_cv\global_cv_value_md5_0f6c1b3a2904d7de5c263490814c4a44.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.0027777777777777778, -0.0027777777777777778),
+        'resample_method': 'near',
+        'target_raster_path': "realized_coastalprotection_norm.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+    masked_service_list = [
+        {
+            'expression': '(raster1>=0)*raster2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\floodplains\global_floodplains_mask.tif",
+                'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
+            },
+            'target_nodata': -2147483647,
+            'target_raster_path': "floodplains_masked_pop_30s.tif",
+            'target_pixel_size': (0.008333333333333333, -0.008333333333333333),
+            'resample_method': 'near',
+        },
+    ]
+
+    for calculation in masked_service_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>0)*raster1*raster2 + (raster1<=0)*-1',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_esa2015_md5_50debbf5fba6dbdaabfccbc39a9b1670.tif",
+            'raster2':r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_nitrogenretention_nci_md5_09425dff042ea8dbb94a8d1977be472a.tif",
+        },
+        'target_nodata': -1,
+        'target_pixel_size': (0.0027777777777777778, -0.0027777777777777778),
+        'resample_method': 'near',
+        'target_raster_path': "potential_nitrogenretention_nci_nathab.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': 'raster1-raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\nci\ndr\compressed_baseline_currentpractices_300.0_D8_modified_load_md5_a836509e72dacd536764249ea7beb4d7.tif",
+            'raster2':r"C:\Users\Becky\Documents\nci\ndr\compressed_baseline_currentpractices_300.0_D8_export_md5_eb9855f076fdc8d45a42ca45b5c23219.tif",
+        },
+        'target_nodata': -1,
+        'target_pixel_size': (0.0027777777777777778, -0.0027777777777777778),
+        'resample_method': 'near',
+        'target_raster_path': "potential_nitrogenretention_nci.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1/raster2)*raster3*(raster2>0)',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_compressed_overviews_md5_a2d9f969617c728311b4f3d33bc5f1f8.tif",
+            'raster2':r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\global_stitch_dsbsum_md5_55441129edcc27880861bf448309481a.tif",
+            'raster3':r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\global_stitch_lspopsum_md5_a2db49316a2d47840a9a8f17657fff3b.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_pixel_size': (0.005555555555, -0.005555555555),
+        'resample_method': 'near',
+        'target_raster_path': "downstream_bene_2017_norm.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+
+    
 
     single_expression = {
         'expression': '(raster1>=8)*raster2',
