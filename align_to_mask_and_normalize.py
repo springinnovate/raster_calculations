@@ -103,7 +103,7 @@ RASTER_LIST = [
     #('solution_C_alltargets_2km_md5_ecc7ac5e9ae240495497b641cd65496d.tif', True, False),
     ('A1_90_md5_3dda02c29dea33eae9ddc459e1a7fa65.tif', True, False),
     ('B1_90_md5_5a7442ffa127e5213bab5329060c82c2.tif', True, False),
-    ('C1_90_md5_558f4d220d132ad50e0df5249d772b46.tif]', True, False),
+    ('C1_90_md5_558f4d220d132ad50e0df5249d772b46.tif', True, False),
     ]
 
 
