@@ -26,33 +26,29 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = (
-    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/' #this is not a great one
-    #'global_people_access_lspop_2017_URCA_rural_360.0m_md5_14991c229634505edd5ff3f1944acda1.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed.tif')
-    'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed_reduce8x.tif')
-    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed_reduce8x.tif')
+    'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/marinefish_extent_Eckert_md5_f47b3d96244beb4ac1fbefb26275cab2.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_Eckert_2km_md5_1aa7deb7de147aad7434245474c1ef43.tif')
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_service_ecoshards/truncated_masked'
 ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks'
 
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
 RASTER_LIST = [
 #    ('realized_coastalprotection_barrierreef_md5_126320d42827adc0f7504d4693c67e18.tif', False, False),
-#    ('realized_coastalprotection_md5_.tif', True, True),
-#    ('realized_coastalprotection_offshore_md5_.tif', False, True),
 #    ('realized_commercialtimber_forest_clamped0_md5_24844213f0f65a6c0bedfebe2fbd089e.tif', True, False),
 #    ('realized_domestictimber_forest_clamped0_md5_dca99ceb7dd9f96d54b3fcec656d3180.tif', True, False),
 #    ('realized_flood_nathab_clamped0_md5_eb8fd58621e00c6aeb80f4483da1b35c.tif', True, False),
 #    ('realized_fuelwood_forest_clamped0_md5_4ee236f5400ac400c07642356dd358d1.tif', True, False),
 #    ('realized_fwfish_per_km2_clamped_1e-3_30_md5_0b4455185988a9e2062a39b27910eb8b.tif', True, False),
 #    ('realized_grazing_natnotforest_clamped0_md5_8eeb02139f0fabf552658f7641ab7576.tif', True, False),
-#    ('realized_marinefish_watson_2010_2014_clamped_md5_167448a2c010fb2f20f9727b024efab8.tif', False, False),
-#    ('realized_nitrogenretention_nathab_clamped_md5_.tif', True, True),
-#    ('realized_pollination_nathab_clamped_md5_.tif', True, True),
+#    ('realized_marinefish_watson_2010_2014_clamped_md5_167448a2c010fb2f20f9727b024efab8.tif', True, False), #with EEZ_mask_Eckert_2km_md5_1aa7deb7de147aad7434245474c1ef43.tif
 #    ('realized_reeftourism_Modelled_Total_Dollar_Value_md5_171a993b8ff40d0447f343dd014c72e0.tif', False, False),
-#    ('realized_sedimentdeposition_nathab_clamped_md5_.tif', True, True),
 #    ('Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif', True, False),
 #    ('realized_moisturerecycling_nathab30s_md5_6c97073919f952545349efcc95d4ea7f.tif', True, False),
 #    ('realized_coastalprotection_norm_md5_485aef1d6c412bde472bdaa1393100d7.tif', False, False),
@@ -67,50 +63,54 @@ RASTER_LIST = [
 #    ('realized_sedimentdeposition_attn_50km_md5_5139215a28962a1c1cd2d18ca40b7244.tif', True, False),
 #    ('realized_floodmitigation_attn_500km_nathab_clamped_md5_db7fb0cebfc9dc0979b93fe36eca62ee.tif', True, False),
 #    ('realized_floodmitigation_attn_50km_nathab_clamped_md5_c7f0f1ee91571cdf94bbb43bd50eb563.tif', True, False),
-#    ('A90_md5_a227d61b8e1469fbd3abd34d045435e4.tif', True, False),
-    #('A90_md5_a227d61b8e1469fbd3abd34d045435e4.tif', True, False),
-    #('D1_90_md5_9633e6b25a1c28632588e6bbef7e0715.tif', True, False),
-    #('D_90_md5_cd7a02778615934d66e5be1ad5df11a8.tif', True, False),
-    #('E1_90_md5_6cfb84c71a3acc0019181b83d94236ea.tif', True, False),
-    #('E_90_md5_58da94a0d6b17245b485c9c8bf8fc071.tif', True, False),
-    #('F1_90_md5_1154967b32728ff635a4239470575a0d.tif', True, False),
-    #('F_90_md5_d567ef8f70fd4bb76852aaa50c2bf4ff.tif', True, False),
-    #('G1_90_md5_021588f5ee9356448ebf39010af355c4.tif', True, False),
-    #('G_90_md5_52557cebef77f8c6db3f15ba91343626.tif', True, False),
-    #('H1_90_md5_d79e07071bd6820241799ee9a033065e.tif', True, False),
-    #('H_90_md5_fe35d7c6984622a1429ff0037b5cab69.tif', True, False),
-    #('I1_90_md5_6b7969887db7a3cdf4589a86f92bfdbf.tif', True, False),
-    #('I_90_md5_b6bf46b9e8b1ed00af0b790dbb3e5588.tif', True, False),
-    #('J_90_md5_39938228076e62c4efed0759089cb0a6.tif', True, False),
-    #('K_90_md5_804d07eeb3a0400fa4fa59672c1dd8ec.tif', True, False),
-    #('L_90_md5_528091cef25d701d215f6b4838adfcf4.tif', True, False),
-    #('M_90_md5_3f324797bd8a606341bc91c43a582a54.tif', True, False),
-    #('N_90_md5_4c7f2897f51c2937033c5edbe45a98f2.tif', True, False),
-    #('O_90_md5_cf6bbb7b46a1901419cb1ad7bc444760.tif', True, False),
-    #('P_90_md5_f976d517118f0ed549e65d71a5d2fd58.tif', True, False),
-    #('Q_90_md5_4e9dc8c0820552327df3740070363cf0.tif', True, False),
-    #('R_90_md5_83f855316180ee8f387f79d3fee19fca.tif', True, False),
-    #('S_90_md5_569e79f8bf753457b3fdcba325c8aab9.tif', True, False),
-    #('T_90_md5_f0f6ca5add6d3a98561e81fdaefe7237.tif', True, False),
-    #('U_90_md5_14568cbf3cc6401d0a894f8daeed144d.tif', True, False),
-    #('V_90_md5_eade0f1e226c6fe0bbf7f1ca64bfca99.tif', True, False),
-    #('W_90_md5_e8e99efe1cb5f61f9fa00630649b7eea.tif', True, False),
-    #('X_90_md5_891eac3d67e5efc66909131640d2794a.tif', True, False),
-    #('Y_90_md5_68117f49cd41e41f3a8915a2a8c941b1.tif', True, False),
-    #('Z_90_md5_60e9c2e61674058dd327af159d19aaf9.tif', True, False),
-    #('solution_A_alltargets_2km_md5_743cf8932c76bcb2480200aaff44d137.tif', True, False),
-    #('solution_B_alltargets_2km_md5_c7468d1b14d3086915f32f49265e9dda.tif', True, False),
+    #('A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif', False, False),
+    #('B_90_md5_e03f74e91f464e3db2023581ed5dd677.tif', False, False),
+    #('C_90_md5_62bfc17b98421712aa1e23f3680373e4.tif', False, False),
+    #('D_90_md5_8be58c70d2bb50eb9092c39d166f2e1a.tif', False, False),
+    #('E_90_md5_ace0527a717db6dc5cfab3bd4a0ca3c1.tif', False, False),
+    #('F_90_md5_223139f1fd25072ba9930feb4d253f78.tif', False, False),
+    #('G_90_md5_cbf80c12bef49862fdce93aadce9e91f.tif', False, False),
+    #('H_90_md5_14b6e2c6cd8044960c4dd6856c447648.tif', False, False),
+    #('I_90_md5_bc01ea91e901188e507f3b3fcf980516.tif', False, False),
+    #('J_90_md5_5043b50d9a64fb63462b3ec684a5930c.tif', False, False),
+    #('K_90_md5_bd10e342272ea1316a2a6e01fd66b52d.tif', False, False),
+    #('L_90_md5_f12afc77ccec144882627ce233ee7a8f.tif', False, False),
+    #('M_90_md5_3f324797bd8a606341bc91c43a582a54.tif', False, False),
+    #('N_90_md5_902c49417124030ff819217268cbe6f6.tif', False, False),
+    #('O_90_md5_30e31dae916e07f19f568a67e69cccde.tif', False, False),
+    #('P_90_md5_035bd141364af0a5311966f42b00f5ed.tif', False, False),
+    #('Q_90_md5_4ef4705dfd8a6bc68acbd54717c8adf3.tif', False, False),
+    #('R_90_md5_df68eabe62a62d8e73a8907ecb553374.tif', False, False),
+    #('S_90_md5_569e79f8bf753457b3fdcba325c8aab9.tif', False, False),
+    #('T_90_md5_f0f6ca5add6d3a98561e81fdaefe7237.tif', False, False),
+    #('U_90_md5_14568cbf3cc6401d0a894f8daeed144d.tif', False, False),
+    #('V_90_md5_eade0f1e226c6fe0bbf7f1ca64bfca99.tif', False, False),
+    #('W_90_md5_e8e99efe1cb5f61f9fa00630649b7eea.tif', False, False),
+    #('X_90_md5_891eac3d67e5efc66909131640d2794a.tif', False, False),
+    ('Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9.tif', True, False),
+    #('Z_90_md5_60e9c2e61674058dd327af159d19aaf9.tif', False, False),
+    #('A1_90_md5_3dda02c29dea33eae9ddc459e1a7fa65.tif', False, False),
+    #('B1_90_md5_5a7442ffa127e5213bab5329060c82c2.tif', False, False),
+    #('C1_90_md5_558f4d220d132ad50e0df5249d772b46.tif', False, False),
+    #('D1_90_md5_9633e6b25a1c28632588e6bbef7e0715.tif', False, False),
+    #('E1_90_md5_6cfb84c71a3acc0019181b83d94236ea.tif', False, False),
+    #('F1_90_md5_1154967b32728ff635a4239470575a0d.tif', False, False),
+    #('G1_90_md5_021588f5ee9356448ebf39010af355c4.tif', False, False),
+    #('H1_90_md5_d79e07071bd6820241799ee9a033065e.tif', False, False),
+    #('I1_90_md5_6b7969887db7a3cdf4589a86f92bfdbf.tif', False, False),
+    #('solution_A_alltargets_2km_md5_743cf8932c76bcb2480200aaff44d137.tif', True, False), #wrong marine_fish
+    #('solution_A_all_targets_2km_compressed_md5_75c290563f16d4d46453bb8125335bfc.tif', True, False),
+    #('solution_B_alltargets_2km_md5_c7468d1b14d3086915f32f49265e9dda.tif', True, False), #wrong marine_fish
+    #('solution_B_all_targets_2km_compressed_md5_c34466ed7046ac1cdfa47caf41af86b2.tif', True, False),
     #('solution_C_alltargets_2km_md5_ecc7ac5e9ae240495497b641cd65496d.tif', True, False),
-    ('A1_90_md5_3dda02c29dea33eae9ddc459e1a7fa65.tif', True, False),
-    ('B1_90_md5_5a7442ffa127e5213bab5329060c82c2.tif', True, False),
-    ('C1_90_md5_558f4d220d132ad50e0df5249d772b46.tif', True, False),
+    #('EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif', True, False),
     ]
 
 
 WARPED_SUFFIX = '_WARPED'
 MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
-RESAMPLE_MODE = 'average'
+RESAMPLE_MODE = 'near'
 
 WORKSPACE_DIR = 'workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')
