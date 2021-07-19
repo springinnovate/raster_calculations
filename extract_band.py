@@ -4,7 +4,11 @@ import pygeoprocessing
 def _passthrough_op(array):
     return array
 
-for band_id in range(1, 17):
+raster_path = "/data/GDP_PPP.tif"
+base_name = os.path.basename(os.path.splitext(raster_path)[0])
+raster_info = pygeoprocessing.get_raster_info(raster_path)
+
+for band_id in range(3, 4): #always go up one from the band # you want
     pygeoprocessing.raster_calculator(
-        [("baccini_carbon_data_2003_2014_compressed_md5_11d1455ee8f091bf4be12c4f7ff9451b.tif", band_id)],
-        _passthrough_op, f'baccini_band{band_id}.tif', gdal.GDT_Int16, 65535)
+        [(raster_path, band_id)],
+        _passthrough_op, f'{base_name}{band_id}.tif', raster_info["datatype"], raster_info["nodata"][band_id-1])
