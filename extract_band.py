@@ -1,3 +1,5 @@
+#docker run -it --rm -v "%CD%":/usr/local/workspace -v "C:\Users\Becky\Documents\cnc_project\supporting_layers":/data therealspring/inspring:latest extract_band.py
+
 from osgeo import gdal
 import pygeoprocessing
 
