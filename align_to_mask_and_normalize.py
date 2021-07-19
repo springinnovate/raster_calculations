@@ -112,7 +112,7 @@ MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
 RESAMPLE_MODE = 'near'
 
-WORKSPACE_DIR = 'workspace'
+WORKSPACE_DIR = 'align_to_mask_workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')
 ECOSHARD_DIR = os.path.join(WORKSPACE_DIR, 'ecoshards')
 MASK_DIR = os.path.join(WORKSPACE_DIR, 'mask')
