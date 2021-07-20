@@ -42,6 +42,7 @@ if __name__ == '__main__':
     zonal_stats_task = task_graph.add_task(
         func=pygeoprocessing.zonal_statistics,
         args=((args.raster_path, 1), args.vector_path),
+        store_result=True,
         task_name=(
             f'calculating zonal stats for {args.raster_path} '
             f'on {args.vector_path}'))

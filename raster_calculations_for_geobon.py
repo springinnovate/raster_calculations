@@ -40,6 +40,240 @@ def main():
 
 #############GEOBON###########################
 
+    calc_list = [
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cbd\Pollination\PNV\monfreda_2008_yield_poll_dep_ppl_fed_5min.tif",
+                'raster2': r"C:\Users\Becky\Documents\geobon\pollination\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2000-v2.0.7_ag_mask.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_pixel_size': (0.0027777778,-0.0027777778),
+            'resample_method': 'near',
+            'target_raster_path': "monfreda_poll_dep_yield_ppl_fed_10s_2000.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cbd\Pollination\PNV\monfreda_2008_yield_poll_dep_ppl_fed_5min.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\agmask_esa2015_md5_68abfed1893cfe664a7d62d472c863ea.tif",
+            },    
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_pixel_size': (0.0027777778,-0.0027777778),
+            'resample_method': 'near',
+            'target_raster_path': "monfreda_poll_dep_yield_ppl_fed_10s_2015.tif",
+        },
+    
+    ]
+    
+    for calc in calc_list:
+       raster_calculations_core.evaluate_calculation(
+            calc, TASK_GRAPH, WORKSPACE_DIR)
+
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
+            'raster2': r"C:\Users\Becky\Documents\geobon\nitrogen\n_retention_2015_nathab_md5_575efdf1aa74eb406c029769c292f09c.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_pixel_size': (0.0027777778,-0.0027777778),
+        'resample_method': 'near',
+        'target_raster_path': "realized_nitrogenretention_2015_attn_500km_nathab.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\geobon\nitrogen\downstream_bene_2000_500000.0_compressed_overviews_md5_f4caba7a00ae793dcad5e2c4462aa955.tif",
+            'raster2': r"C:\Users\Becky\Documents\geobon\nitrogen\n_retention_2000_nathab_md5_026424ce513a3e8c18418bc1d8633f79.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_pixel_size': (0.0027777778,-0.0027777778),
+        'resample_method': 'near',
+        'target_raster_path': "realized_nitrogenretention_2000_attn_500km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    calc_list = [
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\geobon\nitrogen\esa2015_n_retention_ovr_md5_f68d5975d58f97b74784c20087c98d07.tif",
+                'raster2': r"C:\Users\Becky\Documents\geobon\nitrogen\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015_hab_mask.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_pixel_size': (0.0027777778,-0.0027777778),
+            'resample_method': 'near',
+            'target_raster_path': "n_retention_2015_nathab.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\geobon\nitrogen\esa2000_n_retention_ovr_md5_2c4175085ebc5880b5506872988f24dd.tif",
+                'raster2': r"C:\Users\Becky\Documents\geobon\nitrogen\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2000_hab_mask.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_pixel_size': (0.0027777778,-0.0027777778),
+            'resample_method': 'near',
+            'target_raster_path': "n_retention_2000_nathab.tif",
+        },
+
+    ]
+    for calc in calc_list:
+       raster_calculations_core.evaluate_calculation(
+            calc, TASK_GRAPH, WORKSPACE_DIR)
+
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
+            'raster2': r"C:\Users\Becky\Documents\geobon\nitrogen\esa2015_n_retention_nathab.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_pixel_size': (0.0027777778,-0.0027777778),
+        'resample_method': 'near',
+        'target_raster_path': "realized_nitrogenretention_2015_attn_500km_nathab.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\geobon\nitrogen\downstream_bene_2000_500000.0_compressed_overviews_md5_f4caba7a00ae793dcad5e2c4462aa955.tif",
+            'raster2': r"C:\Users\Becky\Documents\geobon\nitrogen\esa2000_n_retention_nathab.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_pixel_size': (0.0027777778,-0.0027777778),
+        'resample_method': 'near',
+        'target_raster_path': "realized_nitrogenretention_2000_attn_500km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    single_expression = {
+        'expression': '(raster1>0)*raster1',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_esa2015_md5_50debbf5fba6dbdaabfccbc39a9b1670.tif",
+        },
+        'target_nodata': 0,
+        'target_raster_path': "ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015_hab_mask.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>0)*raster1',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\geobon\pollination\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2000-v2.0.7_hab_mask_md5_3429a6963bb239da624783ee9dc44f58.tif",
+        },
+        'target_nodata': 0,
+        'target_raster_path': "ESACCI-LC-L4-LCCS-Map-300m-P1Y-2000_hab_mask.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+
+    single_expression = {
+        'expression': '(raster1>0)*raster1',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\geobon\cv_2000\realized_coastal_risk_reduction_norm_2000.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_raster_path': "realized_coastal_risk_reduction_2000_norm.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': 'raster1*raster2',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\geobon\cv_2000\cv_pop_2000_md5_39edaba81350294481ae79877a9a0950.tif",
+            'raster2': r"C:\Users\Becky\Documents\geobon\cv_2000\cv_value_esa2000_md5_e0c9759c3404697f34f6632ec532c7c5.tif",
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_pixel_size': (0.0027777778,-0.0027777778),
+        'resample_method': 'near',
+        'target_raster_path': "realized_coastal_risk_reduction_norm_2000.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     single_expression = {
         'expression': '(raster1>0)*raster2',
         'symbol_to_path_map': {
