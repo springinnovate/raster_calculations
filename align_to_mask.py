@@ -26,20 +26,23 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = (
+    'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/' #this is not a great one
+    'global_people_access_lspop_2017_URCA_rural_360.0m_md5_14991c229634505edd5ff3f1944acda1.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed_reduce8x.tif')
-    'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/marinefish_extent_Eckert_md5_f47b3d96244beb4ac1fbefb26275cab2.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_Eckert_2km_md5_1aa7deb7de147aad7434245474c1ef43.tif')
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_service_ecoshards/truncated_masked'
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results'
-#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results'
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks'
 
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
 RASTER_LIST = [
+    ('masked_all_nathab_wstreams_esa2015_nodata_md5_ee40334f1fc77bb1804d462c07261c86.tif', False, False)
 #    ('realized_coastalprotection_barrierreef_md5_126320d42827adc0f7504d4693c67e18.tif', False, False),
 #    ('realized_commercialtimber_forest_clamped0_md5_24844213f0f65a6c0bedfebe2fbd089e.tif', True, False),
 #    ('realized_domestictimber_forest_clamped0_md5_dca99ceb7dd9f96d54b3fcec656d3180.tif', True, False),
@@ -87,7 +90,7 @@ RASTER_LIST = [
     #('V_90_md5_eade0f1e226c6fe0bbf7f1ca64bfca99.tif', False, False),
     #('W_90_md5_e8e99efe1cb5f61f9fa00630649b7eea.tif', False, False),
     #('X_90_md5_891eac3d67e5efc66909131640d2794a.tif', False, False),
-    ('Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9.tif', True, False),
+    #('Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9.tif', True, False),
     #('Z_90_md5_60e9c2e61674058dd327af159d19aaf9.tif', False, False),
     #('A1_90_md5_3dda02c29dea33eae9ddc459e1a7fa65.tif', False, False),
     #('B1_90_md5_5a7442ffa127e5213bab5329060c82c2.tif', False, False),

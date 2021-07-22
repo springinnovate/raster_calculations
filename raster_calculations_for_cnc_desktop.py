@@ -41,22 +41,26 @@ def main():
     #to find nodata value: 
     #gdalinfo [raster path]
 
-#coastal - S_90_md5_569e79f8bf753457b3fdcba325c8aab9.tif 
-#timber - T_90_md5_f0f6ca5add6d3a98561e81fdaefe7237.tif
-#flood - U_90_md5_14568cbf3cc6401d0a894f8daeed144d.tif
-#fuelwood - V_90_md5_eade0f1e226c6fe0bbf7f1ca64bfca99.tif
-#fwfish - W_90_md5_e8e99efe1cb5f61f9fa00630649b7eea.tif
-#grazing - X_90_md5_891eac3d67e5efc66909131640d2794a.tif
-#marinefish - Y_90_md5_68117f49cd41e41f3a8915a2a8c941b1.tif
-#natureacces - Z_90_md5_60e9c2e61674058dd327af159d19aaf9.tif
-#nitrogen - A1_90_md5_3dda02c29dea33eae9ddc459e1a7fa65.tif
-#pollination - B1_90_md5_5a7442ffa127e5213bab5329060c82c2.tif
-#reeftourism - C1_90_md5_558f4d220d132ad50e0df5249d772b46.tif
-#sediment - D1_90_md5_9633e6b25a1c28632588e6bbef7e0715.tif
 
-#carbon - H1_90_md5_d79e07071bd6820241799ee9a033065e
-#moisture - I1_90_md5_6b7969887db7a3cdf4589a86f92bfdbf
-    
+    single_expression = {
+        'expression': 'raster1*(raster2<0)',
+        'symbol_to_path_map': {            
+            'raster1': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\poverty\chi_relative_wealth_index.tif",
+        },
+        'target_nodata': -9999,
+        'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
+        'resample_method': 'near',
+        'target_raster_path': "lspop_negchi.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     calculation_list = [ 
         {
@@ -66,7 +70,7 @@ def main():
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.02222222222222399943,-0.02222222222222399943),
+            'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'resample_method': 'near',
             'target_raster_path': "lspop2017_on_A90.tif",
         },
@@ -77,7 +81,7 @@ def main():
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.02222222222222399943,-0.02222222222222399943),
+            'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'resample_method': 'near',
             'target_raster_path': "lspop2017_on_B90.tif",
         },
@@ -88,22 +92,10 @@ def main():
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.02222222222222399943,-0.02222222222222399943),
+            'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'resample_method': 'near',
             'target_raster_path': "lspop2017_on_C90.tif",
         },
-    ]
-
-    for calculation in calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-    
-    calculation_list = [ 
         {
             'expression': '(raster1<0)*raster2',
             'symbol_to_path_map': {            
@@ -111,7 +103,7 @@ def main():
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.02222222222222399943,-0.02222222222222399943),
+            'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'resample_method': 'near',
             'target_raster_path': "pop_negchi_on_A90.tif",
         },
@@ -122,7 +114,7 @@ def main():
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.02222222222222399943,-0.02222222222222399943),
+            'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'resample_method': 'near',
             'target_raster_path': "pop_negchi_on_B90.tif",
         },
@@ -133,7 +125,7 @@ def main():
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.02222222222222399943,-0.02222222222222399943),
+            'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'resample_method': 'near',
             'target_raster_path': "pop_negchi_on_C90.tif",
         },
@@ -192,8 +184,48 @@ def main():
     TASK_GRAPH.close()
 
     return
+
     
-    single_expression = {
+    calculation_list = [ #making masks so I can try average_rasters on these and masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif to see where these exist outside that mask (they shouldn't, but they do)
+        {
+            'expression': 'raster1*10', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\resampled_Eckert2km\masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif",
+             },
+            'target_nodata': 0,
+            'target_raster_path': "nathab_10.tif",
+        },
+        {
+            'expression': 'raster1*2', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\churn\target_stitch_dir\A_100_md5_7474de70786c3dce0b760c691368c839.tif",
+             },
+            'target_nodata': 0,
+            'target_raster_path': "A100_2.tif",
+        },
+        {
+            'expression': 'raster1*3', 
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\churn\target_stitch_dir\A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif",
+             },
+            'target_nodata': 0,
+            'target_raster_path': "A90_3.tif",
+        },        
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+#For Pat's analysis
+
+    single_expression = { 
         'expression': 'raster1*(raster2>-1)',
         'symbol_to_path_map': {            
             'raster1': r"C:\Users\Becky\Documents\raster_calculations\align-to-mask-and-normalize\workspace\A_90_WARPED_near_md5_1e9f19fadc8ba5e2b32c5c11bb4154cf.tif",
@@ -236,43 +268,6 @@ def main():
 
     return
 
-    
-    calculation_list = [ #making masks so I can try average_rasters on these and masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif to see where these exist outside that mask (they shouldn't, but they do)
-        {
-            'expression': 'raster1*10', 
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\cnc_project\resampled_Eckert2km\masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif",
-             },
-            'target_nodata': 0,
-            'target_raster_path': "nathab_10.tif",
-        },
-        {
-            'expression': 'raster1*2', 
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\churn\target_stitch_dir\A_100_md5_7474de70786c3dce0b760c691368c839.tif",
-             },
-            'target_nodata': 0,
-            'target_raster_path': "A100_2.tif",
-        },
-        {
-            'expression': 'raster1*3', 
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\churn\target_stitch_dir\A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif",
-             },
-            'target_nodata': 0,
-            'target_raster_path': "A90_3.tif",
-        },        
-    ]
-
-    for calculation in calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-
     single_expression = {
         'expression': 'raster1-raster2',
         'symbol_to_path_map': {            
@@ -292,7 +287,10 @@ def main():
     TASK_GRAPH.close()
 
     return
+
+
     
+    #Overlap for Fig 2
 
     calculation_list = [
         {
@@ -353,7 +351,7 @@ def main():
     return
 
 
-    calculation_list = [
+    calculation_list = [ #making a realized sediment layer that's not masked to nathab, for a presentation
         {
             'expression': 'raster1*raster2', 
             'symbol_to_path_map': {
@@ -375,6 +373,23 @@ def main():
     TASK_GRAPH.close()
 
     return
+
+#Overlap analyses to make correlation table (still need to add marine fish)
+    #coastal - S_90_md5_569e79f8bf753457b3fdcba325c8aab9.tif 
+    #timber - T_90_md5_f0f6ca5add6d3a98561e81fdaefe7237.tif
+    #flood - U_90_md5_14568cbf3cc6401d0a894f8daeed144d.tif
+    #fuelwood - V_90_md5_eade0f1e226c6fe0bbf7f1ca64bfca99.tif
+    #fwfish - W_90_md5_e8e99efe1cb5f61f9fa00630649b7eea.tif
+    #grazing - X_90_md5_891eac3d67e5efc66909131640d2794a.tif
+    #marinefish - Y_90_md5_68117f49cd41e41f3a8915a2a8c941b1.tif
+    #natureacces - Z_90_md5_60e9c2e61674058dd327af159d19aaf9.tif
+    #nitrogen - A1_90_md5_3dda02c29dea33eae9ddc459e1a7fa65.tif
+    #pollination - B1_90_md5_5a7442ffa127e5213bab5329060c82c2.tif
+    #reeftourism - C1_90_md5_558f4d220d132ad50e0df5249d772b46.tif
+    #sediment - D1_90_md5_9633e6b25a1c28632588e6bbef7e0715.tif
+    
+    #carbon - H1_90_md5_d79e07071bd6820241799ee9a033065e
+    #moisture - I1_90_md5_6b7969887db7a3cdf4589a86f92bfdbf
 
     calculation_list = [
         {
