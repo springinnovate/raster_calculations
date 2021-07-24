@@ -113,7 +113,7 @@ RASTER_LIST = [
 WARPED_SUFFIX = '_WARPED'
 MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
-RESAMPLE_MODE = 'near'
+RESAMPLE_MODE = 'average'
 
 WORKSPACE_DIR = 'align_to_mask_workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')
@@ -215,7 +215,7 @@ def main():
         task_name=f'download {mask_ecoshard_path}')
 
     for ecoshard_base, mask_flag, per_area_flag in RASTER_LIST:
-        ecoshard_url = os.path.join(ECOSHARD_URL_PREFIX, ecoshard_base)
+        ecoshard_url = f'{ECOSHARD_URL_PREFIX}/{ecoshard_base}'
         target_path = os.path.join(ECOSHARD_DIR, ecoshard_base)
         LOGGER.debug(f'download {ecoshard_url} to {target_path}')
         last_task = task_graph.add_task(
