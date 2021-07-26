@@ -54,7 +54,7 @@ def main():
     args = parser.parse_args()
 
     task_graph = taskgraph.TaskGraph('.', -1)
-    WORKSPACE_DIR = 'resample_workspace' #tempfile.mkdtmp(dir='.', prefix='resample_workspace')
+    WORKSPACE_DIR = tempfile.mkdtemp(dir='.', prefix='resample_workspace')
     os.makedirs(WORKSPACE_DIR, exist_ok=True)
 
     mask_info = ecoshard.geoprocessing.get_raster_info(args.mask_raster_path)
@@ -112,9 +112,8 @@ def main():
     task_graph.join()
     if args.reproject_file:
         LOGGER.info(f'reproject to {args.reproject_file}')
-        temp_workspace = tempfile.mkdtemp(dir='.', prefix='resample_workspace')
         unprojected_path = os.path.join(
-            temp_workspace, os.path.basename(args.target_raster_path))
+            WORKSPACE_DIR, os.path.basename(args.target_raster_path))
         shutil.copy(args.target_raster_path, unprojected_path)
         with open(args.reproject_file[0], 'r') as reproject_file:
             target_projection_wkt = reproject_file.read()
@@ -130,7 +129,7 @@ def main():
             unprojected_path, target_pixel_size, args.target_raster_path,
             'near', target_projection_wkt=target_projection_wkt,
             target_bb=target_bounding_box)
-        shutil.rmtree(temp_workspace)
+    shutil.rmtree(WORKSPACE_DIR)
 
 
 if __name__ == '__main__':
