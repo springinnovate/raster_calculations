@@ -3,6 +3,7 @@ import argparse
 import logging
 import math
 import os
+import shutil
 import sys
 import tempfile
 
@@ -32,7 +33,6 @@ def threshold_mask(prop_array, threshold):
 
 def main():
     """Entry point."""
-    LOGGER.info('hello')
     parser = argparse.ArgumentParser(description='Resample mask')
     parser.add_argument(
         'mask_raster_path',
@@ -46,6 +46,11 @@ def main():
     parser.add_argument(
         'target_raster_path', type=str,
         help='path to resampled target raster')
+    parser.add_argument(
+        '--reproject_file', nargs=6, type=str, help=(
+            '6 arguments: {path to projection wkt} '
+            '{pixel size in projected units} '
+            'bounding box {xmin}, {ymin} {xmax} {ymax}'))
     args = parser.parse_args()
 
     task_graph = taskgraph.TaskGraph('.', -1)
@@ -81,17 +86,51 @@ def main():
         args=(
             (args.mask_raster_path, 1),
             (kernel_raster_path, 1), sampled_raster_path),
+        kwargs={'mask_nodata': False},
         target_path_list=[sampled_raster_path],
         task_name='convolve_2d')
 
+    threshold_raster_path = os.path.join(WORKSPACE_DIR, 'threshold.tif')
     task_graph.add_task(
         func=ecoshard.geoprocessing.raster_calculator,
         args=(
             [(sampled_raster_path, 1), (args.pixel_proportion_to_mask, 'raw')],
-            threshold_mask, args.target_raster_path,
+            threshold_mask, threshold_raster_path,
             gdal.GDT_Byte, None),
-        target_path_list=[args.target_raster_path],
+        target_path_list=[threshold_raster_path],
         task_name='threshold')
+
+    task_graph.add_task(
+        func=ecoshard.geoprocessing.warp_raster,
+        args=(
+            threshold_raster_path,
+            (args.target_cell_size, -args.target_cell_size),
+            args.target_raster_path, 'near'),
+        target_path_list=[args.target_raster_path],
+        task_name=f'warp to {args.target_cell_size}')
+
+    task_graph.join()
+    if args.reproject_file:
+        LOGGER.info(f'reproject to {args.reproject_file}')
+        temp_workspace = tempfile.mkdtemp(dir='.', prefix='resample_workspace')
+        unprojected_path = os.path.join(
+            temp_workspace, os.path.basename(args.target_raster_path))
+        shutil.copy(args.target_raster_path, unprojected_path)
+        with open(args.reproject_file[0], 'r') as reproject_file:
+            target_projection_wkt = reproject_file.read()
+        # target pixel size is specified by the user
+        target_pixel_size = [
+            float(args.reproject_file[1]), -float(args.reproject_file[1])]
+
+        target_bounding_box = [float(x) for x in args.reproject_file[2:]]
+        LOGGER.debug(
+            f'warp raster to new projection with bounding box '
+            f'{target_bounding_box}')
+        ecoshard.geoprocessing.warp_raster(
+            unprojected_path, target_pixel_size, args.target_raster_path,
+            'near', target_projection_wkt=target_projection_wkt,
+            target_bb=target_bounding_box)
+        shutil.rmtree(temp_workspace)
 
 
 if __name__ == '__main__':
