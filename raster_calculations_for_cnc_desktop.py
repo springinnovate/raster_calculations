@@ -41,6 +41,24 @@ def main():
     #to find nodata value: 
     #gdalinfo [raster path]
 
+    single_expression = {
+        'expression': 'raster1*(raster2>0)',
+        'symbol_to_path_map': {            
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\Eckert\90_targets\Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\eez_mask_eckert_2km_md5_3208b8094dbece295374bddf4d99d192.tif",
+        },
+        'target_nodata': 0,
+        'target_raster_path': "Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9_nodata0.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
 
     single_expression = {
         'expression': 'raster1*(raster2<0)',
@@ -374,7 +392,7 @@ def main():
 
     return
 
-#Overlap analyses to make correlation table (still need to add marine fish)
+#Overlap analyses to make correlation table (still need to add marine fish) ((and need to redo nature access))
     #coastal - S_90_md5_569e79f8bf753457b3fdcba325c8aab9.tif 
     #timber - T_90_md5_f0f6ca5add6d3a98561e81fdaefe7237.tif
     #flood - U_90_md5_14568cbf3cc6401d0a894f8daeed144d.tif
