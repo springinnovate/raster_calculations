@@ -53,7 +53,7 @@ def main():
             'bounding box {xmin}, {ymin} {xmax} {ymax}'))
     args = parser.parse_args()
 
-    WORKSPACE_DIR = 'resample_workspace'
+    WORKSPACE_DIR = 'tmp_resample_workspace'
     os.makedirs(WORKSPACE_DIR, exist_ok=True)
     task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1)
 
@@ -100,7 +100,7 @@ def main():
 
     threshold_raster_path = os.path.join(
         WORKSPACE_DIR,
-        'tmp_threshold_{mask_basename}_{pixel_proportion_to_mask}.tif')
+        f'tmp_threshold_{mask_basename}_{args.pixel_proportion_to_mask}.tif')
     task_graph.add_task(
         func=ecoshard.geoprocessing.raster_calculator,
         args=(
