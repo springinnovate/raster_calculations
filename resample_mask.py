@@ -53,16 +53,22 @@ def main():
             'bounding box {xmin}, {ymin} {xmax} {ymax}'))
     args = parser.parse_args()
 
-    task_graph = taskgraph.TaskGraph('.', -1)
-    WORKSPACE_DIR = tempfile.mkdtemp(dir='.', prefix='resample_workspace')
+    WORKSPACE_DIR = 'resample_workspace'
     os.makedirs(WORKSPACE_DIR, exist_ok=True)
+    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1)
 
     mask_info = ecoshard.geoprocessing.get_raster_info(args.mask_raster_path)
-
+    mask_basename = os.path.basename(
+        os.path.splitext(args.mask_raster_path)[0])
     # calculate new raster size
     n_cols, n_rows = mask_info['raster_size']
 
     change_ratio = args.target_cell_size / mask_info['pixel_size'][0]
+    if change_ratio > 1:
+        raise ValueError(
+            f'the selection of a new target cell size of '
+            f'{args.target_cell_size} will result in making the cells '
+            f'{change_ratio} times bigger.')
     LOGGER.info(f'raster size is scaled by {change_ratio}')
     LOGGER.info(
         f"original raster is {mask_info['pixel_size']}, "
@@ -72,7 +78,8 @@ def main():
         (int(math.ceil(change_ratio)), int(math.ceil(change_ratio))),
         dtype=numpy.float32)
     ones_array[:] /= ones_array.size
-    kernel_raster_path = os.path.join(WORKSPACE_DIR, 'kernel.tif')
+    kernel_raster_path = os.path.join(
+        WORKSPACE_DIR, f'tmp_kernel_{ones_array.shape}.tif')
     task_graph.add_task(
         func=ecoshard.geoprocessing.numpy_array_to_raster,
         args=(
@@ -80,7 +87,8 @@ def main():
             kernel_raster_path),
         target_path_list=[kernel_raster_path])
 
-    sampled_raster_path = os.path.join(WORKSPACE_DIR, 'sampled.tif')
+    sampled_raster_path = os.path.join(
+        WORKSPACE_DIR, f'tmp_sampled_{mask_basename}.tif')
     task_graph.add_task(
         func=ecoshard.geoprocessing.convolve_2d,
         args=(
@@ -90,7 +98,9 @@ def main():
         target_path_list=[sampled_raster_path],
         task_name='convolve_2d')
 
-    threshold_raster_path = os.path.join(WORKSPACE_DIR, 'threshold.tif')
+    threshold_raster_path = os.path.join(
+        WORKSPACE_DIR,
+        'tmp_threshold_{mask_basename}_{pixel_proportion_to_mask}.tif')
     task_graph.add_task(
         func=ecoshard.geoprocessing.raster_calculator,
         args=(
@@ -125,11 +135,16 @@ def main():
         LOGGER.debug(
             f'warp raster to new projection with bounding box '
             f'{target_bounding_box}')
-        ecoshard.geoprocessing.warp_raster(
-            unprojected_path, target_pixel_size, args.target_raster_path,
-            'near', target_projection_wkt=target_projection_wkt,
-            target_bb=target_bounding_box)
-    shutil.rmtree(WORKSPACE_DIR)
+        task_graph.add_task(
+            func=ecoshard.geoprocessing.warp_raster,
+            args=(
+                unprojected_path, target_pixel_size, args.target_raster_path,
+                'near'),
+            kwargs={
+                'target_projection_wkt': target_projection_wkt,
+                'target_bb': target_bounding_box},
+            target_path_list=[args.target_raster_path],
+            task_name=f'reproject {args.target_raster_path}')
 
 
 if __name__ == '__main__':
