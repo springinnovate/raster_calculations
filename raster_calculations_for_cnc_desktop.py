@@ -41,6 +41,115 @@ def main():
     #to find nodata value: 
     #gdalinfo [raster path]
 
+    single_expression = {
+        'expression': '(raster1>0)*0 + (raster1<1)*-9999',
+        'symbol_to_path_map': {            
+            'raster1': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\ecoshards\eez_mask_eckert_2km_md5_3208b8094dbece295374bddf4d99d192.tif",
+        },
+        'target_nodata': -9999,
+        'target_raster_path': "eez_mask0s_eckert_2km.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [ 
+        {
+            'expression': 'raster1*(raster2)',
+            'symbol_to_path_map': {            
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\pollination_norm\norm_ppl_fed_within_2km_per_pixel_mask_to_hab_compressed_md5_e32a0dd59de79a8dfc0d34dc08c18c41.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\wgs\A_90_WARPED_near_md5_1e9f19fadc8ba5e2b32c5c11bb4154cf.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777778,-0.002777777777777778),
+            'resample_method': 'average',
+            'target_raster_path': "pollinationpop_on_A90.tif",
+        },
+        #{
+        #    'expression': 'raster1*(raster2)',
+        #    'symbol_to_path_map': {            
+        #        'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cnc_cv\normalized_pop_on_hab\total_pop_masked_by_10m_md5_ef02b7ee48fa100f877e3a1671564be2.tif",
+        #        'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\wgs\A_90_WARPED_near_md5_1e9f19fadc8ba5e2b32c5c11bb4154cf.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
+        #    'resample_method': 'average',
+        #    'target_raster_path': "coastalpop_on_A90.tif",
+        #},
+        #{
+        #    'expression': 'raster1*(raster2)',
+        #    'symbol_to_path_map': {            
+        #        'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\normalized\downstream_bene_2017_hab_normalized_compressed_overviews_md5_7e8c9ecd4092068afaebc1a4b1efe3ce.tif",
+        #        'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\wgs\A_90_WARPED_near_md5_1e9f19fadc8ba5e2b32c5c11bb4154cf.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.005555555555555555768,-0.005555555555555555768),
+        #    'resample_method': 'average',
+        #    'target_raster_path': "downstreampop_A90.tif",
+        #}, 
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [ 
+        {
+            'expression': 'raster1*(raster2)',
+            'symbol_to_path_map': {            
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\nature_access\global_normalized_people_access_lspop_2017_URCA_rural_60.0m_md5_507f8846b347eea4b26b229e09cf8a82.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\Eckert\90_targets\A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "ruralpop_within1hr_A90.tif",
+        },
+        {
+            'expression': 'raster1*(raster2)',
+            'symbol_to_path_map': {            
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\nature_access\global_normalized_people_access_lspop_2017_URCA_urban_60.0m_md5_17f0b77fe672c6b144ecc3522e4820ce.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\Eckert\90_targets\A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "urbanpop_within1hr_A90.tif",
+        },
+        {
+            'expression': 'raster1*(raster2)',
+            'symbol_to_path_map': {            
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\nature_access\global_normalized_people_access_lspop_2017_URCA_rural_360.0m_md5_abe7eb2d42712d2c3428d4c9e0345e76.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\Eckert\90_targets\A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "ruralpop_within6hr_A90.tif",
+        },
+        {
+            'expression': 'raster1*(raster2)',
+            'symbol_to_path_map': {            
+                'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\nature_access\global_normalized_people_access_lspop_2017_URCA_urban_360.0m_md5_82c12b9c711870ae134fbf064b68164f.tif",
+                'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\Eckert\90_targets\A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "urbanpop_within6hr_A90.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     single_expression = {
         'expression': 'raster1*(raster2<0)',
@@ -374,7 +483,7 @@ def main():
 
     return
 
-#Overlap analyses to make correlation table (still need to add marine fish)
+#Overlap analyses to make correlation table (still need to add marine fish) ((and need to redo nature access))
     #coastal - S_90_md5_569e79f8bf753457b3fdcba325c8aab9.tif 
     #timber - T_90_md5_f0f6ca5add6d3a98561e81fdaefe7237.tif
     #flood - U_90_md5_14568cbf3cc6401d0a894f8daeed144d.tif
@@ -1011,12 +1120,30 @@ def main():
     return
 
     single_expression = {
-        'expression': '(raster1>=0)',
+        'expression': 'raster1*(raster2>0)',
+        'symbol_to_path_map': {            
+            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\Eckert\90_targets\Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9.tif",
+            'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\eez_mask_eckert_2km_md5_3208b8094dbece295374bddf4d99d192.tif",
+        },
+        'target_nodata': 0,
+        'target_raster_path': "Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9_nodata0.tif", #still has haloes but at least the mask is the full EEZ area
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    single_expression = {
+        'expression': '(raster1>=0)', 
         'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\solutions\D-I1_90s\Y_90_md5_68117f49cd41e41f3a8915a2a8c941b1.tif",
         },
         'target_nodata': 0,
-        'target_raster_path': "marinefish_extent_Eckert.tif",
+        'target_raster_path': "marinefish_extent_Eckert.tif", #this is not a good mask to use because the optimization created haloes around some islands
     }
 
     raster_calculations_core.evaluate_calculation(

@@ -26,23 +26,25 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = (
-    'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/' #this is not a great one
-    'global_people_access_lspop_2017_URCA_rural_360.0m_md5_14991c229634505edd5ff3f1944acda1.tif')
-    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access/' #this is not a great one
+    #'global_people_access_lspop_2017_URCA_rural_360.0m_md5_14991c229634505edd5ff3f1944acda1.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/masked_all_nathab_wstreams_esa2015_nodata_WARPED_average_md5_8bcfb3a1b1a40b7d2b99e2269b4ea1b5.tif')
+    'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed_reduce8x.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/marinefish_extent_Eckert_md5_f47b3d96244beb4ac1fbefb26275cab2.tif')
-    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_Eckert_2km_md5_1aa7deb7de147aad7434245474c1ef43.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_Eckert_2km_md5_1aa7deb7de147aad7434245474c1ef43.tif') #this was masked to marine_fish extent and therefore has haloes around islands
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/eez_mask_eckert_2km_md5_3208b8094dbece295374bddf4d99d192.tif')
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_service_ecoshards/truncated_masked'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results'
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks'
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/results_2021_07_28'
 
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
 RASTER_LIST = [
-    ('masked_all_nathab_wstreams_esa2015_nodata_md5_ee40334f1fc77bb1804d462c07261c86.tif', False, False)
 #    ('realized_coastalprotection_barrierreef_md5_126320d42827adc0f7504d4693c67e18.tif', False, False),
 #    ('realized_commercialtimber_forest_clamped0_md5_24844213f0f65a6c0bedfebe2fbd089e.tif', True, False),
 #    ('realized_domestictimber_forest_clamped0_md5_dca99ceb7dd9f96d54b3fcec656d3180.tif', True, False),
@@ -54,18 +56,19 @@ RASTER_LIST = [
 #    ('realized_reeftourism_Modelled_Total_Dollar_Value_md5_171a993b8ff40d0447f343dd014c72e0.tif', False, False),
 #    ('Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif', True, False),
 #    ('realized_moisturerecycling_nathab30s_md5_6c97073919f952545349efcc95d4ea7f.tif', True, False),
-#    ('realized_coastalprotection_norm_md5_485aef1d6c412bde472bdaa1393100d7.tif', False, False),
-#    ('realized_coastalprotection_norm_offshore_md5_68a2b938e3712f3cf764fb0be8f54685.tif', False, False),
-#    ('realized_floodmitigation_norm_md5_ba11bb43399648b9b010493707885418.tif', True, False),
-#    ('realized_nitrogenretention_norm_md5_504bf57e964592f2494b0a1fb8ef0dcd.tif', True, False),
+##    ('realized_coastalprotection_norm_md5_485aef1d6c412bde472bdaa1393100d7.tif', False, False),
+##    ('realized_coastalprotection_norm_offshore_md5_68a2b938e3712f3cf764fb0be8f54685.tif', False, False),
 #    ('realized_pollination_norm_nathab_clamped_md5_2a832d086de6a857d26cb30915b948b1.tif', True, False),
-#    ('realized_sedimentdeposition_norm_md5_6fa5ff49ba93e01927efd37f7b91bfd7.tif', True, False),]
 #    ('realized_nitrogenretention_attn_500km_md5_fe9a89318d97a48dfd78dbeed4cb2b94.tif', True, False),
 #    ('realized_sedimentdeposition_attn_500km_md5_133ecc403c8c572f93157b659ea79d02.tif', True, False),
 #    ('realized_nitrogenretention_attn_50km_md5_5d5804f5bfed6bd1025a51128c7ec835.tif', True, False),
 #    ('realized_sedimentdeposition_attn_50km_md5_5139215a28962a1c1cd2d18ca40b7244.tif', True, False),
 #    ('realized_floodmitigation_attn_500km_nathab_clamped_md5_db7fb0cebfc9dc0979b93fe36eca62ee.tif', True, False),
 #    ('realized_floodmitigation_attn_50km_nathab_clamped_md5_c7f0f1ee91571cdf94bbb43bd50eb563.tif', True, False),
+    ('global_normalized_people_access_lspop_2017_URCA_rural_360.0m_md5_5cd804c489ab949c4891410d65b71057.tif', True, False),
+    ('global_normalized_people_access_lspop_2017_URCA_rural_60.0m_md5_77e111769dcab34cf992fb0d3a9eb49c.tif', True, False),
+    ('global_normalized_people_access_lspop_2017_URCA_urban_360.0m_md5_e7720b3032df6ea8293cddcb2be26802.tif', True, False),
+    ('global_normalized_people_access_lspop_2017_URCA_urban_60.0m_md5_77d3af07d88721543128205645f75b8d.tif', True, False),
     #('A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif', False, False),
     #('B_90_md5_e03f74e91f464e3db2023581ed5dd677.tif', False, False),
     #('C_90_md5_62bfc17b98421712aa1e23f3680373e4.tif', False, False),
@@ -107,6 +110,8 @@ RASTER_LIST = [
     #('solution_B_all_targets_2km_compressed_md5_c34466ed7046ac1cdfa47caf41af86b2.tif', True, False),
     #('solution_C_alltargets_2km_md5_ecc7ac5e9ae240495497b641cd65496d.tif', True, False),
     #('EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif', True, False),
+   #('masked_all_nathab_wstreams_esa2015_nodata_md5_ee40334f1fc77bb1804d462c07261c86.tif', False, False),
+   #('masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif', False, False),
     ]
 
 
@@ -210,7 +215,7 @@ def main():
         ECOSHARD_DIR, os.path.basename(MASK_ECOSHARD_URL))
     download_mask_task = task_graph.add_task(
         func=ecoshard.download_url,
-        args=(MASK_ECOSHARD_URL, mask_ecoshard_path),
+        args=(MASK_ECOSHARD_URL, mask_ecoshard_path, True), #True is for skip_target_if_exists parameter
         target_path_list=[mask_ecoshard_path],
         task_name=f'download {mask_ecoshard_path}')
 
@@ -220,7 +225,7 @@ def main():
         LOGGER.debug(f'download {ecoshard_url} to {target_path}')
         last_task = task_graph.add_task(
             func=ecoshard.download_url,
-            args=(ecoshard_url, target_path),
+            args=(ecoshard_url, target_path, True),
             target_path_list=[target_path],
             dependent_task_list=[download_mask_task],
             task_name=f'download {ecoshard_url} to {target_path}')
