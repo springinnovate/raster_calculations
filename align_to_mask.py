@@ -40,7 +40,7 @@ MASK_ECOSHARD_URL = (
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_service_ecoshards/truncated_masked'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks'
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/critical_natural_capital/results_2021_07_28'
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/nature_access'
 
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
@@ -65,10 +65,10 @@ RASTER_LIST = [
 #    ('realized_sedimentdeposition_attn_50km_md5_5139215a28962a1c1cd2d18ca40b7244.tif', True, False),
 #    ('realized_floodmitigation_attn_500km_nathab_clamped_md5_db7fb0cebfc9dc0979b93fe36eca62ee.tif', True, False),
 #    ('realized_floodmitigation_attn_50km_nathab_clamped_md5_c7f0f1ee91571cdf94bbb43bd50eb563.tif', True, False),
-    ('global_normalized_people_access_lspop_2017_URCA_rural_360.0m_md5_5cd804c489ab949c4891410d65b71057.tif', True, False),
-    ('global_normalized_people_access_lspop_2017_URCA_rural_60.0m_md5_77e111769dcab34cf992fb0d3a9eb49c.tif', True, False),
-    ('global_normalized_people_access_lspop_2017_URCA_urban_360.0m_md5_e7720b3032df6ea8293cddcb2be26802.tif', True, False),
-    ('global_normalized_people_access_lspop_2017_URCA_urban_60.0m_md5_77d3af07d88721543128205645f75b8d.tif', True, False),
+    ('global_normalized_people_access_lspop_2017_URCA_rural_360_noneg_md5_d7b34c31cd72b84974da08471dd6620d.tif', True, False),
+    ('global_normalized_people_access_lspop_2017_URCA_rural_60_noneg_md5_dcc342357e635e511e9d43ad1e057c1e.tif', True, False),
+    ('global_normalized_people_access_lspop_2017_URCA_urban_360_noneg_md5_da47d209c5ca2be346e939a4c33cf7c1.tif', True, False),
+    ('global_normalized_people_access_lspop_2017_URCA_urban_60_noneg_md5_24f9290d317e8985f47a8ae58b67c7b3.tif', True, False),
     #('A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif', False, False),
     #('B_90_md5_e03f74e91f464e3db2023581ed5dd677.tif', False, False),
     #('C_90_md5_62bfc17b98421712aa1e23f3680373e4.tif', False, False),
