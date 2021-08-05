@@ -33,8 +33,8 @@ def main():
         table_df.fillna(table_df.mean(), inplace=True)
 
     # uncomment below if you want it to guess the dimensionality
-    #pca = PCA(n_components='mle', svd_solver='full')
-    pca = PCA(n_components=18, svd_solver='full')
+    pca = PCA(n_components='mle', svd_solver='full')
+    #pca = PCA(n_components=18, svd_solver='full')
     pca.fit(table_df[response_list])
     with open('stats_pca.csv', 'w') as pca_table:
         pca_table.write(f",{','.join(response_list)}\n")
