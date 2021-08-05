@@ -41,35 +41,30 @@ def main():
         for index, pca_row in enumerate(pca.components_):
             print(pca_row)
             pca_table.write(f"je ne sais quoi {index+1},{','.join([str(v) for v in pca_row])}\n")
-    print(pca.components_.shape)
-    print(pca.explained_variance_ratio_)
-    print(pca.singular_values_)
-
-    reg = linear_model.MultiTaskLassoCV(normalize=True, max_iter=5000, verbose=True, n_jobs=-1, tol=0.01)
-    #reg = linear_model.LinearRegression(normalize=True)
-    reg.fit(table_df[predictor_list], table_df[response_list])
-
-    prediction = reg.predict(table_df[predictor_list])
-    r2 = r2_score(table_df[response_list], prediction)
-
-    print(f'overall R^2 = {r2}')
-    print(reg.coef_.shape)
 
     csv_path = 'stats_results.csv'
     with open(csv_path, 'w') as stats_file:
         stats_file.write(f'response_id,r2,intercept,{",".join(predictor_list)}\n')
-        for response_index, response_id in enumerate(response_list):
-            plt.plot(table_df[response_id], reg.predict(table_df[predictor_list])[:, response_index], '.')
-            r2 = r2_score(table_df[response_id], prediction[:, response_index])
+
+    with open(csv_path, 'w') as stats_file:
+        stats_file.write(f'response_id,r2,intercept,{",".join(predictor_list)}\n')
+
+        for response_id in response_list:
+            reg = linear_model.OrthogonalMatchingPursuitCV()
+            #reg = linear_model.LinearRegression(normalize=True)
+            reg.fit(table_df[predictor_list], table_df[response_id])
+
+            prediction = reg.predict(table_df[predictor_list])
+            plt.plot(table_df[response_id], prediction, '.')
+
+            r2 = r2_score(table_df[response_id], prediction)
+            print(f'{response_id} R^2 = {r2}, reg.n_nonzero_coefs_: {reg.n_nonzero_coefs_}\n')
             ymin, ymax = plt.ylim()
             plt.title(f'{response_id}, R^2={r2}')
             plt.axis('tight')
             plt.savefig(f'stats_{response_id}.png')
             plt.clf()
-            stats_file.write(f'{response_id},{r2},{reg.intercept_[response_index]},{",".join([str(v) for v in reg.coef_[response_index]])}\n')
-
-
-
+            stats_file.write(f'{response_id},{r2},{reg.intercept_},{",".join([str(v) for v in reg.coef_])}\n')
 
 
 if __name__ == '__main__':
