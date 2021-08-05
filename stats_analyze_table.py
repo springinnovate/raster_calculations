@@ -4,10 +4,11 @@ import argparse
 from sklearn import linear_model
 from sklearn.metrics import r2_score
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import PolynomialFeatures
 import pandas
 import numpy
-
 import matplotlib.pyplot as plt
+
 
 
 def main():
@@ -41,19 +42,24 @@ def main():
         for index, pca_row in enumerate(pca.components_):
             pca_table.write(f"je ne sais quoi {index+1},{','.join([str(v) for v in pca_row])}\n")
 
+    poly = PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)
+
     csv_path = 'stats_results.csv'
     with open(csv_path, 'w') as stats_file:
-        stats_file.write(f'response_id,r2,intercept,{",".join(predictor_list)}\n')
-
-    with open(csv_path, 'w') as stats_file:
-        stats_file.write(f'response_id,r2,intercept,{",".join(predictor_list)}\n')
+        interactions_predictors = poly.fit_transform(table_df[predictor_list])
+        interations_feature_names = poly.get_feature_names(predictor_list)
+        interations_feature_names = [v.replace(' ', '*') for v in interations_feature_names]
+        #print(interations_feature_names)
+        stats_file.write(f'response_id,r2,intercept,{",".join(interations_feature_names)}\n')
 
         for response_id in response_list:
             reg = linear_model.OrthogonalMatchingPursuitCV(n_jobs=-1)
             #reg = linear_model.LinearRegression(normalize=True)
-            reg.fit(table_df[predictor_list], table_df[response_id])
+            #print(table_df[predictor_list])
+            #print(interactions_predictors)
+            reg.fit(interactions_predictors, table_df[response_id])
 
-            prediction = reg.predict(table_df[predictor_list])
+            prediction = reg.predict(interactions_predictors)
             plt.plot(table_df[response_id], prediction, '.')
 
             r2 = r2_score(table_df[response_id], prediction)
