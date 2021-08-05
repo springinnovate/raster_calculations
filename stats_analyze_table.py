@@ -39,7 +39,6 @@ def main():
     with open('stats_pca.csv', 'w') as pca_table:
         pca_table.write(f",{','.join(response_list)}\n")
         for index, pca_row in enumerate(pca.components_):
-            print(pca_row)
             pca_table.write(f"je ne sais quoi {index+1},{','.join([str(v) for v in pca_row])}\n")
 
     csv_path = 'stats_results.csv'
