@@ -50,7 +50,7 @@ def main():
         stats_file.write(f'response_id,r2,intercept,{",".join(predictor_list)}\n')
 
         for response_id in response_list:
-            reg = linear_model.OrthogonalMatchingPursuitCV()
+            reg = linear_model.OrthogonalMatchingPursuitCV(n_jobs=-1)
             #reg = linear_model.LinearRegression(normalize=True)
             reg.fit(table_df[predictor_list], table_df[response_id])
 
