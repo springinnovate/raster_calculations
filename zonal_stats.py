@@ -6,7 +6,8 @@ import pprint
 import sys
 
 from osgeo import gdal
-import pygeoprocessing
+#import pygeoprocessing
+import ecoshard.geoprocessing as pygeoprocessing
 import taskgraph
 
 logging.basicConfig(

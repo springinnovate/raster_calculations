@@ -25,12 +25,20 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
 
-MASK_ECOSHARD_URL = (
+MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif')
     'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_0s_2km_moisturextent_md5_b91bdc0eed9397d0ed104be8cb145880.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed_reduce8x.tif')
+    #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif')
+    #'https://storage.googleapis.com/ecoshard-root/population/lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif')
+    
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/realized_service_ecoshards/truncated_masked'
 ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results/benefitsheds/'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results/beneficiaries/'
 
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
@@ -58,47 +66,54 @@ RASTER_LIST = [
 #    ('realized_sedimentdeposition_attn_50km_md5_5139215a28962a1c1cd2d18ca40b7244.tif', True, False),
 #    ('realized_floodmitigation_attn_500km_nathab_clamped_md5_db7fb0cebfc9dc0979b93fe36eca62ee.tif', True, False),
 #    ('realized_floodmitigation_attn_50km_nathab_clamped_md5_c7f0f1ee91571cdf94bbb43bd50eb563.tif', True, False),
-    #('A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif', False, False),
-    #('B_90_md5_e03f74e91f464e3db2023581ed5dd677.tif', False, False),
-    #('C_90_md5_62bfc17b98421712aa1e23f3680373e4.tif', False, False),
-    #('D_90_md5_8be58c70d2bb50eb9092c39d166f2e1a.tif', False, False),
-    #('E_90_md5_ace0527a717db6dc5cfab3bd4a0ca3c1.tif', False, False),
-    #('F_90_md5_223139f1fd25072ba9930feb4d253f78.tif', False, False),
-    #('G_90_md5_cbf80c12bef49862fdce93aadce9e91f.tif', False, False),
-    #('H_90_md5_14b6e2c6cd8044960c4dd6856c447648.tif', False, False),
-    #('I_90_md5_bc01ea91e901188e507f3b3fcf980516.tif', False, False),
-    #('J_90_md5_5043b50d9a64fb63462b3ec684a5930c.tif', False, False),
-    #('K_90_md5_bd10e342272ea1316a2a6e01fd66b52d.tif', False, False),
-    #('L_90_md5_f12afc77ccec144882627ce233ee7a8f.tif', False, False),
-    #('M_90_md5_3f324797bd8a606341bc91c43a582a54.tif', False, False),
-    #('N_90_md5_902c49417124030ff819217268cbe6f6.tif', False, False),
-    #('O_90_md5_30e31dae916e07f19f568a67e69cccde.tif', False, False),
-    #('P_90_md5_035bd141364af0a5311966f42b00f5ed.tif', False, False),
-    #('Q_90_md5_4ef4705dfd8a6bc68acbd54717c8adf3.tif', False, False),
-    #('R_90_md5_df68eabe62a62d8e73a8907ecb553374.tif', False, False),
-    #('S_90_md5_569e79f8bf753457b3fdcba325c8aab9.tif', False, False),
-    #('T_90_md5_f0f6ca5add6d3a98561e81fdaefe7237.tif', False, False),
-    #('U_90_md5_14568cbf3cc6401d0a894f8daeed144d.tif', False, False),
-    #('V_90_md5_eade0f1e226c6fe0bbf7f1ca64bfca99.tif', False, False),
-    #('W_90_md5_e8e99efe1cb5f61f9fa00630649b7eea.tif', False, False),
-    #('X_90_md5_891eac3d67e5efc66909131640d2794a.tif', False, False),
-    ('Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9.tif', True, False),
-    #('Z_90_md5_60e9c2e61674058dd327af159d19aaf9.tif', False, False),
-    #('A1_90_md5_3dda02c29dea33eae9ddc459e1a7fa65.tif', False, False),
-    #('B1_90_md5_5a7442ffa127e5213bab5329060c82c2.tif', False, False),
-    #('C1_90_md5_558f4d220d132ad50e0df5249d772b46.tif', False, False),
-    #('D1_90_md5_9633e6b25a1c28632588e6bbef7e0715.tif', False, False),
-    #('E1_90_md5_6cfb84c71a3acc0019181b83d94236ea.tif', False, False),
-    #('F1_90_md5_1154967b32728ff635a4239470575a0d.tif', False, False),
-    #('G1_90_md5_021588f5ee9356448ebf39010af355c4.tif', False, False),
-    #('H1_90_md5_d79e07071bd6820241799ee9a033065e.tif', False, False),
-    #('I1_90_md5_6b7969887db7a3cdf4589a86f92bfdbf.tif', False, False),
-    #('solution_A_alltargets_2km_md5_743cf8932c76bcb2480200aaff44d137.tif', True, False), #wrong marine_fish
-    #('solution_A_all_targets_2km_compressed_md5_75c290563f16d4d46453bb8125335bfc.tif', True, False),
-    #('solution_B_alltargets_2km_md5_c7468d1b14d3086915f32f49265e9dda.tif', True, False), #wrong marine_fish
-    #('solution_B_all_targets_2km_compressed_md5_c34466ed7046ac1cdfa47caf41af86b2.tif', True, False),
-    #('solution_C_alltargets_2km_md5_ecc7ac5e9ae240495497b641cd65496d.tif', True, False),
-    #('EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif', True, False),
+#    ('A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif', True, False), #masked (near) to landmask for Pat
+#    ('B_90_md5_b08de6ccc0fc3e122450c1ccfcb8b60d.tif', True, False),
+#    ('A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif', False, False), #unmasked just reprojected (near) to WGS
+#    ('B_90_md5_b08de6ccc0fc3e122450c1ccfcb8b60d.tif', False, False),
+#    ('C_90_md5_bdf604015a7b1c7c78845ad716d568ef.tif', False, False),
+#    ('D_90_md5_893abc862f38d66e222a99fa1808dd34.tif', False, False),
+    ('S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif', False, False),
+    #('E_90.tif', False, False),
+    #('F_90.tif', False, False),
+    #('G_90.tif', False, False),
+    #('H_90.tif', False, False),
+    #('I_90.tif', False, False),
+    #('J_90.tif', False, False),
+    #('K_90.tif', False, False),
+    #('L_90.tif', False, False),
+    #('M_90.tif', False, False),
+    #('N_90.tif', False, False),
+    #('O_90.tif', False, False),
+    #('P_90.tif', False, False),
+    #('Q_90.tif', False, False),
+    #('R_90.tif', False, False),
+    #('S_90.tif', False, False),
+    #('T_90.tif', False, False),
+    #('U_90.tif', False, False),
+    #('V_90.tif', False, False),
+    #('W_90.tif', False, False),
+    #('X_90.tif', False, False),
+    #('Y_90.tif', True, False),
+    #('Z_90.tif', False, False),
+    #('A1_90.tif', False, False),
+    #('B1_90.tif', False, False),
+    #('C1_90.tif', False, False),
+    #('D1_90.tif', False, False),
+    #('E1_90.tif', False, False),
+    #('F1_90.tif', False, False),
+    #('G1_90.tif', False, False),
+    #('H1_90.tif', False, False),
+    #('I1_90.tif', False, False),
+    #('landmask_0s_2km_moisturextent_md5_b91bdc0eed9397d0ed104be8cb145880.tif', False, False), #making an Eckert (near) landmask to count areas
+    #('natural_assets_wstreams_300m_to_2km_0s_md5_8bb276a0ddec53961fa0e3fa4737e4d0.tif', False, False) #making a natural assets mask of 1s and 0s (instead of nodata) that's aligned to the more convenient reducefactor8x from 10s
+    #('solution_A_all_targets_2km_compressed_md5_46647c1d514427417a588674a98fd93b.tif', True, False), # (near) landmask reproject to WGS
+    #('solution_B_all_targets_2km_compressed_md5_46640e0340231bc3f7a3d9c286985d3f.tif', True, False),
+    #('solution_A_all_targets_2km_compressed_md5_46647c1d514427417a588674a98fd93b.tif', False, False), (average) reproject to WGS
+    #('solution_C_all_targets_2km_compressed_md5_43f374da85eb01d17b90f8f885c8bf5a.tif', False, False),
+    #('ncp1_climate2_overlap3_md5_d88e369d04b0363ddab4441a114a2cd7.tif', False, False),
+#    ('global_mask_access_A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff_60.0m.tif', False, False),
+#    ('global_mask_access_C_90_md5_bdf604015a7b1c7c78845ad716d568ef_60.0m.tif', False, False),
+#    ('global_mask_access_masked_all_nathab_wstreams_esa2015_nodata_warped_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c_60.0m.tif', False, False),
     ]
 
 
@@ -202,7 +217,7 @@ def main():
         ECOSHARD_DIR, os.path.basename(MASK_ECOSHARD_URL))
     download_mask_task = task_graph.add_task(
         func=ecoshard.download_url,
-        args=(MASK_ECOSHARD_URL, mask_ecoshard_path),
+        args=(MASK_ECOSHARD_URL, mask_ecoshard_path, True), #True is for skip_target_if_exists parameter
         target_path_list=[mask_ecoshard_path],
         task_name=f'download {mask_ecoshard_path}')
 

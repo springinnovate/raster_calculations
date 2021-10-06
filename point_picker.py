@@ -54,7 +54,6 @@ if __name__ == '__main__':
 
         point_to_raster_transform = osr.CoordinateTransformation(
             point_srs, raster_srs)
-        print(raster_path)
         point_layer.ResetReading()
         for point in point_layer:
             point_fid = point.GetFID()
@@ -76,6 +75,7 @@ if __name__ == '__main__':
                     fid_to_feature_map[point_fid] = feature
                 pixel_value = band.ReadAsArray(
                     result[0], result[1], 1, 1)[0][0]
+                print(f'{result[0]} {result[1]}, {pixel_value}')
                 fid_to_feature_map[point_fid].SetField(
                     basename, float(pixel_value))
 
