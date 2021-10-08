@@ -12,7 +12,7 @@ import numpy
 gdal.SetCacheMax(2**28)
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format=(
         '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
         ' [%(pathname)s.%(funcName)s:%(lineno)d] %(message)s'),
@@ -76,7 +76,7 @@ def _mult_by_mask_op(base_array, area_array, base_nodata):
         valid_mask = base_array != base_nodata
     else:
         valid_mask = numpy.ones(base_array.shape, dtype=bool)
-    result = numpy.full(base_array.shape, -1)
+    result = numpy.full(base_array.shape, -1, dtype=numpy.float32)
     result[valid_mask] = base_array[valid_mask] * area_array[valid_mask]
     return result
 
@@ -94,6 +94,7 @@ def main():
     lat_area_km2 = _get_area_column(raster_info)
     masked_area_raster_path = os.path.join(
         WORKSPACE_DIR, f'area_km_{os.path.basename(args.raster_path)}')
+    LOGGER.debug(lat_area_km2)
     pygeoprocessing.raster_calculator(
         [(args.raster_path, 1), lat_area_km2,
          (raster_info['nodata'][0], 'raw')], _mult_by_mask_op,
@@ -122,4 +123,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
