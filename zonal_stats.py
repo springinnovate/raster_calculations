@@ -6,7 +6,6 @@ import pprint
 import sys
 
 from osgeo import gdal
-#import pygeoprocessing
 import ecoshard.geoprocessing as pygeoprocessing
 import taskgraph
 
@@ -43,6 +42,7 @@ if __name__ == '__main__':
     zonal_stats_task = task_graph.add_task(
         func=pygeoprocessing.zonal_statistics,
         args=((args.raster_path, 1), args.vector_path),
+        kwargs={'working_dir': './zonal_stats', 'clean_working_dir': False,},
         store_result=True,
         task_name=(
             f'calculating zonal stats for {args.raster_path} '
