@@ -4,12 +4,10 @@ import datetime
 import glob
 import logging
 import os
-import pprint
 import sys
 
 from osgeo import gdal
 import ecoshard.geoprocessing as pygeoprocessing
-import taskgraph
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -34,9 +32,14 @@ if __name__ == '__main__':
     parser.add_argument(
         '--field_name', type=str,
         help='provide vector fieldname to summarize by, otherwise just fid')
+    parser.add_argument(
+        '--keep_working_dir', action='store_true',
+        help='keep the temporary working directory created by zonal_stats')
+    parser.add_argument(
+        '--polygons_overlap', action='store_true', help=(
+            'set if polygons overlap and need zonal_statistics to be '
+            'calculated individually for each'))
     args = parser.parse_args()
-
-    task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, -1)
 
     LOGGER.info(
         f'calculating zonal stats for {args.raster_pattern} '
@@ -45,20 +48,11 @@ if __name__ == '__main__':
     os.makedirs(working_dir, exist_ok=True)
     for raster_path in glob.glob(args.raster_pattern):
         basename = os.path.basename(os.path.splitext(raster_path)[0])
-        zonal_stats_task = task_graph.add_task(
-            func=pygeoprocessing.zonal_statistics,
-            args=((raster_path, 1), args.vector_path),
-            kwargs={
-                'working_dir': working_dir,
-                'clean_working_dir': False,
-                },
-            store_result=True,
-            task_name=(
-                f'calculating zonal stats for {raster_path} '
-                f'on {args.vector_path}'))
-
-        stat_dict = zonal_stats_task.get()
-        pp = pprint.PrettyPrinter(indent=4)
+        stat_dict = pygeoprocessing.zonal_statistics(
+            (raster_path, 1), args.vector_path,
+            working_dir=working_dir,
+            clean_working_dir=not args.keep_working_dir,
+            polygons_might_overlap=args.polygons_overlap)
         fid_to_field_val = {}
         if args.field_name:
             vector = gdal.OpenEx(args.vector_path, gdal.OF_VECTOR)
