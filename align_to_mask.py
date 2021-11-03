@@ -26,22 +26,21 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
-    'https://storage.googleapis.com/ecoshard-root/cbd/esa2015_ssp3_realized_coastal_risk_reduction_per_ha_0.04205_md5_f0dfc4edfd033566f6a9815bd0529117.tif')
+    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_2ed6285e6f8ec1e7e0b75309cc6d6f9f_hab_mask.tif')
 
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/cbd/'
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration'
 
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
 RASTER_LIST = [
-    ('cv_value_esa2015_ssp3_md5_5c2daf7444cd7e942311c134e91cc7a2.tif', False, False),
-    ('cv_value_pnv_ssp3_md5_4b30a987e4d0cd46895aee102e9d7df4.tif', False, False),
+    ('global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif', True, True),
     ]
 
 
 WARPED_SUFFIX = '_WARPED'
 MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
-RESAMPLE_MODE = 'average'
+RESAMPLE_MODE = 'sum'
 
 WORKSPACE_DIR = 'align_to_mask_workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')

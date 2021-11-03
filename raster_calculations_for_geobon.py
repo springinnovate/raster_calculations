@@ -39,7 +39,28 @@ def main():
 
 
 #############GEOBON###########################
+    
+#1-3.38399*2.7**(-raster1**-0.28978)
 
+    single_expression = {
+        'expression': '1-(1.07389*(2.7**(-x**-1.20130)**0.04406))',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Downloads\test.tif",
+        },
+        'target_nodata': -1,
+        'default_nan': -1,
+        'target_raster_path': "test_evi.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    
     calc_list = [
         {
             'expression': 'raster1 * raster2',
