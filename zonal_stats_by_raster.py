@@ -66,8 +66,8 @@ if __name__ == '__main__':
     working_dir = tempfile.mkdtemp(
         "lulc_raster_stats_workspace", dir='.')
     basename = f'''{
-        os.path.splitext(os.path.basename(args.landcover_raster))[:40]}_''' + \
-        f'{os.path.splitext(os.path.basename(args.other_raster))[:12]}'
+        os.path.splitext(os.path.basename(args.landcover_raster))[0][:40]}_''' + \
+        f'{os.path.splitext(os.path.basename(args.other_raster))[0][:12]}'
 
     base_raster_path_list = [args.landcover_raster, args.other_raster]
     aligned_raster_path_list = [
