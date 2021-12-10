@@ -8,11 +8,11 @@ import sys
 
 from osgeo import gdal
 from osgeo import osr
-from pygeoprocessing.geoprocessing import _create_latitude_m2_area_column
+from ecoshard.geoprocessing import _create_latitude_m2_area_column
 import ecoshard
 import numpy
-import pygeoprocessing
-import taskgraph
+from ecoshard import geoprocessing
+from ecoshard import taskgraph
 
 gdal.SetCacheMax(2**27)
 
@@ -31,16 +31,19 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/'
 
 
-# Format of these are (ecoshard filename, mask(t/f), perarea(t/f))
+# Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
     ('ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_2ed6285e6f8ec1e7e0b75309cc6d6f9f_hab_mask.tif', False, False),
     #('restoration_pnv0.0001_on_ESA2020_v2_md5_47613f8e4d340c92b2c481cc8080cc9d_hab_mask.tif', False, False),
+    #('results/global_normalized_people_access_population_2019_60.0m_md5_6a3bf3ec196b3b295930e75d8808fa9c.tif', True, True, False),
+    #('results/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif', True, True, False),
     ]
 
 
 WARPED_SUFFIX = '_WARPED'
 MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
+RESCALED_VALUE_SUFFIX = '_AREA_SCALED_VALUE'
 RESAMPLE_MODE = 'near'
 
 WORKSPACE_DIR = 'align_to_mask_workspace'
@@ -56,15 +59,15 @@ for dir_path in [
 
 def warp_raster(base_raster_path, mask_raster_path, resample_mode, target_raster_path):
     """Warp raster to exemplar's bounding box, cell size, and projection."""
-    base_projection_wkt = pygeoprocessing.get_raster_info(
+    base_projection_wkt = geoprocessing.get_raster_info(
         base_raster_path)['projection_wkt']
     if base_projection_wkt is None:
         # assume its wgs84 if not defined
         LOGGER.warn(
             f'{base_raster_path} has undefined projection, assuming WGS84')
         base_projection_wkt = osr.SRS_WKT_WGS84_LAT_LONG
-    mask_raster_info = pygeoprocessing.get_raster_info(mask_raster_path)
-    pygeoprocessing.warp_raster(
+    mask_raster_info = geoprocessing.get_raster_info(mask_raster_path)
+    geoprocessing.warp_raster(
         base_raster_path, mask_raster_info['pixel_size'],
         target_raster_path, resample_mode,
         base_projection_wkt=base_projection_wkt,
@@ -79,14 +82,19 @@ def copy_and_rehash_final_file(base_raster_path, target_dir):
         re.sub('(.*)md5_[0-9a-f]+_(.*)', r"\1\2", os.path.basename(
             base_raster_path)))
     shutil.copyfile(base_raster_path, target_md5_free_path)
-    ecoshard.hash_file(target_md5_free_path, rename=True)
+    try:
+        ecoshard.hash_file(target_md5_free_path, rename=True)
+    except OSError:
+        LOGGER.exception(
+            'hash file failed, possibly because file exists but that is okay '
+            'since it is the same hash')
 
 
 def mask_raster(base_raster_path, mask_raster_path, target_raster_path):
     """Mask base by mask setting nodata to nodata otherwise passthrough."""
-    mask_nodata = pygeoprocessing.get_raster_info(
+    mask_nodata = geoprocessing.get_raster_info(
         mask_raster_path)['nodata'][0]
-    base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
+    base_raster_info = geoprocessing.get_raster_info(base_raster_path)
     base_nodata = base_raster_info['nodata'][0]
 
     def _mask_op(base_array, mask_array):
@@ -95,21 +103,23 @@ def mask_raster(base_raster_path, mask_raster_path, target_raster_path):
         result[nodata_mask] = base_nodata
         return result
 
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(base_raster_path, 1), (mask_raster_path, 1)], _mask_op,
         target_raster_path, base_raster_info['datatype'], base_nodata)
 
 
 def _convert_to_density(
-        base_wgs84_raster_path, target_wgs84_density_raster_path):
-    """Convert base WGS84 raster path to a per density raster path."""
-    base_raster_info = pygeoprocessing.get_raster_info(
-        base_wgs84_raster_path)
-    # xmin, ymin, xmax, ymax
-    _, lat_min, _, lat_max = base_raster_info['bounding_box']
-    _, n_rows = base_raster_info['raster_size']
+        base_raster_path, wgs84_flag, target_density_raster_path):
+    base_raster_info = geoprocessing.get_raster_info(
+        base_raster_path)
+    if wgs84_flag:
+        ## xmin, ymin, xmax, ymax
+        _, lat_min, _, lat_max = base_raster_info['bounding_box']
+        _, n_rows = base_raster_info['raster_size']
+        m2_area_col = _create_latitude_m2_area_column(lat_min, lat_max, n_rows)
+    else:
+        pixel_area = base_raster_info['pixel_size'][0]**2
 
-    m2_area_col = _create_latitude_m2_area_column(lat_min, lat_max, n_rows)
     nodata = base_raster_info['nodata'][0]
 
     def _div_by_area_op(base_array, m2_area_array):
@@ -120,13 +130,51 @@ def _convert_to_density(
         else:
             valid_mask = numpy.ones(base_array.shape, dtype=bool)
 
-        result[valid_mask] = (
-            base_array[valid_mask] / m2_area_array[valid_mask])
+        if wgs84_flag:
+            result[valid_mask] = (
+                base_array[valid_mask] / m2_area_array[valid_mask])
+        else:
+            result[valid_mask] = (
+                base_array[valid_mask] / m2_area_array)
         return result
 
-    pygeoprocessing.raster_calculator(
-        [(base_wgs84_raster_path, 1), m2_area_col], _div_by_area_op,
-        target_wgs84_density_raster_path, base_raster_info['datatype'],
+    if wgs84_flag:
+        geoprocessing.raster_calculator(
+            [(base_raster_path, 1), m2_area_col], _div_by_area_op,
+            target_density_raster_path, base_raster_info['datatype'],
+            nodata)
+    else:
+        geoprocessing.raster_calculator(
+            [(base_raster_path, 1), (pixel_area, 'raw')], _div_by_area_op,
+            target_density_raster_path, base_raster_info['datatype'],
+            nodata)
+
+
+def _wgs84_density_to_value(base_raster_path, target_value_raster_path):
+    base_raster_info = geoprocessing.get_raster_info(
+        base_raster_path)
+
+    # xmin, ymin, xmax, ymax
+    _, lat_min, _, lat_max = base_raster_info['bounding_box']
+    _, n_rows = base_raster_info['raster_size']
+    m2_area_col = _create_latitude_m2_area_column(lat_min, lat_max, n_rows)
+    nodata = base_raster_info['nodata'][0]
+
+    def _mult_by_area_op(base_array, m2_area_array):
+        result = numpy.empty(base_array.shape, dtype=base_array.dtype)
+        if nodata is not None:
+            valid_mask = ~numpy.isclose(base_array, nodata)
+            result[:] = nodata
+        else:
+            valid_mask = numpy.ones(base_array.shape, dtype=bool)
+
+        result[valid_mask] = (
+            base_array[valid_mask] * m2_area_array[valid_mask])
+        return result
+
+    geoprocessing.raster_calculator(
+        [(base_raster_path, 1), m2_area_col], _mult_by_area_op,
+        target_value_raster_path, base_raster_info['datatype'],
         nodata)
 
 
@@ -142,9 +190,11 @@ def main():
         target_path_list=[mask_ecoshard_path],
         task_name=f'download {mask_ecoshard_path}')
 
-    for ecoshard_base, mask_flag, per_area_flag in RASTER_LIST:
+    #for ecoshard_base, mask_flag, per_area_flag in RASTER_LIST:
+    for ecoshard_base, mask_flag, per_area_flag, wgs84_flag in RASTER_LIST:
         ecoshard_url = f'{ECOSHARD_URL_PREFIX}/{ecoshard_base}'
         target_path = os.path.join(ECOSHARD_DIR, ecoshard_base)
+        os.makedirs(os.path.dirname(target_path), exist_ok=True)
         LOGGER.debug(f'download {ecoshard_url} to {target_path}')
         last_task = task_graph.add_task(
             func=ecoshard.download_url,
@@ -158,10 +208,11 @@ def main():
                     os.path.basename(target_path)))
             last_task = task_graph.add_task(
                 func=_convert_to_density,
-                args=(target_path, wgs84_density_raster_path),
+                args=(target_path, wgs84_flag, wgs84_density_raster_path),
                 target_path_list=[wgs84_density_raster_path],
                 task_name=f'convert to density: {wgs84_density_raster_path}',
-                dependent_task_list=[last_task])
+                dependent_task_list=[last_task],
+                )
             target_path = wgs84_density_raster_path
         warped_raster_path = os.path.join(
             WARPED_DIR,
@@ -195,6 +246,24 @@ def main():
             args=(target_path, WORKSPACE_DIR),
             task_name=f'copy and reshash final target_path',
             dependent_task_list=[last_task])
+
+        if per_area_flag:
+            # convert the density to a count
+            wgs84_value_raster_path = os.path.join(
+                PERAREA_DIR, f'%s{RESCALED_VALUE_SUFFIX}%s' % os.path.splitext(
+                    os.path.basename(target_path)))
+            last_task = task_graph.add_task(
+                func=_wgs84_density_to_value,
+                args=(target_path, wgs84_value_raster_path),
+                target_path_list=[wgs84_value_raster_path],
+                task_name=f'convert from density to value: {wgs84_value_raster_path}',
+                dependent_task_list=[last_task],
+                )
+            task_graph.add_task(
+                func=copy_and_rehash_final_file,
+                args=(wgs84_value_raster_path, WORKSPACE_DIR),
+                task_name=f'copy and reshash final target_path',
+                dependent_task_list=[last_task])
 
     task_graph.close()
     task_graph.join()
