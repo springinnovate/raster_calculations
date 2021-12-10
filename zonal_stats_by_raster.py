@@ -11,8 +11,7 @@ from osgeo import gdal
 from ecoshard import geoprocessing
 import numpy
 
-# set a 1GB limit for the cache
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**27)
 
 
 logging.basicConfig(
@@ -84,7 +83,7 @@ if __name__ == '__main__':
         args.landcover_raster)['nodata']
     unique_values = get_unique_values(args.landcover_raster)
     LOGGER.debug(unique_values)
-    stats_table = open('stats_table.csv', 'w')
+    stats_table = open(f'stats_table_{basename}.csv', 'w')
     stats_table.write('lucode,min,max,mean,stdev\n')
 
     mask_raster_path_list = []
@@ -98,6 +97,7 @@ if __name__ == '__main__':
                 (aligned_raster_path_list, mask_code, other_raster_info,
                  mask_raster_path))
         LOGGER.debug('waiting for it to gadot')
+        pool.close()
         pool.join()
         for mask_raster_path in mask_raster_path_list:
             LOGGER.debug(f'getting stats for {mask_raster_path}')
