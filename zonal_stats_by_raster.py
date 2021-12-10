@@ -22,7 +22,7 @@ logging.basicConfig(
         ' [%(pathname)s.%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
-
+logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 
 def get_unique_values(raster_path):
     """Return a list of non-nodata unique values from `raster_path`."""
@@ -64,20 +64,21 @@ if __name__ == '__main__':
         'landcover_raster', help='Path to landcover raster.')
     parser.add_argument(
         'other_raster', help='Path to another raster to calculate stats over.')
+    parser.add_argument(
+        '--working_dir', default='lulc_raster_stats_workspace',
+        help='location to store temporary files')
     args = parser.parse_args()
 
-    working_dir = tempfile.mkdtemp(
-        "lulc_raster_stats_workspace", dir='.')
     basename = f'''{
         os.path.splitext(os.path.basename(args.landcover_raster))[0][:40]}_''' + \
         f'{os.path.splitext(os.path.basename(args.other_raster))[0][:12]}'
 
     task_graph = taskgraph.TaskGraph(
-        working_dir, '.', multiprocessing.cpu_count())
+        args.working_dir, multiprocessing.cpu_count(), 10.0)
 
     base_raster_path_list = [args.landcover_raster, args.other_raster]
     aligned_raster_path_list = [
-        os.path.join(working_dir, os.path.basename(path))
+        os.path.join(args.working_dir, os.path.basename(path))
         for path in base_raster_path_list]
     other_raster_info = geoprocessing.get_raster_info(
         args.other_raster)
@@ -88,7 +89,8 @@ if __name__ == '__main__':
             other_raster_info['pixel_size'], 'intersection',
             ),
         kwargs={'target_projection_wkt': other_raster_info['projection_wkt']},
-        target_path_list=aligned_raster_path_list)
+        target_path_list=aligned_raster_path_list,
+        task_name=f'aligning {aligned_raster_path_list}')
     task_graph.join()
     lulc_nodata = geoprocessing.get_raster_info(
         args.landcover_raster)['nodata']
@@ -100,9 +102,9 @@ if __name__ == '__main__':
     mask_raster_path_list = []
     for mask_code in sorted(unique_values):
         LOGGER.debug(f'scheduling {mask_code}')
-        mask_raster_path = os.path.join(working_dir, '%d.tif' % mask_code)
+        mask_raster_path = os.path.join(args.working_dir, '%d.tif' % mask_code)
         mask_raster_path_list.append(mask_raster_path)
-        taskgraph.add_task(
+        task_graph.add_task(
             func=_calculate_stats,
             args=(
                 aligned_raster_path_list, mask_code, other_raster_info,
@@ -124,4 +126,3 @@ if __name__ == '__main__':
             '%d,%f,%f,%f,%f\n' % (
                 mask_code, raster_min, raster_max, raster_mean, raster_stdev))
     stats_table.close()
-    shutil.rmtree(working_dir)
