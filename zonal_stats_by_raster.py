@@ -12,7 +12,7 @@ from ecoshard import geoprocessing
 from ecoshard import taskgraph
 import numpy
 
-gdal.SetCacheMax(2**27)
+gdal.SetCacheMax(2**26)
 
 
 logging.basicConfig(
