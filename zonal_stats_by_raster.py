@@ -103,7 +103,7 @@ if __name__ == '__main__':
     for mask_code in sorted(unique_values):
         LOGGER.debug(f'scheduling {mask_code}')
         mask_raster_path = os.path.join(args.working_dir, '%d.tif' % mask_code)
-        mask_raster_path_list.append(mask_raster_path)
+        mask_raster_path_list.append((mask_raster_path, mask_code))
         task_graph.add_task(
             func=_calculate_stats,
             args=(
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     task_graph.close()
     task_graph.join()
     LOGGER.debug('waiting for it to gadot')
-    for mask_raster_path in mask_raster_path_list:
+    for mask_raster_path, mask_code in mask_raster_path_list:
         LOGGER.debug(f'getting stats for {mask_raster_path}')
         raster = gdal.OpenEx(mask_raster_path, gdal.OF_RASTER)
         band = raster.GetRasterBand(1)
