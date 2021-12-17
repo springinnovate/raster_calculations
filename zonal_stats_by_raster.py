@@ -99,6 +99,7 @@ if __name__ == '__main__':
     task_graph.join()
     lulc_nodata = geoprocessing.get_raster_info(
         args.landcover_raster)['nodata']
+    LOGGER.info('calculate unique values')
     unique_values = get_unique_values(args.landcover_raster)
     LOGGER.debug(unique_values)
     stats_table = open(f'stats_table_{basename}.csv', 'w')
