@@ -97,7 +97,7 @@ if __name__ == '__main__':
     unique_values = get_unique_values(args.landcover_raster)
     LOGGER.debug(unique_values)
     stats_table = open(f'stats_table_{basename}.csv', 'w')
-    stats_table.write('lucode,min,max,mean,stdev\n')
+    stats_table.write('lucode,min,max,mean,stdev,valid_count,nodata_count,total\n')
 
     mask_raster_path_list = []
     for mask_code in sorted(unique_values):
@@ -120,9 +120,17 @@ if __name__ == '__main__':
         band = raster.GetRasterBand(1)
         (raster_min, raster_max, raster_mean, raster_stdev) = (
             band.GetStatistics(0, 1))
+        n_pixels = band.XSize * band.YSize
+        nodata_count = 0
+        nodata = band.GetNoDataValue()
+        if nodata is not None:
+            for _, block in geoprocessing.iterblocks((mask_raster_path, 1)):
+                nodata_mask = block == nodata
+                nodata_count += numpy.count_nonzero(nodata_mask)
         band = None
         raster = None
         stats_table.write(
-            '%d,%f,%f,%f,%f\n' % (
-                mask_code, raster_min, raster_max, raster_mean, raster_stdev))
+            '%d,%f,%f,%f,%f,%d,%d,%d\n' % (
+                mask_code, raster_min, raster_max, raster_mean, raster_stdev,
+                n_pixels-nodata_count, nodata_count, n_pixels))
     stats_table.close()
