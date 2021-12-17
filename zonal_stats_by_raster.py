@@ -67,6 +67,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--working_dir', default='lulc_raster_stats_workspace',
         help='location to store temporary files')
+    parser.add_argument(
+        '--do_not_align', default=False, action='store_true', help='pass this flag to avoid aligning rasters')
     args = parser.parse_args()
 
     basename = f'''{
@@ -82,15 +84,18 @@ if __name__ == '__main__':
         for path in base_raster_path_list]
     other_raster_info = geoprocessing.get_raster_info(
         args.other_raster)
-    task_graph.add_task(
-        func=geoprocessing.align_and_resize_raster_stack,
-        args=(
-            base_raster_path_list, aligned_raster_path_list, ['mode', 'near'],
-            other_raster_info['pixel_size'], 'intersection',
-            ),
-        kwargs={'target_projection_wkt': other_raster_info['projection_wkt']},
-        target_path_list=aligned_raster_path_list,
-        task_name=f'aligning {aligned_raster_path_list}')
+    if not args.do_not_align:
+        task_graph.add_task(
+            func=geoprocessing.align_and_resize_raster_stack,
+            args=(
+                base_raster_path_list, aligned_raster_path_list, ['mode', 'near'],
+                other_raster_info['pixel_size'], 'intersection',
+                ),
+            kwargs={'target_projection_wkt': other_raster_info['projection_wkt']},
+            target_path_list=aligned_raster_path_list,
+            task_name=f'aligning {aligned_raster_path_list}')
+    else:
+        aligned_raster_path_list = base_raster_path_list
     task_graph.join()
     lulc_nodata = geoprocessing.get_raster_info(
         args.landcover_raster)['nodata']
