@@ -22,85 +22,85 @@ gdal.SetCacheMax(2**26)
 
 RASTER_CALCULATIONS_WORKSPACE = 'raster_calculations_workspace_not_for_humans'
 
-from taskgraph.Task import _normalize_path
+# from taskgraph.Task import _normalize_path
 
+# class AttrArray(numpy.ndarray):
+#     """Numpy array with new attribute."""
+#     def __new__(cls, input_array, your_new_attr=None):
+#         obj = numpy.asarray(input_array).view(cls)
+#         obj.your_new_attr = your_new_attr
+#         return obj
 
-class AttrArray(numpy.ndarray):
-    """Numpy array with new attribute."""
-    def __new__(cls, input_array, your_new_attr=None):
-        obj = numpy.asarray(input_array).view(cls)
-        obj.your_new_attr = your_new_attr
-        return obj
+#     def __array_finalize__(self, obj):
+#         if obj is None:
+#             return
+#         self.your_new_attr = getattr(obj, 'your_new_attr', None)
 
-    def __array_finalize__(self, obj):
-        if obj is None:
-            return
-        self.your_new_attr = getattr(obj, 'your_new_attr', None)
+# def fast_raster_calculator(
+#         raster_path_map, local_op, target_path,
+#         datatype_target=gdal.GDT_Float32, nodata_target=None,
+#         align_rasters=True, target_projection_wkt=None,
+#         target_pixel_size=None):
+#     """Perform raster calculations assuming single band rasters."""
+#     raster_path_map_copy = raster_path_map.copy()
+#     normal_path_list = sorted([
+#         _normalize_path(path) for path in raster_path_map_copy.values()])
+#     hash_func = hashlib.new('md6')
+#     hash_func.update(''.join(normal_path_list))
+#     hash_val = hash_func.hexdigest()
+#     local_workspace = os.path.join(RASTER_CALCULATIONS_WORKSPACE, hash_val)
+#     os.makedirs(local_workspace, exist_ok=True)
 
-def fast_raster_calculator(
-        raster_path_map, local_op, target_path,
-        datatype_target=gdal.GDT_Float32, nodata_target=None,
-        align_rasters=True, target_projection_wkt=None,
-        target_pixel_size=None):
-    """Perform raster calculations assuming single band rasters."""
-    raster_path_map_copy = raster_path_map.copy()
-    normal_path_list = sorted([
-        _normalize_path(path) for path in raster_path_map_copy.values()])
-    hash_func = hashlib.new('md6')
-    hash_func.update(''.join(normal_path_list))
-    hash_val = hash_func.hexdigest()
-    local_workspace = os.path.join(RASTER_CALCULATIONS_WORKSPACE, hash_val)
-    os.makedirs(local_workspace, exist_ok=True)
+#     task_graph = taskgraph.TaskGraph(local_workspace, -1)
 
-    task_graph = taskgraph.TaskGraph(local_workspace, -1)
+#     download_task_list = []
+#     for symbol, path in list(raster_path_map_copy.items()):
+#         if isinstance(path, str) and (
+#                 path.startswith('http://') or path.startswith('https://')):
+#             # download to local file
+#             local_path = os.path.join(
+#                 local_workspace,
+#                 os.path.basename(path))
+#             download_task = task_graph.add_task(
+#                 func=download_url,
+#                 args=(path, local_path),
+#                 target_path_list=[local_path],
+#                 task_name='download %s' % local_path)
+#             download_task_list.append(download_task)
+#             raster_path_map_copy[symbol] = local_path
+#         else:
+#             raster_path_map_copy[symbol] = path
+#     task_graph.join()
 
-    download_task_list = []
-    for symbol, path in list(raster_path_map_copy.items()):
-        if isinstance(path, str) and (
-                path.startswith('http://') or path.startswith('https://')):
-            # download to local file
-            local_path = os.path.join(
-                local_workspace,
-                os.path.basename(path))
-            download_task = task_graph.add_task(
-                func=download_url,
-                args=(path, local_path),
-                target_path_list=[local_path],
-                task_name='download %s' % local_path)
-            download_task_list.append(download_task)
-            raster_path_map_copy[symbol] = local_path
-        else:
-            raster_path_map_copy[symbol] = path
+#     first_raster_path = next(iter(raster_path_map.values()))
+#     raster_info = geoprocessing.get_raster_info(first_raster_path)
+#     if target_projection_wkt is None:
+#         target_projection_wkt = raster_info['projection_wkt']
+#     if target_pixel_size is None:
+#         target_pixel_size = raster_info['pixel_size']
 
-    first_raster_path = next(iter(raster_path_map.values()))
-    raster_info = geoprocessing.get_raster_info(first_raster_path)
-    if target_projection_wkt is None:
-        target_projection_wkt = raster_info['projection_wkt']
-    if target_pixel_size is None:
-        target_pixel_size = raster_info['pixel_size']
+#     if align_rasters:
+#         align_raster_list = [
+#             os.path.join(local_workspace, os.path.basename(path))
+#             for path in normal_path_list]
+#         geoprocessing.align_and_resize_raster_stack(
+#             normal_path_list, align_raster_list,
+#             ['near']*len(normal_path_list),
+#             target_pixel_size, 'intersection',
+#             target_projection_wkt=target_projection_wkt)
+#         raster_info = geoprocessing.get_raster_info(normal_path_list[0])
+#     else:
+#         align_raster_list = normal_path_list
 
-    if align_rasters:
-        align_raster_list = [
-            os.path.join(local_workspace, os.path.basename(path))
-            for path in normal_path_list]
-        geoprocessing.align_and_resize_raster_stack(
-            normal_path_list, align_raster_list,
-            ['near']*len(normal_path_list),
-            target_pixel_size, 'intersection',
-            target_projection_wkt=target_projection_wkt)
-        raster_info = geoprocessing.get_raster_info(normal_path_list[0])
-    else:
-        align_raster_list = normal_path_list
+#     raster_driver = gdal.GetDriverByName('GTiff')
+#     n_cols, n_rows = raster_info_list[0]['raster_size']
+#     target_raster = raster_driver.Create(
+#         target_raster_path, n_cols, n_rows, 1, datatype_target,
+#         options=raster_driver_creation_tuple[1])
 
-    raster_driver = gdal.GetDriverByName('GTiff')
-    n_cols, n_rows = raster_info_list[0]['raster_size']
-    target_raster = raster_driver.Create(
-        target_raster_path, n_cols, n_rows, 1, datatype_target,
-        options=raster_driver_creation_tuple[1])
-
-    block_offset_list = list(iterblocks(
-        (target_raster_path, 1), offset_only=True,
-        largest_block=largest_block))
+#     block_offset_list = list(iterblocks(
+#         (target_raster_path, 1), offset_only=True,
+#         largest_block=largest_block))
 
 
 
