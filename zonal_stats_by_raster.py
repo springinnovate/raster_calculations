@@ -91,7 +91,7 @@ if __name__ == '__main__':
         basename = hashlib.sha1(
             f'{args.landcover_raster}_{args.other_raster}'.encode(
                 'utf-8')).hexdigest()[:12]
-    basename += time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime())
+    basename += '_'+time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime())
     working_dir = os.path.join(args.working_dir, basename)
     os.makedirs(working_dir, exist_ok=True)
 
