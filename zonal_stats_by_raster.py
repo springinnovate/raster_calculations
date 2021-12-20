@@ -2,9 +2,8 @@
 import argparse
 import os
 import logging
-import shutil
+import hashlib
 import sys
-import tempfile
 import multiprocessing
 
 from osgeo import gdal
@@ -23,6 +22,7 @@ logging.basicConfig(
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
+
 
 def get_unique_values(raster_path):
     """Return a list of non-nodata unique values from `raster_path`."""
@@ -68,19 +68,33 @@ if __name__ == '__main__':
         '--working_dir', default='lulc_raster_stats_workspace',
         help='location to store temporary files')
     parser.add_argument(
-        '--do_not_align', default=False, action='store_true', help='pass this flag to avoid aligning rasters')
+        '--do_not_align', default=False, action='store_true',
+        help='pass this flag to avoid aligning rasters')
+    parser.add_task('--basename', type=str, help=(
+        'output table will include this name, if left off a unique hash will '
+        'be used created from the landcover and other raster filepath '
+        'strings.'))
+    parser.add_task(
+        '--n_workers', type=int, default=multiprocessing.cpu_count(),
+        help=(
+            'number of CPUs to use for processing, default is all CPUs on '
+            'the machine'))
     args = parser.parse_args()
-
-    basename = f'''{
-        os.path.splitext(os.path.basename(args.landcover_raster))[0][:40]}_''' + \
-        f'{os.path.splitext(os.path.basename(args.other_raster))[0][:12]}'
+    if args.basename:
+        basename = args.basename
+    else:
+        basename = hashlib.sha1(
+            f'{args.landcover_raster}_{args.other_raster}'.encode(
+                'utf-8')).hexdigest()[:12]
+    working_dir = os.path.join(args.working_dir, basename)
+    os.makedirs(working_dir, exist_ok=True)
 
     task_graph = taskgraph.TaskGraph(
-        args.working_dir, multiprocessing.cpu_count(), 10.0)
+        working_dir, args.n_workers, 10.0)
 
     base_raster_path_list = [args.landcover_raster, args.other_raster]
     aligned_raster_path_list = [
-        os.path.join(args.working_dir, os.path.basename(path))
+        os.path.join(working_dir, os.path.basename(path))
         for path in base_raster_path_list]
     other_raster_info = geoprocessing.get_raster_info(
         args.other_raster)
@@ -88,10 +102,12 @@ if __name__ == '__main__':
         task_graph.add_task(
             func=geoprocessing.align_and_resize_raster_stack,
             args=(
-                base_raster_path_list, aligned_raster_path_list, ['mode', 'near'],
-                other_raster_info['pixel_size'], 'intersection',
+                base_raster_path_list, aligned_raster_path_list,
+                ['mode', 'near'], other_raster_info['pixel_size'],
+                'intersection',
                 ),
-            kwargs={'target_projection_wkt': other_raster_info['projection_wkt']},
+            kwargs={
+                'target_projection_wkt': other_raster_info['projection_wkt']},
             target_path_list=aligned_raster_path_list,
             task_name=f'aligning {aligned_raster_path_list}')
     else:
@@ -103,12 +119,13 @@ if __name__ == '__main__':
     unique_values = get_unique_values(args.landcover_raster)
     LOGGER.debug(unique_values)
     stats_table = open(f'stats_table_{basename}.csv', 'w')
-    stats_table.write('lucode,min,max,mean,stdev,valid_count,nodata_count,total\n')
+    stats_table.write(
+        'lucode,min,max,mean,stdev,valid_count,nodata_count,total\n')
 
     mask_raster_path_list = []
     for mask_code in sorted(unique_values):
         LOGGER.debug(f'scheduling {mask_code}')
-        mask_raster_path = os.path.join(args.working_dir, '%d.tif' % mask_code)
+        mask_raster_path = os.path.join(working_dir, '%d.tif' % mask_code)
         mask_raster_path_list.append((mask_raster_path, mask_code))
         task_graph.add_task(
             func=_calculate_stats,
