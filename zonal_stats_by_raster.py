@@ -5,6 +5,7 @@ import logging
 import hashlib
 import sys
 import multiprocessing
+import time
 
 from osgeo import gdal
 from ecoshard import geoprocessing
@@ -29,7 +30,11 @@ def get_unique_values(raster_path):
     nodata = geoprocessing.get_raster_info(raster_path)['nodata'][0]
     unique_set = set()
     for offset_data, array in geoprocessing.iterblocks((raster_path, 1)):
-        unique_set |= set(numpy.unique(array[~numpy.isclose(array, nodata)]))
+        if nodata is not None:
+            valid_mask = array != nodata
+            unique_set |= set(numpy.unique(array[valid_mask]))
+        else:
+            unique_set |= set(numpy.unique(array))
     return unique_set
 
 
@@ -70,11 +75,11 @@ if __name__ == '__main__':
     parser.add_argument(
         '--do_not_align', default=False, action='store_true',
         help='pass this flag to avoid aligning rasters')
-    parser.add_task('--basename', type=str, help=(
+    parser.add_argument('--basename', type=str, help=(
         'output table will include this name, if left off a unique hash will '
         'be used created from the landcover and other raster filepath '
         'strings.'))
-    parser.add_task(
+    parser.add_argument(
         '--n_workers', type=int, default=multiprocessing.cpu_count(),
         help=(
             'number of CPUs to use for processing, default is all CPUs on '
@@ -86,6 +91,7 @@ if __name__ == '__main__':
         basename = hashlib.sha1(
             f'{args.landcover_raster}_{args.other_raster}'.encode(
                 'utf-8')).hexdigest()[:12]
+    basename += time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime())
     working_dir = os.path.join(args.working_dir, basename)
     os.makedirs(working_dir, exist_ok=True)
 
