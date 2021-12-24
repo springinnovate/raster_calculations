@@ -47,39 +47,43 @@ def mask_out_op(mask_data, base_data, mask_code, base_nodata):
     return result
 
 
-def mask_out_op_with_mask(mask_data, mask_code, base_nodata):
-    """Return 1 where base data == mask_code, 0 or nodata othewise."""
-    result = numpy.empty_like(mask_data)
-    result[:] = base_nodata
-    valid_mask = (mask_data == mask_code) & (~numpy.isnan(mask_data))
-    result[valid_mask] = mask_data[valid_mask]
-    return result
-
-
 def _calculate_stats(
         aligned_raster_path_list, mask_code, other_raster_info,
-        mask_raster_path):
-    LOGGER.debug(f'_calculate_stats for {mask_raster_path}')
-    if len(set(aligned_raster_path_list)) == 2:
-        geoprocessing.raster_calculator(
-            [(aligned_raster_path_list[0], 1), (aligned_raster_path_list[1], 1),
-             (mask_code, 'raw'), (other_raster_info['nodata'][0], 'raw')],
-            mask_out_op, mask_raster_path, gdal.GDT_Float32,
-            other_raster_info['nodata'][0])
-    elif len(set(aligned_raster_path_list)) == 1:
-        # they're the same raster
-        geoprocessing.raster_calculator(
-            [(aligned_raster_path_list[0], 1),
-             (mask_code, 'raw'), (other_raster_info['nodata'][0], 'raw')],
-            mask_out_op_with_mask, mask_raster_path, gdal.GDT_Float32,
-            other_raster_info['nodata'][0])
-    else:
-        raise ValueError('something horrible happened')
-    raster = gdal.OpenEx(mask_raster_path, gdal.OF_RASTER)
-    band = raster.GetRasterBand(1)
-    _ = (band.GetStatistics(0, 1))
-    band = None
-    raster = None
+        masked_raster_path):
+    LOGGER.debug(f'_calculate_stats for {masked_raster_path}')
+    geoprocessing.raster_calculator(
+        [(aligned_raster_path_list[0], 1), (aligned_raster_path_list[1], 1),
+         (mask_code, 'raw'), (other_raster_info['nodata'][0], 'raw')],
+        mask_out_op, masked_raster_path, gdal.GDT_Float32,
+        other_raster_info['nodata'][0])
+    masked_raster = gdal.OpenEx(masked_raster_path, gdal.OF_RASTER)
+    masked_band = masked_raster.GetRasterBand(1)
+    (raster_min, raster_max, raster_mean, raster_stdev) = (
+        masked_band.GetStatistics(0, 1))
+    value_nodata = other_raster_info['nodata'][0]
+    masked_band = None
+    masked_raster = None
+
+    LOGGER.debug(f'getting stats for {masked_raster_path}')
+    nodata_count = 0
+    valid_count = 0
+    value_raster = gdal.OpenEx(aligned_raster_path_list[1], gdal.OF_RASTER)
+    value_band = value_raster.GetRasterBand(1)
+    for offset_dict, base_block in geoprocessing.iterblocks(
+            (aligned_raster_path_list[0], 1)):
+        valid_mask = base_block == mask_code
+        value_block = value_band.ReadAsArray(**offset_dict)
+        valid_value_block = value_block[valid_mask]
+        local_nodata_count = numpy.count_nonzero(
+            numpy.isclose(valid_value_block, value_nodata))
+        nodata_count += local_nodata_count
+        valid_count += valid_value_block.size - local_nodata_count
+
+    value_raster = None
+    value_band = None
+
+    return (raster_min, raster_max, raster_mean,
+            raster_stdev, valid_count, nodata_count)
 
 
 if __name__ == '__main__':
@@ -123,7 +127,7 @@ if __name__ == '__main__':
         for path in base_raster_path_list]
     other_raster_info = geoprocessing.get_raster_info(
         args.other_raster)
-    if not args.do_not_align or (args.landcover_raster == args.other_raster):
+    if not args.do_not_align and (args.landcover_raster != args.other_raster):
         task_graph.add_task(
             func=geoprocessing.align_and_resize_raster_stack,
             args=(
@@ -147,38 +151,29 @@ if __name__ == '__main__':
     stats_table.write(
         'lucode,min,max,mean,stdev,valid_count,nodata_count,total\n')
 
-    mask_raster_path_list = []
+    masked_stats_list = []
     for mask_code in sorted(unique_values):
         LOGGER.debug(f'scheduling {mask_code}')
-        mask_raster_path = os.path.join(working_dir, '%d.tif' % mask_code)
-        mask_raster_path_list.append((mask_raster_path, mask_code))
-        task_graph.add_task(
+        masked_raster_path = os.path.join(working_dir, '%d.tif' % mask_code)
+        stats_task = task_graph.add_task(
             func=_calculate_stats,
             args=(
                 aligned_raster_path_list, mask_code, other_raster_info,
-                mask_raster_path),
-            target_path_list=[mask_raster_path],
-            task_name=f'mask {mask_raster_path}')
-    task_graph.close()
-    task_graph.join()
+                masked_raster_path),
+            store_result=True,
+            target_path_list=[masked_raster_path],
+            task_name=f'mask {masked_raster_path}')
+        masked_stats_list.append((stats_task, mask_code))
+
     LOGGER.debug('waiting for it to gadot')
-    for mask_raster_path, mask_code in mask_raster_path_list:
-        LOGGER.debug(f'getting stats for {mask_raster_path}')
-        raster = gdal.OpenEx(mask_raster_path, gdal.OF_RASTER)
-        band = raster.GetRasterBand(1)
-        (raster_min, raster_max, raster_mean, raster_stdev) = (
-            band.GetStatistics(0, 1))
-        n_pixels = band.XSize * band.YSize
-        nodata_count = 0
-        nodata = band.GetNoDataValue()
-        if nodata is not None:
-            for _, block in geoprocessing.iterblocks((mask_raster_path, 1)):
-                nodata_mask = block == nodata
-                nodata_count += numpy.count_nonzero(nodata_mask)
-        band = None
-        raster = None
+    for masked_task, mask_code in masked_stats_list:
+        (raster_min, raster_max, raster_mean,
+         raster_stdev, valid_count, nodata_count) = masked_task.get()
         stats_table.write(
             '%d,%f,%f,%f,%f,%d,%d,%d\n' % (
                 mask_code, raster_min, raster_max, raster_mean, raster_stdev,
-                n_pixels-nodata_count, nodata_count, n_pixels))
+                valid_count, nodata_count, valid_count+nodata_count))
     stats_table.close()
+
+    task_graph.join()
+    task_graph.close()
