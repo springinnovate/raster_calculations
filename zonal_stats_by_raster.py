@@ -47,15 +47,34 @@ def mask_out_op(mask_data, base_data, mask_code, base_nodata):
     return result
 
 
+def mask_out_op_with_mask(mask_data, mask_code, base_nodata):
+    """Return 1 where base data == mask_code, 0 or nodata othewise."""
+    result = numpy.empty_like(mask_data)
+    result[:] = base_nodata
+    valid_mask = (mask_data == mask_code) & (~numpy.isnan(mask_data))
+    result[valid_mask] = mask_data[valid_mask]
+    return result
+
+
 def _calculate_stats(
         aligned_raster_path_list, mask_code, other_raster_info,
         mask_raster_path):
     LOGGER.debug(f'_calculate_stats for {mask_raster_path}')
-    geoprocessing.raster_calculator(
-        [(aligned_raster_path_list[0], 1), (aligned_raster_path_list[1], 1),
-         (mask_code, 'raw'), (other_raster_info['nodata'][0], 'raw')],
-        mask_out_op, mask_raster_path, gdal.GDT_Float32,
-        other_raster_info['nodata'][0])
+    if len(set(aligned_raster_path_list)) == 2:
+        geoprocessing.raster_calculator(
+            [(aligned_raster_path_list[0], 1), (aligned_raster_path_list[1], 1),
+             (mask_code, 'raw'), (other_raster_info['nodata'][0], 'raw')],
+            mask_out_op, mask_raster_path, gdal.GDT_Float32,
+            other_raster_info['nodata'][0])
+    elif len(set(aligned_raster_path_list)) == 1:
+        # they're the same raster
+        geoprocessing.raster_calculator(
+            [(aligned_raster_path_list[0], 1),
+             (mask_code, 'raw'), (other_raster_info['nodata'][0], 'raw')],
+            mask_out_op_with_mask, mask_raster_path, gdal.GDT_Float32,
+            other_raster_info['nodata'][0])
+    else:
+        raise ValueError('something horrible happened')
     raster = gdal.OpenEx(mask_raster_path, gdal.OF_RASTER)
     band = raster.GetRasterBand(1)
     _ = (band.GetStatistics(0, 1))
@@ -104,7 +123,7 @@ if __name__ == '__main__':
         for path in base_raster_path_list]
     other_raster_info = geoprocessing.get_raster_info(
         args.other_raster)
-    if not args.do_not_align:
+    if not args.do_not_align or (args.landcover_raster == args.other_raster):
         task_graph.add_task(
             func=geoprocessing.align_and_resize_raster_stack,
             args=(
