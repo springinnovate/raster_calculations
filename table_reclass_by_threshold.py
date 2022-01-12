@@ -1,10 +1,25 @@
 """Table based reclassify triggered by probability threshold."""
 import argparse
+import os
+import logging
 
 from ecoshard import geoprocessing
+from ecoshard import taskgraph
 import pandas
 
+from osgeo import gdal
 
+gdal.SetCacheMax(2**27)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
+        ' [%(funcName)s:%(lineno)d] %(message)s'))
+logging.getLogger('ecoshard.taskgraph').setLevel(logging.WARN)
+LOGGER = logging.getLogger(__name__)
+
+ALIGNED_DIR = 'reclass_aligned_dir'
+os.makedirs(ALIGNED_DIR, exist_ok=True)
 
 
 def main():
@@ -27,8 +42,8 @@ def main():
             'path to csv table with columns'))
     parser.add_argument(
         '--csv_table_fields', type=str, nargs=3, required=True, help=(
-            'column names for base raster value, value to flip to if <= '
-            'threshold, and value to flip to if > threshold'))
+            'column names for (1) base raster value, (2) value to flip to if <= '
+            'threshold, and (3) value to flip to if > threshold'))
     parser.add_argument(
         '--target_raster_path', type=str,
         help='desired target raster')
@@ -57,8 +72,28 @@ def main():
         return result
 
     base_raster_info = geoprocessing.get_raster_info(args.base_raster_path)
+
+    base_raster_path_list = [
+        args.base_raster_path, args.threshold_raster_path]
+    aligned_raster_path_list = [
+        os.path.join(ALIGNED_DIR, os.path.basename(path))
+        for path in base_raster_path_list]
+    LOGGER.info(f'aligning {base_raster_path_list}')
+    task_graph = taskgraph.TaskGraph(ALIGNED_DIR, -1)
+    task_graph.add_task(
+        func=geoprocessing.align_and_resize_raster_stack,
+        args=(
+            base_raster_path_list, aligned_raster_path_list, ['near']*2,
+            base_raster_info['pixel_size'], 'intersection'),
+        kwargs={
+            'target_projection_wkt': base_raster_info['projection_wkt']
+        })
+    task_graph.close()
+    task_graph.join()
+
+    LOGGER.info(f'reclassifying to {args.target_raster_path}')
     geoprocessing.raster_calculator(
-        [(args.base_raster_path, 1), (args.threshold_raster_path, 1)],
+        [(path, 1) for path in aligned_raster_path_list],
         _reclass_op, args.target_raster_path, base_raster_info['datatype'],
         base_raster_info['nodata'][0])
 
