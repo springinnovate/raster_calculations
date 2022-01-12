@@ -79,11 +79,9 @@ def main():
                 }
                 array = band.ReadAsArray(**offset_dict)
                 LOGGER.debug(f'{raster_path}: {offset_dict}')
-                if nodata is None:
-                    break
-                nodata_count = numpy.count_nonzero(array == nodata)
-                if nodata_count < 0.1*array.size:
-                    # choose it
+                values, counts = numpy.unique(array, return_counts=True)
+                largest_count = next(iter(sorted(counts, reverse=True)))
+                if largest_count < numpy.product(args.target_dims)*.9:
                     break
 
             target_path = os.path.join(
@@ -92,7 +90,7 @@ def main():
                     basename))
             LOGGER.info(f'writing {target_path}')
             geoprocessing.numpy_array_to_raster(
-                array, nodata, (1, -1), (0, 0),
+                array, nodata, (30, -30), (-args.target_dims[0]//2*30, -args.target_dims[1]//2*30),
                 WORLD_ECKERT_IV_WKT, target_path)
 
 
