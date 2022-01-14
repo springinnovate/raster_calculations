@@ -35,8 +35,8 @@ def main():
     parser.add_argument(
         '--threshold_value', type=float, required=True, help=(
             'floating point value, if threshold raster is greater than this '
-            'value, reclassify based on > column of table.value in 0..1 to '
-            'flip lulc pixel'))
+            'value, reclassify based on > column of table.value, else use the '
+            '<= value flip lulc pixel'))
     parser.add_argument(
         '--reclassify_table_path', type=str, required=True, help=(
             'path to csv table with columns'))
@@ -63,11 +63,13 @@ def main():
         result = base_array.copy()
         for base_code, (leq_target, gt_target) in value_map.items():
             leq_mask = (
-                base_array == base_code) * (threshold_array <= leq_target)
+                base_array == base_code) * (
+                    threshold_array <= args.threshold_value)
             result[leq_mask] = leq_target
 
             gt_mask = (
-                base_array == base_code) * (threshold_array > gt_target)
+                base_array == base_code) * (
+                    threshold_array > args.threshold_value)
             result[gt_mask] = gt_target
         return result
 
