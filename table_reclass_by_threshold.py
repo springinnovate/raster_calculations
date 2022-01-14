@@ -82,7 +82,7 @@ def main():
     path_hash.update(','.join([
         os.path.basename(path) for path in base_raster_path_list]).encode(
         'utf-8'))
-    workspace_dir = os.path.join(ALIGNED_DIR, path_hash.hexdigest())
+    workspace_dir = os.path.join(ALIGNED_DIR, path_hash.hexdigest()[:5])
     os.makedirs(workspace_dir, exist_ok=True)
     aligned_raster_path_list = [
         os.path.join(workspace_dir, os.path.basename(path))
