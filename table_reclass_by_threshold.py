@@ -2,6 +2,7 @@
 import argparse
 import os
 import logging
+import hashlib
 
 from ecoshard import geoprocessing
 from ecoshard import taskgraph
@@ -77,11 +78,16 @@ def main():
 
     base_raster_path_list = [
         args.base_raster_path, args.threshold_raster_path]
+    path_hash = hashlib.md6()
+    path_hash.update(','.join([
+        os.path.basename(path) for path in base_raster_path_list]))
+    workspace_dir = os.path.join(ALIGNED_DIR, path_hash.hexdigest())
+    os.makedirs(workspace_dir, exist_ok=True)
     aligned_raster_path_list = [
-        os.path.join(ALIGNED_DIR, os.path.basename(path))
+        os.path.join(workspace_dir, os.path.basename(path))
         for path in base_raster_path_list]
     LOGGER.info(f'aligning {base_raster_path_list}')
-    task_graph = taskgraph.TaskGraph(ALIGNED_DIR, -1)
+    task_graph = taskgraph.TaskGraph(workspace_dir, -1)
     task_graph.add_task(
         func=geoprocessing.align_and_resize_raster_stack,
         args=(
