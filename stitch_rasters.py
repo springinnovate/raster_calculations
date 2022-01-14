@@ -138,7 +138,9 @@ def main():
     target_raster.SetProjection(target_projection.ExportToWkt())
     target_raster.SetGeoTransform(geotransform)
     target_band = target_raster.GetRasterBand(1)
-    target_band.SetNoDataValue(raster_info['nodata'][0])
+    target_nodata = raster_info['nodata'][0]
+    if target_nodata is not None:
+        target_band.SetNoDataValue(target_nodata)
     target_band = None
     target_raster = None
 
