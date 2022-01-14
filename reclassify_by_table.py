@@ -56,7 +56,7 @@ if __name__ == '__main__':
     value_map = {
         int(base_lucode): cast_fn(target_val)
         for base_lucode, target_val in zip(
-            df[args.base_lulc_field], df[args.target_lulc_field])}
+            df[args.base_lulc_field], df[args.target_value_field])}
     LOGGER.info(f'reclassification map: {value_map}')
 
     target_raster_path = f'''reclassified_{
