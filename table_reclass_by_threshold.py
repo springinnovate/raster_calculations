@@ -80,7 +80,8 @@ def main():
         args.base_raster_path, args.threshold_raster_path]
     path_hash = hashlib.sha256()
     path_hash.update(','.join([
-        os.path.basename(path) for path in base_raster_path_list]).encode(
+        os.path.basename(path) for path in base_raster_path_list + [
+            args.target_raster_path]]).encode(
         'utf-8'))
     workspace_dir = os.path.join(ALIGNED_DIR, path_hash.hexdigest()[:5])
     os.makedirs(workspace_dir, exist_ok=True)
