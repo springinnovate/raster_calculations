@@ -78,7 +78,7 @@ def main():
 
     base_raster_path_list = [
         args.base_raster_path, args.threshold_raster_path]
-    path_hash = hashlib.md6()
+    path_hash = hashlib.sha256()
     path_hash.update(','.join([
         os.path.basename(path) for path in base_raster_path_list]))
     workspace_dir = os.path.join(ALIGNED_DIR, path_hash.hexdigest())
