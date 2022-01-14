@@ -55,7 +55,8 @@ if __name__ == '__main__':
     df = pandas.read_csv(args.reclassify_table_path)
 
     if not args.float and any(
-            not x.is_integer() for x in df[args.target_value_field]):
+            not isinstance(x, int) and not x.is_integer() for x in df[
+                args.target_value_field]):
         raise ValueError(
             f'There are floating point values in {args.target_value_field} '
             'column but the --float flag has not been passed. Either run '
