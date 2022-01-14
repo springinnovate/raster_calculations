@@ -7,6 +7,7 @@ import hashlib
 from ecoshard import geoprocessing
 from ecoshard import taskgraph
 import pandas
+import numpy
 
 from osgeo import gdal
 
@@ -60,18 +61,26 @@ def main():
         }
     print(value_map)
 
+    threshold_nodata = geoprocessing.get_raster_info(
+        args.threshold_raster_path)['nodata'][0]
+
     def _reclass_op(base_array, threshold_array):
         result = base_array.copy()
+        if threshold_nodata is not None:
+            valid_mask = ~numpy.isclose(threshold_array, threshold_nodata)
+        else:
+            valid_mask = numpy.ones(base_array.shape, dtype=bool)
+
         for base_code, (leq_target, gt_target) in value_map.items():
             leq_mask = (
                 base_array == base_code) * (
                     threshold_array <= args.threshold_value)
-            result[leq_mask] = leq_target
+            result[leq_mask & valid_mask] = leq_target
 
             gt_mask = (
                 base_array == base_code) * (
                     threshold_array > args.threshold_value)
-            result[gt_mask] = gt_target
+            result[gt_mask & valid_mask] = gt_target
         return result
 
     base_raster_info = geoprocessing.get_raster_info(args.base_raster_path)
@@ -94,7 +103,7 @@ def main():
         func=geoprocessing.align_and_resize_raster_stack,
         args=(
             base_raster_path_list, aligned_raster_path_list, ['near']*2,
-            base_raster_info['pixel_size'], 'intersection'),
+            base_raster_info['pixel_size'], 'union'),
         kwargs={
             'target_projection_wkt': base_raster_info['projection_wkt']
         })
