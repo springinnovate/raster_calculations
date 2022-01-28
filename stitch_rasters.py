@@ -134,7 +134,7 @@ def main():
         raster_info['datatype'],
         options=(
             'TILED=YES', 'BIGTIFF=YES', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
-            'COMPRESS=LZW', 'SPARSE_OK=TRUE'))
+            'COMPRESS=ZSTD', 'SPARSE_OK=TRUE'))
     target_raster.SetProjection(target_projection.ExportToWkt())
     target_raster.SetGeoTransform(geotransform)
     target_band = target_raster.GetRasterBand(1)
