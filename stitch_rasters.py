@@ -65,6 +65,12 @@ def main():
             'if true, rescales values to be proportional to area change '
             'for wgs84 coordinates'))
 
+    parser.add_argument(
+        '--workspace_dir', default=f"""stitch_raster_workspace_{os.basename(
+            os.path.splitext(args.target_raster_path)[0])}""", help=(
+            'temporary directory used for warping files, useful for '
+            'avoiding rewarping of files'))
+
     args = parser.parse_args()
 
     if not args.raster_list != args.raster_pattern:
@@ -151,8 +157,7 @@ def main():
         (args.target_raster_path, 1),
         overlap_algorithm=args.overlap_algorithm,
         run_parallel=True,
-        working_dir=f"""stitch_raster_workspace_{os.basename(
-            os.path.splitext(args.target_raster_path)[0])}""",
+        working_dir=args.working_dir,
         area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
 
     LOGGER.debug('build overviews...')
