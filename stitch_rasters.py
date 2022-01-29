@@ -9,7 +9,7 @@ import os
 
 from osgeo import gdal
 from osgeo import osr
-import pygeoprocessing
+from ecoshard import geoprocessing
 
 
 logging.basicConfig(
@@ -65,6 +65,12 @@ def main():
             'if true, rescales values to be proportional to area change '
             'for wgs84 coordinates'))
 
+    parser.add_argument(
+        '--workspace_dir', default=f"""stitch_raster_workspace_{os.basename(
+            os.path.splitext(args.target_raster_path)[0])}""", help=(
+            'temporary directory used for warping files, useful for '
+            'avoiding rewarping of files'))
+
     args = parser.parse_args()
 
     if not args.raster_list != args.raster_pattern:
@@ -106,14 +112,14 @@ def main():
             LOGGER.warning(f'{raster_path} already scheduled')
             continue
         raster_path_set.add(raster_path)
-        raster_info = pygeoprocessing.get_raster_info(raster_path)
+        raster_info = geoprocessing.get_raster_info(raster_path)
         bounding_box = raster_info['bounding_box']
-        target_bounding_box = pygeoprocessing.transform_bounding_box(
+        target_bounding_box = geoprocessing.transform_bounding_box(
             bounding_box, raster_info['projection_wkt'],
             target_projection.ExportToWkt())
         target_bounding_box_list.append(target_bounding_box)
 
-    target_bounding_box = pygeoprocessing.merge_bounding_box_list(
+    target_bounding_box = geoprocessing.merge_bounding_box_list(
         target_bounding_box_list, 'union')
 
     gtiff_driver = gdal.GetDriverByName('GTiff')
@@ -134,7 +140,7 @@ def main():
         raster_info['datatype'],
         options=(
             'TILED=YES', 'BIGTIFF=YES', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
-            'COMPRESS=LZW', 'SPARSE_OK=TRUE'))
+            'COMPRESS=ZSTD', 'SPARSE_OK=TRUE'))
     target_raster.SetProjection(target_projection.ExportToWkt())
     target_raster.SetGeoTransform(geotransform)
     target_band = target_raster.GetRasterBand(1)
@@ -147,11 +153,13 @@ def main():
     target_raster = None
 
     LOGGER.info('calling stitch_rasters')
-    pygeoprocessing.stitch_rasters(
+    geoprocessing.stitch_rasters(
         [(path, 1) for path in raster_path_list],
         [args.resample_method]*len(raster_path_list),
         (args.target_raster_path, 1),
         overlap_algorithm=args.overlap_algorithm,
+        run_parallel=True,
+        working_dir=args.working_dir,
         area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
 
     LOGGER.debug('build overviews...')
