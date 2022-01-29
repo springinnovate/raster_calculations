@@ -141,6 +141,8 @@ def main():
     target_nodata = raster_info['nodata'][0]
     if target_nodata is not None:
         target_band.SetNoDataValue(target_nodata)
+    else:
+        target_band.SetNoDataValue(-9999)
     target_band = None
     target_raster = None
 
