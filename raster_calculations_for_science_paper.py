@@ -6,7 +6,7 @@ import multiprocessing
 
 import raster_calculations_core
 from osgeo import gdal
-import taskgraph
+from ecoshard import taskgraph
 
 
 WORKSPACE_DIR = 'raster_expression_workspace'
@@ -66,7 +66,7 @@ def main():
     for calculation in raster_change_calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
-    
+
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
@@ -147,15 +147,15 @@ def main():
             'target_raster_path': "pop_30s_cur.tif",
             'build_overview': False,
             'target_pixel_size': (0.00833333333333339, -0.00833333333333339)
-        },   
+        },
     ]
 
     for calculation in  raster_calulation_list1:
        raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
-   
+
     TASK_GRAPH.join()
-    
+
     raster_calculation_list2 = [
         {
             'expression': 'masker*pop',
@@ -200,7 +200,7 @@ def main():
             'target_raster_path': "pop_30s_ssp5.tif",
             'build_overview': False,
             'target_pixel_size': (0.00833333333333339, -0.00833333333333339),
-        }, 
+        },
     ]
 
     for calculation in raster_calculation_list2:
@@ -290,13 +290,13 @@ def main():
     for calculation in raster_calculation_list4:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
-    
+
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
     return #terminates at this point
 
-    
+
     # just build overviews
     raster_calculation_list = [
         {
@@ -502,7 +502,7 @@ def main():
     for calculation in raster_calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
-   
+
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 

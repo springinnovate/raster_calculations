@@ -1,15 +1,15 @@
 """Calculate potential pollination."""
-import os
 import logging
+import os
 import sys
 
-import scipy
-import numpy
-from osgeo import osr
+from ecoshard import geoprocessing
+from ecoshard import taskgraph
 from osgeo import gdal
-import pygeoprocessing
-import taskgraph
+from osgeo import osr
+import numpy
 import raster_calculations_core
+import scipy
 
 WORKSPACE_DIR = 'workspace_potential_pollination'
 CHURN_DIR = os.path.join(WORKSPACE_DIR, 'churn')
@@ -55,7 +55,7 @@ def main():
             WORKSPACE_DIR, '%s_proportion.tif' % prefix_name)
 
         nathab_proportion_task = task_graph.add_task(
-            func=pygeoprocessing.convolve_2d,
+            func=geoprocessing.convolve_2d,
             args=[
                 (hab_mask_path, 1), (kernel_raster_path, 1),
                 natural_hab_proportion_raster_path],
@@ -74,14 +74,14 @@ def main():
                 f' {os.path.basename(natural_hab_proportion_raster_path)}'))
 
         nathab_proportion_task.join()
-        nathab_proportion_nodata = pygeoprocessing.get_raster_info(
+        nathab_proportion_nodata = geoprocessing.get_raster_info(
             natural_hab_proportion_raster_path)['nodata'][0]
 
         potential_pollination_raster_path = os.path.join(
             WORKSPACE_DIR,
             '%s_potential_pollination.tif' % prefix_name)
         threshold_proportion_task = task_graph.add_task(
-            func=pygeoprocessing.raster_calculator,
+            func=geoprocessing.raster_calculator,
             args=(
                 [(natural_hab_proportion_raster_path, 1),
                  (nathab_proportion_nodata, 'raw'),

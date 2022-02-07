@@ -6,10 +6,10 @@ import os
 import sys
 
 from osgeo import gdal
-import pygeoprocessing
+from ecoshard import geoprocessing
 import numpy
 
-gdal.SetCacheMax(2**28)
+gdal.SetCacheMax(2**26)
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -89,13 +89,13 @@ def main():
     parser.add_argument('vector_path', help='Vector path')
     args = parser.parse_args()
 
-    raster_info = pygeoprocessing.get_raster_info(args.raster_path)
+    raster_info = geoprocessing.get_raster_info(args.raster_path)
     # create a masked area raster
     lat_area_km2 = _get_area_column(raster_info)
     masked_area_raster_path = os.path.join(
         WORKSPACE_DIR, f'area_km_{os.path.basename(args.raster_path)}')
     LOGGER.debug(lat_area_km2)
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(args.raster_path, 1), lat_area_km2,
          (raster_info['nodata'][0], 'raw')], _mult_by_mask_op,
         masked_area_raster_path, gdal.GDT_Float32, -1)
@@ -104,7 +104,7 @@ def main():
     projected_vector_path = os.path.join(
         WORKSPACE_DIR, f'projected_{os.path.basename(args.vector_path)}')
 
-    pygeoprocessing.reproject_vector(
+    geoprocessing.reproject_vector(
         args.vector_path, raster_info['projection_wkt'],
         projected_vector_path, driver_name='GPKG', copy_fields=True)
 
@@ -112,7 +112,7 @@ def main():
     # * # of pixels
 
     # base stats
-    stats = pygeoprocessing.zonal_statistics(
+    stats = geoprocessing.zonal_statistics(
         (args.raster_path, 1), projected_vector_path,
         polygons_might_overlap=False, working_dir='.')
 

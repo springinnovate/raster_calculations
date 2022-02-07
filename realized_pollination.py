@@ -1,16 +1,16 @@
 """Map people fed equivalents back to ESA habitat."""
-import os
 import logging
+import os
 import sys
 
-import scipy
-import numpy
-from osgeo import osr
+from ecoshard import geoprocessing
+from ecoshard import taskgraph
 from osgeo import gdal
-import pygeoprocessing
-import taskgraph
-import raster_calculations_core
+from osgeo import osr
 import compress_and_overview
+import numpy
+import raster_calculations_core
+import scipy
 
 BASE_RASTER_URL_MAP = {
     'ppl_fed': 'https://storage.googleapis.com/ecoshard-root/working-shards/pollination_ppl_fed_on_ag_10s_esa_md5_0fb6bd172901703755b33dae2c9f1b92.tif',
@@ -69,17 +69,17 @@ def main():
         hab_fetch_path_map[raster_id] = raster_path
     task_graph.join()
 
-    hab_mask_raster_info = pygeoprocessing.get_raster_info(
+    hab_mask_raster_info = geoprocessing.get_raster_info(
         hab_fetch_path_map['hab_mask'])
 
-    ppl_fed_raster_info = pygeoprocessing.get_raster_info(
+    ppl_fed_raster_info = geoprocessing.get_raster_info(
         hab_fetch_path_map['ppl_fed'])
 
     ppl_fed_nodata_to_zero_path = os.path.join(
         CHURN_DIR, 'ppl_fed__nodata_to_zero.tif')
 
     task_graph.add_task(
-        func=pygeoprocessing.raster_calculator,
+        func=geoprocessing.raster_calculator,
         args=(
             [(hab_fetch_path_map['ppl_fed'], 1),
              (ppl_fed_raster_info['nodata'][0], 'raw')],
@@ -92,7 +92,7 @@ def main():
     # calculate extent of ppl fed by 2km.
     ppl_fed_reach_raster_path = os.path.join(CHURN_DIR, 'ppl_fed_reach.tif')
     ppl_fed_reach_task = task_graph.add_task(
-        func=pygeoprocessing.convolve_2d,
+        func=geoprocessing.convolve_2d,
         args=[
             (ppl_fed_nodata_to_zero_path, 1), (kernel_raster_path, 1),
             ppl_fed_reach_raster_path],

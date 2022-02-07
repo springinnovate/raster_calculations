@@ -2,19 +2,20 @@
 #cd C:\Users\Becky\Documents\raster_calculations
 #conda activate py38_gdal312
 
+import datetime
 import glob
-import sys
-import os
 import logging
 import multiprocessing
-import datetime
+import numpy
+import os
 import subprocess
-import raster_calculations_core
+import sys
+
+from ecoshard import geoprocessing
 from osgeo import gdal
 from osgeo import osr
-import taskgraph
-import pygeoprocessing
-import numpy
+import raster_calculations_core
+from ecoshard import taskgraph
 
 gdal.SetCacheMax(2**30)
 
@@ -177,10 +178,10 @@ raster_calculation_list = [
 ###################PRE-PROCESSING
 #their scenario maps are weird.
 # here's a snippet that will reproject it to the esa bounding box and size:
-    esa_info = pygeoprocessing.get_raster_info("ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif")
+    esa_info = geoprocessing.get_raster_info("ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif")
     base_raster_path = r"ESACCI_PNV_iis_OA_ESAclasses_max_md5_e6575db589abb52c683d44434d428d80.tif"
     target_raster_path = '%s_wgs84%s' % os.path.splitext(base_raster_path)
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         base_raster_path, esa_info['pixel_size'], target_raster_path,
         'near', target_projection_wkt=esa_info['projection_wkt'],
         target_bb=esa_info['bounding_box'])
@@ -286,10 +287,10 @@ raster_calculation_list = [
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
-    esa_info = pygeoprocessing.get_raster_info("MSL_Map_MERGED_Global_AVISO_NoGIA_Adjust_md5_3072845759841d0b2523d00fe9518fee.tif")
+    esa_info = geoprocessing.get_raster_info("MSL_Map_MERGED_Global_AVISO_NoGIA_Adjust_md5_3072845759841d0b2523d00fe9518fee.tif")
     base_raster_path = r"slr_rcp60_md5_99ccaf1319d665b107a9227f2bbbd8b6.tif"
     target_raster_path = '%s_wgs84%s' % os.path.splitext(base_raster_path)
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         base_raster_path, esa_info['pixel_size'], target_raster_path,
         'near', target_projection_wkt=esa_info['projection_wkt'],
         target_bb=esa_info['bounding_box'])

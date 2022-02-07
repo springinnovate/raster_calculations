@@ -8,7 +8,7 @@ import datetime
 
 import raster_calculations_core
 from osgeo import gdal
-import taskgraph
+from ecoshard import taskgraph
 
 gdal.SetCacheMax(2**30)
 

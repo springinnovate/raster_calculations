@@ -6,9 +6,9 @@ import multiprocessing
 
 import raster_calculations_core
 from osgeo import gdal
-import taskgraph
+from ecoshard import taskgraph
 
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**26)
 
 WORKSPACE_DIR = 'less_than_workspace'
 NCPUS = multiprocessing.cpu_count()
