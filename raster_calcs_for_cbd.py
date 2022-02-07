@@ -43,9 +43,17 @@ def main():
                 'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_2050_compressed_md5_c215e5207337873a4c527b173c0d9ae2.tif",
                 'raster2': r"D:\results\global_n_export_lulc_sc2_fertilizer_2050_compressed_md5_6a5b8f74d205e7ba8614e8ca70bce00f.tif",
             },
-            'target_nodata': -9999,
-            'default_nan': -9999,
-            'target_raster_path': "avoided_conversion_n_export_Sc2-Sc1_fert2050.tif",
+            'target_nodata': -1e34,
+            'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fert2050.tif",
+        },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_intensified_compressed_md5_2dfa9baf7db8e015fea34c61e4e90b7b.tif",
+                'raster3': r"D:\results\global_n_export_lulc_sc1_fertilizer_intensified_compressed_md5_2dfa9baf7db8e015fea34c61e4e90b7b.tif",
+            },
+            'target_nodata': -1e34,
+            'target_raster_path': "restoration_nitrogen_Sc2-Sc1_fertInt.tif",
         },
         {
             'expression': 'raster2 - raster1',
@@ -53,9 +61,8 @@ def main():
                 'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_current_compressed_md5_5cdf0610c72b09215bcf686b30d6edfd.tif",
                 'raster2': r"D:\results\global_n_export_lulc_sc2_fertilizer_current_compressed_md5_aa1730466d71ee95c89f8a2c6cdfb312.tif",
             },
-            'target_nodata': -9999,
-            'default_nan': -9999,
-            'target_raster_path': "avoided_conversion_n_export_Sc2-Sc1_fertCur.tif",
+            'target_nodata': -1e34,
+            'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertCur.tif",
         },
         {
             'expression': 'raster1 - raster3',
@@ -63,9 +70,8 @@ def main():
                 'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_2050_compressed_md5_c215e5207337873a4c527b173c0d9ae2.tif",
                 'raster3': r"D:\results\global_n_export_lulc_sc3_fertilizer_current_compressed_md5_95bcca83bdbecdeaa958d0a954df1794.tif",
             },
-            'target_nodata': -9999,
-            'default_nan': -9999,
-            'target_raster_path': "restoration_n_export_Sc1-Sc3_fert2050.tif",
+            'target_nodata': -1e34,
+            'target_raster_path': "restoration_nitrogen_Sc1-Sc3_fert2050.tif",
         },
         {
             'expression': 'raster1 - raster3',
@@ -73,9 +79,8 @@ def main():
                 'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_intensified_compressed_md5_2dfa9baf7db8e015fea34c61e4e90b7b.tif",
                 'raster3': r"D:\results\global_n_export_lulc_sc3_fertilizer_current_compressed_md5_95bcca83bdbecdeaa958d0a954df1794.tif",
             },
-            'target_nodata': -9999,
-            'default_nan': -9999,
-            'target_raster_path': "restoration_n_export_Sc1-Sc3_fertInt.tif",
+            'target_nodata': -1e34,
+            'target_raster_path': "restoration_nitrogen_Sc1-Sc3_fertInt.tif",
         },
     ]
 
