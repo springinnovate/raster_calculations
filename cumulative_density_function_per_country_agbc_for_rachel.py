@@ -5,16 +5,16 @@ import os
 import logging
 import ecoshard
 
+from ecoshard import geoprocessing
+from osgeo import gdal
+from osgeo import ogr
+from osgeo import osr
 import matplotlib.pyplot
 import numpy
 import scipy.interpolate
-import pygeoprocessing
-from osgeo import gdal
-from osgeo import osr
-from osgeo import ogr
-import taskgraph
+from ecoshard import taskgraph
 
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**26)
 
 #RASTER_PATH = 'agbc2010_MgCha_x10.tif'
 RASTER_PATH = r"C:\Users\Rich\Downloads\agbc2010_MgCha_x10.tif"
@@ -67,7 +67,7 @@ def main():
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)
 
-    raster_info = pygeoprocessing.get_raster_info(RASTER_PATH)
+    raster_info = geoprocessing.get_raster_info(RASTER_PATH)
 
     country_threshold_table_path = os.path.join(
         WORKSPACE_DIR, 'country_threshold.csv')
@@ -96,14 +96,14 @@ def main():
         country_raster_path = os.path.join(country_workspace, '%s_%s' % (
             country_name, os.path.basename(RASTER_PATH)))
 
-        country_vector_info = pygeoprocessing.get_vector_info(country_vector)
-        pygeoprocessing.warp_raster(
+        country_vector_info = geoprocessing.get_vector_info(country_vector)
+        geoprocessing.warp_raster(
             RASTER_PATH, raster_info['pixel_size'], country_raster_path,
             'near', target_bb=country_vector_info['bounding_box'],
             vector_mask_options={'mask_vector_path': country_vector},
             working_dir=country_workspace)
 
-        percentile_values = pygeoprocessing.raster_band_percentile(
+        percentile_values = geoprocessing.raster_band_percentile(
             (country_raster_path, 1), country_workspace, PERCENTILE_LIST)
         if len(percentile_values) != len(PERCENTILE_LIST):
             continue
@@ -113,10 +113,10 @@ def main():
 
         cdf_array = [0.0] * len(percentile_values)
 
-        nodata = pygeoprocessing.get_raster_info(
+        nodata = geoprocessing.get_raster_info(
             country_raster_path)['nodata'][0]
         pixel_count = 0
-        for _, data_block in pygeoprocessing.iterblocks(
+        for _, data_block in geoprocessing.iterblocks(
                 (country_raster_path, 1)):
             nodata_mask = ~numpy.isclose(data_block, nodata)
             pixel_count += numpy.count_nonzero(nodata_mask)

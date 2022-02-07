@@ -5,9 +5,9 @@ import math
 import logging
 import sys
 
+from ecoshard import geoprocessing
 from osgeo import gdal
 from osgeo import osr
-import pygeoprocessing
 import numpy
 
 
@@ -62,7 +62,7 @@ def mask_op(mask_array, value_array):
 
 def calculate_mask_area(base_mask_raster_path):
     """Calculate area of mask==1."""
-    base_raster_info = pygeoprocessing.get_raster_info(
+    base_raster_info = geoprocessing.get_raster_info(
         base_mask_raster_path)
 
     base_srs = osr.SpatialReference()
@@ -86,12 +86,12 @@ def calculate_mask_area(base_mask_raster_path):
 
     nodata = base_raster_info['nodata'][0]
     area_raster_path = 'tmp_area_mask.tif'
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(base_mask_raster_path, 1), pixel_conversion], mask_op,
         area_raster_path, gdal.GDT_Float32, nodata)
 
     area_sum = 0.0
-    for _, area_block in pygeoprocessing.iterblocks((area_raster_path, 1)):
+    for _, area_block in geoprocessing.iterblocks((area_raster_path, 1)):
         area_sum += numpy.sum(area_block)
     return area_sum
 

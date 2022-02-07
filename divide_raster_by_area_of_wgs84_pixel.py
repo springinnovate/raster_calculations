@@ -3,9 +3,9 @@ import logging
 import math
 import sys
 
+from ecoshard import geoprocessing
 from osgeo import gdal
 import numpy
-import pygeoprocessing
 
 pixel_size = 0.083
 lat = 0
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         'realized_fwfish_distrib_catch_md5_995d3d330ed5fc4462a47f7db44225e9.tif')
     target_raster = 'per_km_2_%s' % raster_path
 
-    raster_info = pygeoprocessing.get_raster_info(raster_path)
+    raster_info = geoprocessing.get_raster_info(raster_path)
 
     n_cols, n_rows = raster_info['raster_size']
     gt = raster_info['geotransform']
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         lat_area_km2[row_index][0] = area_of_pixel_km2(
             raster_info['pixel_size'][0], lat_center)
 
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(raster_path, 1), lat_area_km2, (raster_info['nodata'][0], 'raw')],
         divide_op, target_raster, raster_info['datatype'],
         raster_info['nodata'][0])
