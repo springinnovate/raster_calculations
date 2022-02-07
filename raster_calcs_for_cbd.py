@@ -36,15 +36,68 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
 
-#for new "current" scenario::
-    # forest = 80; natural grasslands = 150; wetlands = 180; deserts = 200; shrublands = 120; cultivated grasslands = 50; croplands = 20. 
-    # With that map, you are going to reclass the "bare lands" in your esa map (which is in 300m resolution). 
-    # When you encounter shrublands, grasslands, deserts and bare lands in your current esas map, and ours is "cultivated grasslands" you will change yours. 
-    # You will also change the "desert" class to "sparse".
-    
+    calculation_list = [
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_2050_compressed_md5_c215e5207337873a4c527b173c0d9ae2.tif",
+                'raster2': r"D:\results\global_n_export_lulc_sc2_fertilizer_2050_compressed_md5_6a5b8f74d205e7ba8614e8ca70bce00f.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_raster_path': "avoided_conversion_n_export_Sc2-Sc1_fert2050.tif",
+        },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_current_compressed_md5_5cdf0610c72b09215bcf686b30d6edfd.tif",
+                'raster2': r"D:\results\global_n_export_lulc_sc2_fertilizer_current_compressed_md5_aa1730466d71ee95c89f8a2c6cdfb312.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_raster_path': "avoided_conversion_n_export_Sc2-Sc1_fertCur.tif",
+        },
+        {
+            'expression': 'raster1 - raster3',
+            'symbol_to_path_map': {
+                'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_2050_compressed_md5_c215e5207337873a4c527b173c0d9ae2.tif",
+                'raster3': r"D:\results\global_n_export_lulc_sc3_fertilizer_current_compressed_md5_95bcca83bdbecdeaa958d0a954df1794.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_raster_path': "restoration_n_export_Sc1-Sc3_fert2050.tif",
+        },
+        {
+            'expression': 'raster1 - raster3',
+            'symbol_to_path_map': {
+                'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_intensified_compressed_md5_2dfa9baf7db8e015fea34c61e4e90b7b.tif",
+                'raster3': r"D:\results\global_n_export_lulc_sc3_fertilizer_current_compressed_md5_95bcca83bdbecdeaa958d0a954df1794.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_raster_path': "restoration_n_export_Sc1-Sc3_fertInt.tif",
+        },
+    ]
 
-    calculation_list = [ 
-        { 
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+#for new "current" scenario::
+    # forest = 80; natural grasslands = 150; wetlands = 180; deserts = 200; shrublands = 120; cultivated grasslands = 50; croplands = 20.
+    # With that map, you are going to reclass the "bare lands" in your esa map (which is in 300m resolution).
+    # When you encounter shrublands, grasslands, deserts and bare lands in your current esas map, and ours is "cultivated grasslands" you will change yours.
+    # You will also change the "desert" class to "sparse".
+
+
+    calculation_list = [
+        {
             'expression': 'raster1 + raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\Nbackgroundrates_smithpnv_md5_70ffbb628551efdf7b086de8258681fc.tif",
@@ -67,7 +120,7 @@ def main():
 
     return
 
-    single_expression = { 
+    single_expression = {
         'expression': (
             '(raster1>=200)*(raster1<=202)*(raster2>79)*(raster2<81)*50 + (raster1>=200)*(raster1<=202)*(raster2>149)*(raster2<151)*130 +'
             '(raster1>=200)*(raster1<=202)*(raster2>179)*(raster2<181)*180 + (raster1>=200)*(raster1<=202)*(raster2>119)*(raster2<121)*120 +'
@@ -118,7 +171,7 @@ raster_calculation_list = [
 
 ###################PRE-PROCESSING
 #their scenario maps are weird.
-# here's a snippet that will reproject it to the esa bounding box and size: 
+# here's a snippet that will reproject it to the esa bounding box and size:
     esa_info = pygeoprocessing.get_raster_info("ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif")
     base_raster_path = r"ESACCI_PNV_iis_OA_ESAclasses_max_md5_e6575db589abb52c683d44434d428d80.tif"
     target_raster_path = '%s_wgs84%s' % os.path.splitext(base_raster_path)
@@ -179,7 +232,7 @@ raster_calculation_list = [
 
     TASK_GRAPH.join()
 
-    single_expression = { 
+    single_expression = {
         'expression': '(raster1>=0)*raster1',
         'symbol_to_path_map': {
             'raster1': "lspop_ssp3.tif",
