@@ -66,12 +66,17 @@ def main():
             'for wgs84 coordinates'))
 
     parser.add_argument(
-        '--workspace_dir', default=f"""stitch_raster_workspace_{os.basename(
-            os.path.splitext(args.target_raster_path)[0])}""", help=(
+        '--workspace_dir', help=(
             'temporary directory used for warping files, useful for '
-            'avoiding rewarping of files'))
+            'avoiding rewarping of files, otherwise defaults to '
+            'stitch_workspace_[target file name]'))
 
     args = parser.parse_args()
+
+    if args.workspace_dir is None:
+        args.workspace_dir = f"""stitch_raster_workspace_{
+            os.path.basename(os.path.splitext(
+                args.target_raster_path)[0])}"""
 
     if not args.raster_list != args.raster_pattern:
         raise ValueError(
@@ -157,7 +162,7 @@ def main():
         (args.target_raster_path, 1),
         overlap_algorithm=args.overlap_algorithm,
         run_parallel=True,
-        working_dir=args.working_dir,
+        working_dir=args.workspace_dir,
         area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
 
     LOGGER.debug('build overviews...')
