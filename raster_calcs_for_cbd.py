@@ -13,7 +13,7 @@ import raster_calculations_core
 from osgeo import gdal
 from osgeo import osr
 import taskgraph
-import pygeoprocessing
+import ecoshard.geoprocessing as pygeoprocessing
 import numpy
 
 gdal.SetCacheMax(2**30)
@@ -153,14 +153,14 @@ def main():
 
     return
 
-raster_calculation_list = [
+    raster_calculation_list = [
         {
             'expression': '(raster1 - raster2)*(raster1<2)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cbd\Pollination\PNV\ESACCI_PNV_iis_OA_ESAclasses_max_ESAresproj_md5_e6575db589abb52c683d44434d428d80_hab_mask.tif",
                 'raster2': r"C:\Users\Becky\Documents\cbd\Pollination\PNV\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2018-v2.1.1_hab_mask_md5_9afb78a2cc68a7bf6bba947761d74fc3.tif",
             },
-            'target_nodata': -9999
+            'target_nodata': -9999,
             'target_raster_path': "restored_iis-esa.tif",
         },
     ]
@@ -300,7 +300,7 @@ raster_calculation_list = [
 
 
 ############################### POST PROCESSING
-raster_calculation_list = [
+    raster_calculation_list = [
         {
             'expression': 'raster1/raster2',
             'symbol_to_path_map': {
@@ -428,6 +428,6 @@ raster_calculation_list = [
     return
 
 
-    if __name__ == '__main__':
+if __name__ == '__main__':
     TASK_GRAPH = taskgraph.TaskGraph(WORKSPACE_DIR, NCPUS, 5.0)
     main()
