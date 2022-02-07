@@ -50,10 +50,10 @@ def main():
             'expression': 'raster2 - raster1',
             'symbol_to_path_map': {
                 'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_intensified_compressed_md5_2dfa9baf7db8e015fea34c61e4e90b7b.tif",
-                'raster3': r"D:\results\global_n_export_lulc_sc1_fertilizer_intensified_compressed_md5_2dfa9baf7db8e015fea34c61e4e90b7b.tif",
+                'raster2': r"D:\results\global_n_export_lulc_sc2_fertilizer_intensified_compressed_md5_cfd2a69156533f340f044cbc11d89856.tif",
             },
             'target_nodata': -1e34,
-            'target_raster_path': "restoration_nitrogen_Sc2-Sc1_fertInt.tif",
+            'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertInt.tif",
         },
         {
             'expression': 'raster2 - raster1',
