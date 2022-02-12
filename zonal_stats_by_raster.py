@@ -109,8 +109,9 @@ if __name__ == '__main__':
         help='pass this flag to avoid aligning rasters')
     parser.add_argument('--basename', type=str, help=(
         'output table will include this name, if left off a unique hash will '
-        'be used created from the landcover and other raster filepath '
-        'strings.'))
+        'be created from the landcover and other raster filepath and '
+        'timestamp strings, this means a new subworkspace will be created on '
+        'each run.'))
     parser.add_argument(
         '--n_workers', type=int, default=multiprocessing.cpu_count(),
         help=(
