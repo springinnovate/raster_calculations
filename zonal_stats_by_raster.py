@@ -32,7 +32,7 @@ def get_unique_values(raster_path):
     block_list_len = len(list(geoprocessing.iterblocks(
         (raster_path, 1), offset_only=True, largest_block=2**24)))
     last_time = time.time()
-    for (offset_data, array), block_id in enumerate(geoprocessing.iterblocks(
+    for block_id, (offset_data, array) in enumerate(geoprocessing.iterblocks(
             (raster_path, 1), largest_block=2**24)):
         if time.time()-last_time > 5.0:
             LOGGER.info(
