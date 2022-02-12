@@ -29,7 +29,16 @@ def get_unique_values(raster_path):
     """Return a list of non-nodata unique values from `raster_path`."""
     nodata = geoprocessing.get_raster_info(raster_path)['nodata'][0]
     unique_set = set()
-    for offset_data, array in geoprocessing.iterblocks((raster_path, 1)):
+    block_list_len = len(list(geoprocessing.iterblocks(
+        (raster_path, 1), offset_only=True)))
+    last_time = time.time()
+    for (offset_data, array), block_id in enumerate(geoprocessing.iterblocks(
+            (raster_path, 1))):
+        if time.time()-last_time > 5.0:
+            LOGGER.info(
+                f'{(block_id+1)/(block_list_len)*100:.2f}% complete on '
+                f'{raster_path}. set size: {len(unique_set)}')
+            last_time = time.time()
         if nodata is not None:
             valid_mask = array != nodata
             unique_set |= set(numpy.unique(array[valid_mask]))
@@ -128,7 +137,7 @@ if __name__ == '__main__':
     other_raster_info = geoprocessing.get_raster_info(
         args.other_raster)
     if not args.do_not_align and (args.landcover_raster != args.other_raster):
-        task_graph.add_task(
+        align_task = task_graph.add_task(
             func=geoprocessing.align_and_resize_raster_stack,
             args=(
                 base_raster_path_list, aligned_raster_path_list,
@@ -145,7 +154,13 @@ if __name__ == '__main__':
     lulc_nodata = geoprocessing.get_raster_info(
         args.landcover_raster)['nodata']
     LOGGER.info('calculate unique values')
-    unique_values = get_unique_values(args.landcover_raster)
+    unique_value_task = task_graph.add_task(
+        func=get_unique_values,
+        args=(args.landcover_raster,),
+        store_result=True,
+        dependent_task_list=[align_task],
+        task_name=f'unique values for {args.landcover_raster}')
+    unique_values = unique_value_task.get()
     LOGGER.debug(unique_values)
     stats_table = open(f'stats_table_{basename}.csv', 'w')
     stats_table.write(
@@ -161,6 +176,7 @@ if __name__ == '__main__':
                 aligned_raster_path_list, mask_code, other_raster_info,
                 masked_raster_path),
             store_result=True,
+            dependent_task_list=[unique_value_task],
             target_path_list=[masked_raster_path],
             task_name=f'mask {masked_raster_path}')
         masked_stats_list.append((stats_task, mask_code))
