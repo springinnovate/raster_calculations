@@ -6,7 +6,7 @@ import sys
 import zipfile
 
 import ecoshard
-import taskgraph
+from ecoshard import taskgraph
 
 GLOBAL_DEM_ECOSHARD_URL = (
     'https://storage.googleapis.com/nci-ecoshards/'

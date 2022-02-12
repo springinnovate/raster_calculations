@@ -1,4 +1,4 @@
-"""Command line script wrapping pygeoprocessing.raster_stats."""
+"""Command line script wrapping geoprocessing.raster_stats."""
 import argparse
 import datetime
 import glob
@@ -7,7 +7,7 @@ import os
 import sys
 
 from osgeo import gdal
-import ecoshard.geoprocessing as pygeoprocessing
+from ecoshard import geoprocessing
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     os.makedirs(working_dir, exist_ok=True)
     for raster_path in glob.glob(args.raster_pattern):
         basename = os.path.basename(os.path.splitext(raster_path)[0])
-        stat_dict = pygeoprocessing.zonal_statistics(
+        stat_dict = geoprocessing.zonal_statistics(
             (raster_path, 1), args.vector_path,
             working_dir=working_dir,
             clean_working_dir=not args.keep_working_dir,

@@ -4,24 +4,23 @@ Normalize a raster by percentile in a polygon.
     * given a polygon make a local stats list there.
     * option to clamp 0..1
 """
-import sys
+import logging
+import os
 import pickle
 import shutil
-import os
+import sys
 import tempfile
-import logging
 
-import ecoshard
-import numpy
-import shapely.wkb
+from ecoshard import geoprocessing
+from ecoshard import taskgraph
 from osgeo import gdal
 from osgeo import ogr
-import taskgraph
-import pygeoprocessing
+import ecoshard
+import numpy
 import raster_calculations_core
+import shapely.wkb
 
-# set a 1GB limit for the cache
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**26)
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -97,7 +96,7 @@ def normalize_by_polygon(
 
     global_norm_value_raster_path = os.path.join(
         workspace_dir, 'global_norm_values.tif')
-    pygeoprocessing.new_raster_from_base(
+    geoprocessing.new_raster_from_base(
         raster_path, global_norm_value_raster_path, gdal.GDT_Float32,
         [-1], raster_driver_creation_tuple=(
             'GTIFF', (
@@ -118,12 +117,12 @@ def normalize_by_polygon(
     local_layer = None
     local_vector = None
 
-    pygeoprocessing.rasterize(
+    geoprocessing.rasterize(
         local_vector_path, global_norm_value_raster_path,
         option_list=['ATTRIBUTE=norm_val'])
 
-    raster_nodata = pygeoprocessing.get_raster_info(raster_path)['nodata'][0]
-    pygeoprocessing.raster_calculator(
+    raster_nodata = geoprocessing.get_raster_info(raster_path)['nodata'][0]
+    geoprocessing.raster_calculator(
         [(raster_path, 1), (global_norm_value_raster_path, 1),
          (clamp_range, 'raw'), (raster_nodata, 'raw'), (-1, 'raw'),
          (-1, 'raw')], divide_op,
@@ -168,15 +167,15 @@ def clip_and_mask_raster(
     geometry_ref = feature.GetGeometryRef()
     geometry = shapely.wkb.loads(geometry_ref.ExportToWkb())
     base_dir = os.path.dirname(target_mask_path)
-    pixel_size = pygeoprocessing.get_raster_info(raster_path)['pixel_size']
+    pixel_size = geoprocessing.get_raster_info(raster_path)['pixel_size']
     fh, target_clipped_path = tempfile.mkstemp(
         suffix='.tif', prefix='clipped', dir=base_dir)
     os.close(fh)
     LOGGER.debug('%s: %s', vector_path, str(geometry.bounds))
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         raster_path, pixel_size, target_clipped_path,
         'near', target_bb=geometry.bounds)
-    pygeoprocessing.mask_raster(
+    geoprocessing.mask_raster(
         (target_clipped_path, 1), vector_path, target_mask_path,
         where_clause='FID=%d' % fid)
     os.remove(target_clipped_path)
@@ -204,7 +203,7 @@ def calculate_percentile(
     LOGGER.debug('processing percentiles for %s', raster_path)
     heap_size = 2**28
     ffi_buffer_size = 2**10
-    percentile_values_list = pygeoprocessing.raster_band_percentile(
+    percentile_values_list = geoprocessing.raster_band_percentile(
         (raster_path, 1), churn_dir, percentiles_list,
         heap_size, ffi_buffer_size)
     with open(result_pickle_path, 'wb') as pickle_file:

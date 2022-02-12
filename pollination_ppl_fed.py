@@ -6,7 +6,7 @@ import multiprocessing
 
 import raster_calculations_core
 from osgeo import gdal
-import taskgraph
+from ecoshard import taskgraph
 
 
 WORKSPACE_DIR = 'raster_expression_workspace'
@@ -32,9 +32,9 @@ def main():
 
     #coarse average of pollination dependence
 
-#    calculation_list = [ 
+#    calculation_list = [
 #        {
-#            'expression': 'polldep/total', 
+#            'expression': 'polldep/total',
 #            'symbol_to_path_map': {
 #                'polldep': r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\monfreda_2008_yield_poll_dep_en_10km.tif",
 #                'total':r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\monfreda_2008_yield_total_en_10km.tif"
@@ -45,7 +45,7 @@ def main():
 #            'target_pixel_size': (0.08333300100000000377, -0.08333300100000000377),
 #        },
 #        {
-#            'expression': 'polldep/total', 
+#            'expression': 'polldep/total',
 #            'symbol_to_path_map': {
 #                'polldep': r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\monfreda_2008_yield_poll_dep_fo_10km.tif",
 #                'total':r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\monfreda_2008_yield_total_fo_10km.tif"
@@ -56,7 +56,7 @@ def main():
 #            'target_pixel_size': (0.08333300100000000377, -0.08333300100000000377),
 #        },
 #        {
-#            'expression': 'polldep/total', 
+#            'expression': 'polldep/total',
 #            'symbol_to_path_map': {
 #                'polldep': r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\monfreda_2008_yield_poll_dep_va_10km.tif",
 #                'total':r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\monfreda_2008_yield_total_va_10km.tif"
@@ -77,13 +77,13 @@ def main():
 #    TASK_GRAPH.close()
 #
 #    return
-    
+
 #    single_expression = {
 #        'expression': '(va*(486980) + en*(3319921) + fo*(132654)) / (486980 + 3319921 + 132654)',
 #        'symbol_to_path_map': {
 #            'va': r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\prop_poll_dep_10km_va.tif",
 #            'en': r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\prop_poll_dep_10km_en.tif",
-#            'fo': r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\prop_poll_dep_10km_fo.tif",   
+#            'fo': r"C:\Users\Becky\Documents\raster_calculations\ag_work\pollination\prop_poll_dep_10km_fo.tif",
 #        },
 #        'target_nodata': -9999,
 #        'default_nan': -9999,

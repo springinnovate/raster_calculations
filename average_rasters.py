@@ -7,10 +7,10 @@ import shutil
 import sys
 import tempfile
 
-import ecoshard
+from ecoshard import geoprocessing
 from osgeo import gdal
+import ecoshard
 import numpy
-import pygeoprocessing
 
 
 TARGET_AVERAGE_RASTER_PATH = 'average_raster.tif'
@@ -78,25 +78,25 @@ if __name__ == '__main__':
         os.path.join(working_dir, os.path.basename(path))
         for path in file_list]
 
-    target_pixel_size = pygeoprocessing.get_raster_info(
+    target_pixel_size = geoprocessing.get_raster_info(
         file_list[0])['pixel_size']
 
-    pygeoprocessing.align_and_resize_raster_stack(
+    geoprocessing.align_and_resize_raster_stack(
         file_list, aligned_list, ['near'] * len(aligned_list),
         target_pixel_size, 'union')
 
     nodata_list = [
-        (pygeoprocessing.get_raster_info(path)['nodata'][0], 'raw')
+        (geoprocessing.get_raster_info(path)['nodata'][0], 'raw')
         for path in aligned_list]
 
     # count valid pixels
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(path, 1) for path in aligned_list] + nodata_list, count_op,
         args.prefix+TARGET_VALID_COUNT_RASTER_PATH, gdal.GDT_Int32,
         COUNT_NODATA)
 
     # average valid pixels
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(path, 1) for path in aligned_list] + nodata_list, average_op,
         args.prefix+TARGET_AVERAGE_RASTER_PATH, gdal.GDT_Float32,
         AVERAGE_NODATA)

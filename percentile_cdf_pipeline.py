@@ -14,12 +14,12 @@ import shutil
 import logging
 import multiprocessing
 
-import taskgraph
-import pygeoprocessing
-import numpy
+from ecoshard import taskgraph
+from ecoshard import geoprocessing
 from osgeo import gdal
+import numpy
 
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**26)
 
 WORKSPACE_DIR = 'raster_calculations'
 N_CPUS = max(1, multiprocessing.cpu_count() - 2)
@@ -52,7 +52,7 @@ def main():
     # make a list full of 0s as long as the percentile list
     percentiles_list = list(range(0, 101, 1))
         #[0, 0.01, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 96, 97, 98, 99, 99.9, 100]
-        
+
     task_graph = taskgraph.TaskGraph(WORKSPACE_DIR, N_CPUS, 5.0)
 
     pickle_path_list = []
@@ -126,14 +126,14 @@ def calculate_percentile(
     result_dict = {
         'percentiles_list': percentiles_list,
         'percentile_sum_list': [0.] * len(percentiles_list),
-        'percentile_values_list': pygeoprocessing.raster_band_percentile(
+        'percentile_values_list': geoprocessing.raster_band_percentile(
             (raster_path, 1), churn_dir, percentiles_list,
             heap_size, ffi_buffer_size)
     }
     LOGGER.debug('intermediate result_dict: %s', str(result_dict))
     LOGGER.debug('processing percentile sums for %s', raster_path)
-    nodata_value = pygeoprocessing.get_raster_info(raster_path)['nodata'][0]
-    for _, block_data in pygeoprocessing.iterblocks((raster_path, 1)):
+    nodata_value = geoprocessing.get_raster_info(raster_path)['nodata'][0]
+    for _, block_data in geoprocessing.iterblocks((raster_path, 1)):
         nodata_mask = numpy.isclose(block_data, nodata_value)
         # this loop makes the block below a lot simpler
         for index, percentile_value in enumerate(

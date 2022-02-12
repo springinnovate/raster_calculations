@@ -21,6 +21,35 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.DEBUG)
 gdal.SetCacheMax(2**26)
 
+WORLD_ECKERT_IV_WKT = """PROJCRS["unknown",
+    BASEGEOGCRS["GCS_unknown",
+        DATUM["World Geodetic System 1984",
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]],
+            ID["EPSG",6326]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["Degree",0.0174532925199433]]],
+    CONVERSION["unnamed",
+        METHOD["Eckert IV"],
+        PARAMETER["Longitude of natural origin",0,
+            ANGLEUNIT["Degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["False easting",0,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",0,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["(E)",east,
+            ORDER[1],
+            LENGTHUNIT["metre",1,
+                ID["EPSG",9001]]],
+        AXIS["(N)",north,
+            ORDER[2],
+            LENGTHUNIT["metre",1,
+                ID["EPSG",9001]]]]"""
+
 
 def main():
     """Entry point."""
@@ -30,7 +59,7 @@ def main():
             'raster.'))
     parser.add_argument(
         '--target_projection_epsg', required=True,
-        help='EPSG code of target projection')
+        help='EPSG code of target projection or "eckert_iv"')
     parser.add_argument(
         '--target_cell_size', required=True,
         help=(
@@ -66,12 +95,17 @@ def main():
             'for wgs84 coordinates'))
 
     parser.add_argument(
-        '--workspace_dir', default=f"""stitch_raster_workspace_{os.basename(
-            os.path.splitext(args.target_raster_path)[0])}""", help=(
+        '--workspace_dir', help=(
             'temporary directory used for warping files, useful for '
-            'avoiding rewarping of files'))
+            'avoiding rewarping of files, otherwise defaults to '
+            'stitch_workspace_[target file name]'))
 
     args = parser.parse_args()
+
+    if args.workspace_dir is None:
+        args.workspace_dir = f"""stitch_raster_workspace_{
+            os.path.basename(os.path.splitext(
+                args.target_raster_path)[0])}"""
 
     if not args.raster_list != args.raster_pattern:
         raise ValueError(
@@ -98,7 +132,10 @@ def main():
         LOGGER.info(f'found {len(raster_path_list)} files that matched')
 
     target_projection = osr.SpatialReference()
-    target_projection.ImportFromEPSG(int(args.target_projection_epsg))
+    if args.target_projection_epsg == 'eckert_iv':
+        target_projection.ImportFromWkt(WORLD_ECKERT_IV_WKT)
+    else:
+        target_projection.ImportFromEPSG(int(args.target_projection_epsg))
 
     if len(raster_path_list) == 0:
         raise RuntimeError(
@@ -159,7 +196,7 @@ def main():
         (args.target_raster_path, 1),
         overlap_algorithm=args.overlap_algorithm,
         run_parallel=True,
-        working_dir=args.working_dir,
+        working_dir=args.workspace_dir,
         area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
 
     LOGGER.debug('build overviews...')
