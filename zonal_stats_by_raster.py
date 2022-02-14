@@ -50,11 +50,17 @@ def get_unique_values(raster_path):
                     (raster_path, 1), largest_block=2**30)):
             result = p.apply_async(_unique, (array, nodata))
             result_list.append(result)
+            if time.time()-last_time > 5.0:
+                LOGGER.info(
+                    f'loading of {(block_id+1)/(block_list_len)*100:.2f}% '
+                    f'({block_id+1} of '
+                    f'{block_list_len}) complete on '
+                    f'{raster_path}. set size: {len(unique_set)}')
 
         for result in result_list:
             if time.time()-last_time > 5.0:
                 LOGGER.info(
-                    f'{(block_id+1)/(block_list_len)*100:.2f}% '
+                    f'processing {(block_id+1)/(block_list_len)*100:.2f}% '
                     f'({block_id+1} of '
                     f'{block_list_len}) complete on '
                     f'{raster_path}. set size: {len(unique_set)}')
