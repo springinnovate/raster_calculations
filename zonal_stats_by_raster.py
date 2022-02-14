@@ -25,8 +25,13 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 
 
-def _unique(array, nodata):
+def _unique(raster_path, offset_data, nodata):
     """Return set of unique elements in array."""
+    raster = gdal.OpenEx(raster_path, gdal.OF_RASTER)
+    band = raster.GetRasterBand(1)
+    array = band.ReadAsArray(**offset_data)
+    band = None
+    raster = None
     if nodata is not None:
         valid_mask = array != nodata
         unique_set = set(numpy.unique(array[valid_mask]))
@@ -39,25 +44,15 @@ def get_unique_values(raster_path):
     """Return a list of non-nodata unique values from `raster_path`."""
     nodata = geoprocessing.get_raster_info(raster_path)['nodata'][0]
     unique_set = set()
-    block_list_len = len(list(geoprocessing.iterblocks(
-        (raster_path, 1), offset_only=True, largest_block=2**30)))
+    block_list = list(geoprocessing.iterblocks(
+        (raster_path, 1), offset_only=True, largest_block=2**30))
+    block_list_len = len(block_list)
     last_time = time.time()
     with multiprocessing.Pool() as p:
-        result_list = []
         LOGGER.info('build up parallel async')
-        for block_id, (offset_data, array) in enumerate(
-                geoprocessing.iterblocks(
-                    (raster_path, 1), largest_block=2**30)):
-            result = p.apply_async(_unique, (array, nodata))
-            result_list.append(result)
-            if time.time()-last_time > 5.0:
-                LOGGER.info(
-                    f'loading of {(block_id+1)/(block_list_len)*100:.2f}% '
-                    f'({block_id+1} of '
-                    f'{block_list_len}) complete on '
-                    f'{raster_path}. set size: {len(unique_set)}')
-
-        for result in result_list:
+        for block_id, (result,) in enumerate(p.map(_unique, [
+                (raster_path, offset_data, nodata)
+                for offset_data in block_list])):
             if time.time()-last_time > 5.0:
                 LOGGER.info(
                     f'processing {(block_id+1)/(block_list_len)*100:.2f}% '
