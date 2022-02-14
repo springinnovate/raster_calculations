@@ -83,8 +83,11 @@ def _calculate_stats(
         valid_mask = base_block == mask_code
         value_block = value_band.ReadAsArray(**offset_dict)
         valid_value_block = value_block[valid_mask]
-        local_nodata_count = numpy.count_nonzero(
-            numpy.isclose(valid_value_block, value_nodata))
+        if value_nodata is not None:
+            local_nodata_count = numpy.count_nonzero(
+                numpy.isclose(valid_value_block, value_nodata))
+        else:
+            local_nodata_count = 0
         nodata_count += local_nodata_count
         valid_count += valid_value_block.size - local_nodata_count
 
