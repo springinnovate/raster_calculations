@@ -45,20 +45,22 @@ def _unique(raster_path, offset_data):
 def get_unique_values(raster_path):
     """Return a list of non-nodata unique values from `raster_path`."""
     unique_set = set()
-    block_list = list(geoprocessing.iterblocks(
+    offset_list = list(geoprocessing.iterblocks(
         (raster_path, 1), offset_only=True, largest_block=2**30))
-    block_list_len = len(block_list)
+    offset_list_len = len(offset_list)
     last_time = time.time()
     with multiprocessing.Pool() as p:
         LOGGER.info('build up parallel async')
-        for block_id, result in enumerate(p.starmap_async(_unique, [
-                (raster_path, offset_data)
-                for offset_data in block_list])):
+        result_list = [
+            p.apply_async(_unique, (raster_path, offset_data))
+            for offset_data in offset_list]
+        LOGGER.info('fetching results')
+        for offset_id, result in enumerate(result_list):
             if time.time()-last_time > 5.0:
                 LOGGER.info(
-                    f'processing {(block_id+1)/(block_list_len)*100:.2f}% '
-                    f'({block_id+1} of '
-                    f'{block_list_len}) complete on '
+                    f'processing {(offset_id+1)/(offset_list_len)*100:.2f}% '
+                    f'({offset_id+1} of '
+                    f'{offset_list_len}) complete on '
                     f'{raster_path}. set size: {len(unique_set)}')
                 last_time = time.time()
             unique_set |= result.get()
