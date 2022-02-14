@@ -33,7 +33,7 @@ def get_unique_values(raster_path):
         (raster_path, 1), offset_only=True, largest_block=2**24)))
     last_time = time.time()
     for block_id, (offset_data, array) in enumerate(geoprocessing.iterblocks(
-            (raster_path, 1), largest_block=2**24)):
+            (raster_path, 1), largest_block=2**30)):
         if time.time()-last_time > 5.0:
             LOGGER.info(
                 f'{(block_id+1)/(block_list_len)*100:.2f}% complete on '
@@ -79,7 +79,7 @@ def _calculate_stats(
     value_raster = gdal.OpenEx(aligned_raster_path_list[1], gdal.OF_RASTER)
     value_band = value_raster.GetRasterBand(1)
     for offset_dict, base_block in geoprocessing.iterblocks(
-            (aligned_raster_path_list[0], 1)):
+            (aligned_raster_path_list[0], 1), largest_block=2**30):
         valid_mask = base_block == mask_code
         value_block = value_band.ReadAsArray(**offset_dict)
         valid_value_block = value_block[valid_mask]
