@@ -29,6 +29,8 @@ def _unique(raster_path, offset_data, nodata):
     """Return set of unique elements in array."""
     raster = gdal.OpenEx(raster_path, gdal.OF_RASTER)
     band = raster.GetRasterBand(1)
+    nodata = band.GetNoDataValue()
+
     array = band.ReadAsArray(**offset_data)
     band = None
     raster = None
@@ -42,7 +44,6 @@ def _unique(raster_path, offset_data, nodata):
 
 def get_unique_values(raster_path):
     """Return a list of non-nodata unique values from `raster_path`."""
-    nodata = geoprocessing.get_raster_info(raster_path)['nodata'][0]
     unique_set = set()
     block_list = list(geoprocessing.iterblocks(
         (raster_path, 1), offset_only=True, largest_block=2**30))
@@ -51,7 +52,7 @@ def get_unique_values(raster_path):
     with multiprocessing.Pool() as p:
         LOGGER.info('build up parallel async')
         for block_id, (result,) in enumerate(p.map(_unique, [
-                (raster_path, offset_data, nodata)
+                (raster_path, offset_data)
                 for offset_data in block_list])):
             if time.time()-last_time > 5.0:
                 LOGGER.info(
