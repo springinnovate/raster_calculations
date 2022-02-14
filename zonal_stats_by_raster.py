@@ -51,7 +51,7 @@ def get_unique_values(raster_path):
     last_time = time.time()
     with multiprocessing.Pool() as p:
         LOGGER.info('build up parallel async')
-        for block_id, (result,) in enumerate(p.starmap(_unique, [
+        for block_id, result in enumerate(p.starmap_async(_unique, [
                 (raster_path, offset_data)
                 for offset_data in block_list])):
             if time.time()-last_time > 5.0:
