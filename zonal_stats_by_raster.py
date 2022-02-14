@@ -25,6 +25,16 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 
 
+def _unique(array, nodata):
+    """Return set of unique elements in array."""
+    if nodata is not None:
+        valid_mask = array != nodata
+        unique_set = set(numpy.unique(array[valid_mask]))
+    else:
+        unique_set = set(numpy.unique(array))
+    return unique_set
+
+
 def get_unique_values(raster_path):
     """Return a list of non-nodata unique values from `raster_path`."""
     nodata = geoprocessing.get_raster_info(raster_path)['nodata'][0]
@@ -32,19 +42,25 @@ def get_unique_values(raster_path):
     block_list_len = len(list(geoprocessing.iterblocks(
         (raster_path, 1), offset_only=True, largest_block=2**30)))
     last_time = time.time()
-    for block_id, (offset_data, array) in enumerate(geoprocessing.iterblocks(
-            (raster_path, 1), largest_block=2**30)):
-        if time.time()-last_time > 5.0:
-            LOGGER.info(
-                f'{(block_id+1)/(block_list_len)*100:.2f}% ({block_id+1} of '
-                f'{block_list_len}) complete on '
-                f'{raster_path}. set size: {len(unique_set)}')
-            last_time = time.time()
-        if nodata is not None:
-            valid_mask = array != nodata
-            unique_set |= set(numpy.unique(array[valid_mask]))
-        else:
-            unique_set |= set(numpy.unique(array))
+    with multiprocessing.Pool() as p:
+        result_list = []
+        LOGGER.info('build up parallel async')
+        for block_id, (offset_data, array) in enumerate(
+                geoprocessing.iterblocks(
+                    (raster_path, 1), largest_block=2**30)):
+            result = p.apply_async(_unique, (array, nodata))
+            result_list.append(result)
+
+        for result in result_list:
+            if time.time()-last_time > 5.0:
+                LOGGER.info(
+                    f'{(block_id+1)/(block_list_len)*100:.2f}% '
+                    f'({block_id+1} of '
+                    f'{block_list_len}) complete on '
+                    f'{raster_path}. set size: {len(unique_set)}')
+                last_time = time.time()
+            unique_set |= result.get()
+
     return unique_set
 
 
