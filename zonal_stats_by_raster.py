@@ -25,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 
 
-def _unique(raster_path, offset_data, nodata):
+def _unique(raster_path, offset_data):
     """Return set of unique elements in array."""
     raster = gdal.OpenEx(raster_path, gdal.OF_RASTER)
     band = raster.GetRasterBand(1)
@@ -51,7 +51,7 @@ def get_unique_values(raster_path):
     last_time = time.time()
     with multiprocessing.Pool() as p:
         LOGGER.info('build up parallel async')
-        for block_id, (result,) in enumerate(p.map(_unique, [
+        for block_id, (result,) in enumerate(p.starmap(_unique, [
                 (raster_path, offset_data)
                 for offset_data in block_list])):
             if time.time()-last_time > 5.0:
