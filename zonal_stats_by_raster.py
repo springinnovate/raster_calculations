@@ -78,12 +78,9 @@ def mask_out_op(mask_data, base_data, mask_code, base_nodata):
 
 
 def _calculate_stats(
-        aligned_raster_path_list, mask_code, other_raster_info,
+        aligned_raster_path_list, mask_code, masked_nodata,
         masked_raster_path):
     LOGGER.debug(f'_calculate_stats for {masked_raster_path}')
-    masked_nodata = other_raster_info['nodata'][0]
-    if masked_nodata is None:
-        masked_nodata = -9999
     geoprocessing.raster_calculator(
         [(aligned_raster_path_list[0], 1), (aligned_raster_path_list[1], 1),
          (mask_code, 'raw'), (masked_nodata, 'raw')],
@@ -93,7 +90,7 @@ def _calculate_stats(
     masked_band = masked_raster.GetRasterBand(1)
     (raster_min, raster_max, raster_mean, raster_stdev) = (
         masked_band.GetStatistics(0, 1))
-    value_nodata = other_raster_info['nodata'][0]
+    value_nodata = masked_nodata
     masked_band = None
     masked_raster = None
 
@@ -144,6 +141,10 @@ if __name__ == '__main__':
         help=(
             'number of CPUs to use for processing, default is all CPUs on '
             'the machine'))
+    parser.add_argument(
+        '--ndv', type=float, help=(
+            'set the nodata value if one is not defined or you wish to '
+            'override that value when calculating statistics'))
     args = parser.parse_args()
     if args.basename:
         basename = args.basename
@@ -164,9 +165,16 @@ if __name__ == '__main__':
         for path in base_raster_path_list]
     other_raster_info = geoprocessing.get_raster_info(
         args.other_raster)
-    if other_raster_info['nodata'][0] is None:
+    other_nodata = other_raster_info['nodata'][0]
+    if args.ndv is None and (
+            other_nodata is None or
+            not numpy.isfinite(other_raster_info['nodata'][0])):
         raise ValueError(
-            f'nodata value undefined for {args.other_raster}')
+            f'nodata value undefined for {args.other_raster}, you must set it '
+            f'using the --ndv flag. -9999 is a good value if you are unsure '
+            f'of what to select.')
+    if args.ndv is not None:
+        other_nodata = args.ndv
     if not args.do_not_align and (args.landcover_raster != args.other_raster):
         align_task = task_graph.add_task(
             func=geoprocessing.align_and_resize_raster_stack,
@@ -204,7 +212,7 @@ if __name__ == '__main__':
         stats_task = task_graph.add_task(
             func=_calculate_stats,
             args=(
-                aligned_raster_path_list, mask_code, other_raster_info,
+                aligned_raster_path_list, mask_code, other_nodata,
                 masked_raster_path),
             store_result=True,
             dependent_task_list=[unique_value_task],
