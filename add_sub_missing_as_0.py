@@ -15,6 +15,27 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 
+def _add_with_0(array_a, array_b, a_nodata, b_nodata):
+    if a_nodata is not None:
+        result = numpy.full(array_a.shape, a_nodata)
+        a_nodata_mask = (array_a != a_nodata)
+    else:
+        result = numpy.copy(array_a)
+        a_nodata_mask = numpy.full(array_a.shape, True)
+
+    if b_nodata is not None:
+        b_nodata_mask = (array_b != b_nodata)
+    else:
+        b_nodata_mask = numpy.full(array_b.shape, True)
+
+    valid_mask = (a_nodata_mask & b_nodata_mask)
+    result[valid_mask] = array_a[valid_mask] + array_b[valid_mask]
+
+    missing_a_mask = a_nodata_mask & ~b_nodata_mask
+    result[missing_a_mask] = array_b[missing_a_mask]
+    return result
+
+
 def _sub_with_0(array_a, array_b, a_nodata, b_nodata):
     if a_nodata is not None:
         result = numpy.full(array_a.shape, a_nodata)
@@ -44,7 +65,24 @@ if __name__ == '__main__':
     parser.add_argument(
         '--working_dir', default='subtract_missing_as_0_workspace',
         help='location to store temporary files')
+    parser.add_argument(
+        '--add', action='store_true', help='select if you want to add')
+    parser.add_argument(
+        '--subtract', action='store_true',
+        help='select if you want to subtract')
     args = parser.parse_args()
+
+    if args.add and args.subtract:
+        raise ValueError('choose only add or subtract not both')
+    if not args.add and not args.subtract:
+        raise ValueError('choose --add or --subtract')
+
+    if args.add:
+        _func = _add_with_0
+        sep = ' + '
+    if args.subtract:
+        _func = _sub_with_0
+        sep = ' - '
 
     raster_a_info = geoprocessing.get_raster_info(args.raster_a_path)
     raster_b_info = geoprocessing.get_raster_info(args.raster_b_path)
@@ -67,14 +105,15 @@ if __name__ == '__main__':
         raster_list = aligned_raster_list
 
     target_path = (
-        f'{os.path.splitext(os.path.basename(args.raster_a_path))[0]} - '
+        f'{os.path.splitext(os.path.basename(args.raster_a_path))[0]} '
+        f' {sep} '
         f'{os.path.splitext(os.path.basename(args.raster_b_path))[0]}.tif')
 
     LOGGER.info('doing subtraction')
     geoprocessing.raster_calculator(
         [(p, 1) for p in raster_list] +
         [(raster_a_info['nodata'][0], 'raw'),
-         (raster_b_info['nodata'][0], 'raw')], _sub_with_0, target_path,
+         (raster_b_info['nodata'][0], 'raw')], _func, target_path,
         raster_a_info['datatype'], raster_a_info['nodata'][0])
 
     LOGGER.info('removing workspace dir')
