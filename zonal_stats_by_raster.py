@@ -81,11 +81,14 @@ def _calculate_stats(
         aligned_raster_path_list, mask_code, other_raster_info,
         masked_raster_path):
     LOGGER.debug(f'_calculate_stats for {masked_raster_path}')
+    masked_nodata = other_raster_info['nodata'][0]
+    if masked_nodata is None:
+        masked_nodata = -9999
     geoprocessing.raster_calculator(
         [(aligned_raster_path_list[0], 1), (aligned_raster_path_list[1], 1),
-         (mask_code, 'raw'), (other_raster_info['nodata'][0], 'raw')],
+         (mask_code, 'raw'), (masked_nodata, 'raw')],
         mask_out_op, masked_raster_path, gdal.GDT_Float32,
-        other_raster_info['nodata'][0])
+        masked_nodata)
     masked_raster = gdal.OpenEx(masked_raster_path, gdal.OF_RASTER)
     masked_band = masked_raster.GetRasterBand(1)
     (raster_min, raster_max, raster_mean, raster_stdev) = (
@@ -161,6 +164,9 @@ if __name__ == '__main__':
         for path in base_raster_path_list]
     other_raster_info = geoprocessing.get_raster_info(
         args.other_raster)
+    if other_raster_info['nodata'][0] is None:
+        raise ValueError(
+            f'nodata value undefined for {args.other_raster}')
     if not args.do_not_align and (args.landcover_raster != args.other_raster):
         align_task = task_graph.add_task(
             func=geoprocessing.align_and_resize_raster_stack,
