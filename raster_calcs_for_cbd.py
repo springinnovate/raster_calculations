@@ -34,6 +34,11 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
 
+
+#'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertInt.tif",
+#'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertCur.tif",
+#'target_raster_path': "restoration_nitrogen_Sc1-Sc3_fertInt.tif",
+
     calculation_list = [
         {
             'expression': '(raster1>0)*raster1',
