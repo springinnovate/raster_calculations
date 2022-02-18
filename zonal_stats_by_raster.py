@@ -189,6 +189,7 @@ if __name__ == '__main__':
             task_name=f'aligning {aligned_raster_path_list}')
     else:
         aligned_raster_path_list = base_raster_path_list
+        align_task = task_graph.add_task()
     task_graph.join()
     lulc_nodata = geoprocessing.get_raster_info(
         args.landcover_raster)['nodata']
