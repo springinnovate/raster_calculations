@@ -13,7 +13,7 @@ from ecoshard import taskgraph
 import numpy
 
 gdal.SetCacheMax(2**26)
-
+_LARGEST_BLOCK = 2**26
 
 logging.basicConfig(
     level=logging.DEBUG,
