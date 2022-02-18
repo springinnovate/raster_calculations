@@ -36,9 +36,9 @@ def main():
 
 
 #'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertInt.tif",
-#'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertCur.tif",      
+#'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertCur.tif",
 #'target_raster_path': "restoration_nitrogen_Sc1-Sc3_fertInt.tif",
-       
+
     calculation_list = [
         {
             'expression': '(raster1>0)*raster1',
@@ -71,7 +71,7 @@ def main():
             },
             'target_nodata': -1e34,
             'target_raster_path': "IIS_avoided_conversion_CRR_Sc1-Sc2.tif",
-        },  
+        },
     ]
 
     for calculation in calculation_list:
