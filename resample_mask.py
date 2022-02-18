@@ -5,13 +5,12 @@ import math
 import os
 import shutil
 import sys
-import tempfile
 
 from osgeo import gdal
 from osgeo import osr
+from ecoshard import taskgraph
 import ecoshard.geoprocessing
 import numpy
-import taskgraph
 
 gdal.SetCacheMax(2**27)
 

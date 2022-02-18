@@ -5,9 +5,9 @@ import os
 import re
 import sys
 
+from ecoshard import geoprocessing
 from osgeo import gdal
 import pandas
-import pygeoprocessing
 import numpy
 
 PERCENTILES = [
@@ -66,9 +66,9 @@ if __name__ == '__main__':
         bin_raster_path = os.path.join(
             BIN_WORKSPACE, '%s_bins.tif' % os.path.splitext(
                 os.path.basename(raster_path))[0])
-        nodata = pygeoprocessing.get_raster_info(raster_path)['nodata'][0]
+        nodata = geoprocessing.get_raster_info(raster_path)['nodata'][0]
         print(bin_raster_path)
-        pygeoprocessing.raster_calculator(
+        geoprocessing.raster_calculator(
             [(raster_path, 1), (nodata, 'raw'), (11, 'raw'),
              (cutoff_percentile_values, 'raw')], mask_to_percentile,
             bin_raster_path, gdal.GDT_Byte, 11)

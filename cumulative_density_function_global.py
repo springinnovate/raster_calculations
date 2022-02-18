@@ -8,14 +8,14 @@ import shutil
 import sys
 import tempfile
 
+from ecoshard import geoprocessing
 from osgeo import gdal
 from osgeo import ogr
 from osgeo import osr
 import matplotlib.pyplot
 import numpy
-import pygeoprocessing
 import scipy.interpolate
-import taskgraph
+from ecoshard import taskgraph
 
 gdal.SetCacheMax(2**30)
 
@@ -62,7 +62,7 @@ def calculate_percentiles(
     """
     working_dir = os.path.dirname(target_percentile_pickle_path)
     heapfile_dir = tempfile.mkdtemp(dir=working_dir)
-    percentile_values = pygeoprocessing.raster_band_percentile(
+    percentile_values = geoprocessing.raster_band_percentile(
         (raster_path, 1), heapfile_dir, percentile_list)
     with open(target_percentile_pickle_path, 'wb') as pickle_file:
         pickle.dump(percentile_values, pickle_file)
@@ -104,7 +104,7 @@ def main():
     # we need to define this because otherwise no nodata value is defined
     mask_nodata = -1
     mask_task = task_graph.add_task(
-        func=pygeoprocessing.mask_raster,
+        func=geoprocessing.mask_raster,
         args=(
             (raster_path, 1), world_borders_path, masked_raster_path),
         kwargs={
@@ -116,7 +116,7 @@ def main():
         task_name='mask raster')
 
     download_raster_task.join()
-    raster_info = pygeoprocessing.get_raster_info(raster_path)
+    raster_info = geoprocessing.get_raster_info(raster_path)
     country_name = "Global"
 
     country_threshold_table_path = os.path.join(
@@ -143,13 +143,13 @@ def main():
 
     cdf_array = [0.0] * len(percentile_values)
 
-    raster_info = pygeoprocessing.get_raster_info(raster_path)
+    raster_info = geoprocessing.get_raster_info(raster_path)
     nodata = raster_info['nodata'][0]
     valid_pixel_count = 0
     total_pixel_count = 0
     total_pixels = (
         raster_info['raster_size'][0] * raster_info['raster_size'][1])
-    for _, data_block in pygeoprocessing.iterblocks(
+    for _, data_block in geoprocessing.iterblocks(
             (raster_path, 1), largest_block=2**28):
         nodata_mask = ~numpy.isclose(data_block, nodata)
         nonzero_count = numpy.count_nonzero(nodata_mask)
@@ -220,14 +220,14 @@ def main():
         country_raster_path = os.path.join(country_workspace, '%s_%s' % (
             country_name, os.path.basename(RASTER_PATH)))
 
-        country_vector_info = pygeoprocessing.get_vector_info(country_vector)
-        pygeoprocessing.warp_raster(
+        country_vector_info = geoprocessing.get_vector_info(country_vector)
+        geoprocessing.warp_raster(
             RASTER_PATH, raster_info['pixel_size'], country_raster_path,
             'near', target_bb=country_vector_info['bounding_box'],
             vector_mask_options={'mask_vector_path': country_vector},
             working_dir=country_workspace)
 
-        percentile_values = pygeoprocessing.raster_band_percentile(
+        percentile_values = geoprocessing.raster_band_percentile(
             (country_raster_path, 1), country_workspace, PERCENTILE_LIST)
         if len(percentile_values) != len(PERCENTILE_LIST):
             continue
@@ -237,10 +237,10 @@ def main():
 
         cdf_array = [0.0] * len(percentile_values)
 
-        nodata = pygeoprocessing.get_raster_info(
+        nodata = geoprocessing.get_raster_info(
             country_raster_path)['nodata'][0]
         valid_pixel_count = 0
-        for _, data_block in pygeoprocessing.iterblocks(
+        for _, data_block in geoprocessing.iterblocks(
                 (country_raster_path, 1)):
             nodata_mask = ~numpy.isclose(data_block, nodata)
             valid_pixel_count += numpy.count_nonzero(nodata_mask)

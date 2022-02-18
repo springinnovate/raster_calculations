@@ -5,8 +5,8 @@ import os
 import sys
 import tempfile
 
+from ecoshard import geoprocessing
 from osgeo import gdal
-import pygeoprocessing
 import numpy
 import shutil
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.dem_in_degrees:
-        dem_info = pygeoprocessing.get_raster_info(args.dem_path)
+        dem_info = geoprocessing.get_raster_info(args.dem_path)
         bb = dem_info['bounding_box']
         n_cols, n_rows = dem_info['raster_size']
 
@@ -93,7 +93,7 @@ if __name__ == '__main__':
         dem_in_degrees_raster_path = os.path.join(
             work_dir, 'dem_in_degrees.tif')
         nodata = -9999
-        pygeoprocessing.raster_calculator(
+        geoprocessing.raster_calculator(
             [(args.dem_path, 1), (dem_info['nodata'][0], 'raw'),
              lng_m_to_d_array[:, None], (nodata, 'raw')],
             mult_op, dem_in_degrees_raster_path, gdal.GDT_Float32,
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     else:
         dem_raster_path = args.dem_path
 
-    pygeoprocessing.calculate_slope(
+    geoprocessing.calculate_slope(
         (dem_raster_path, 1), args.slope_path)
 
     if args.dem_in_degrees:

@@ -18,13 +18,13 @@ import sys
 import time
 import threading
 
-import numpy
-import pygeoprocessing
+from ecoshard import geoprocessing
 from osgeo import gdal
-from osgeo import osr
 from osgeo import ogr
+from osgeo import osr
+import numpy
 import retrying
-import taskgraph
+from ecoshard import taskgraph
 
 gdal.SetCacheMax(2**30)
 gdal.UseExceptions()
@@ -240,7 +240,7 @@ def feature_worker(
                         aggregate_vector_id, feature_id))
                 LOGGER.debug(
                     'making aggregate vector %s', local_aggregate_vector_path)
-                base_raster_info = pygeoprocessing.get_raster_info(
+                base_raster_info = geoprocessing.get_raster_info(
                     raster_id_to_path_map[
                         (raster_id, aggregate_vector_id, fieldname_id)])
                 feature_raster_path = '%s.tif' % os.path.splitext(
@@ -274,7 +274,7 @@ def feature_worker(
 
             working_sort_directory = os.path.join(worker_dir, 'percentile_reg')
             percentile_task = task_graph.add_task(
-                func=pygeoprocessing.raster_band_percentile,
+                func=geoprocessing.raster_band_percentile,
                 args=(
                     (feature_raster_path, 1), working_sort_directory,
                     PERCENTILE_LIST),
@@ -283,11 +283,11 @@ def feature_worker(
 
             country_nodata0_raster_path = '%s_nodata0.tif' % os.path.splitext(
                 feature_raster_path)[0]
-            feature_raster_info = pygeoprocessing.get_raster_info(
+            feature_raster_info = geoprocessing.get_raster_info(
                 feature_raster_path)
             country_nodata = feature_raster_info['nodata'][0]
             nodata0_raster_task = task_graph.add_task(
-                func=pygeoprocessing.raster_calculator,
+                func=geoprocessing.raster_calculator,
                 args=(
                     [(feature_raster_path, 1), (country_nodata, 'raw')],
                     country_nodata0_op, country_nodata0_raster_path,
@@ -298,7 +298,7 @@ def feature_worker(
             working_sort_nodata0_directory = os.path.join(
                 worker_dir, 'percentile_nodata0')
             percentile_nodata0_task = task_graph.add_task(
-                func=pygeoprocessing.raster_band_percentile,
+                func=geoprocessing.raster_band_percentile,
                 args=(
                     (country_nodata0_raster_path, 1),
                     working_sort_nodata0_directory, PERCENTILE_LIST),
@@ -343,7 +343,7 @@ def feature_worker(
                 bin_raster_path = os.path.join(
                     WORKSPACE_DIR, '%s_%s_%s_bin_raster.tif' % (
                         raster_id, aggregate_vector_id, feature_id))
-            pygeoprocessing.raster_calculator(
+            geoprocessing.raster_calculator(
                 [(feature_raster_path, 1), (country_nodata, 'raw'),
                  (percentile_task.get(), 'raw'),
                  (PERCENTILE_RECLASS_LIST, 'raw'), (BIN_NODATA, 'raw')],
@@ -362,7 +362,7 @@ def feature_worker(
             # the first argument is supposed to be `feature_raster_path` since
             # we want to leave the 0s in there even though the percentiles are
             # different
-            pygeoprocessing.raster_calculator(
+            geoprocessing.raster_calculator(
                 [(feature_raster_path, 1), (country_nodata, 'raw'),
                  (percentile_nodata0_task.get(), 'raw'),
                  (PERCENTILE_RECLASS_LIST, 'raw'),
@@ -453,7 +453,7 @@ def extract_feature_checked(
             geom = feature.GetGeometryRef()
             base_srs = base_layer.GetSpatialRef()
 
-            base_raster_info = pygeoprocessing.get_raster_info(
+            base_raster_info = geoprocessing.get_raster_info(
                 base_raster_path)
 
             base_layer = None
@@ -481,7 +481,7 @@ def extract_feature_checked(
             target_vector = None
 
             with align_lock:
-                pygeoprocessing.align_and_resize_raster_stack(
+                geoprocessing.align_and_resize_raster_stack(
                     [base_raster_path], [target_raster_path], ['near'],
                     base_raster_info['pixel_size'], 'intersection',
                     base_vector_path_list=[target_vector_path],
@@ -703,7 +703,7 @@ def main():
             LOGGER.debug(
                 'get info from: %s', raster_id_to_path_map[
                     (raster_id, aggregate_vector_id, fieldname_id)])
-            raster_info = pygeoprocessing.get_raster_info(
+            raster_info = geoprocessing.get_raster_info(
                 raster_id_to_path_map[
                     (raster_id, aggregate_vector_id, fieldname_id)])
             LOGGER.debug('info: %s', raster_info)
@@ -911,10 +911,10 @@ def main():
 def calculate_cdf(raster_path, percentile_list):
     """Calculate the CDF given its percentile list."""
     cdf_array = [0.0] * len(percentile_list)
-    nodata = pygeoprocessing.get_raster_info(
+    nodata = geoprocessing.get_raster_info(
         raster_path)['nodata'][0]
     pixel_count = 0
-    for _, data_block in pygeoprocessing.iterblocks(
+    for _, data_block in geoprocessing.iterblocks(
             (raster_path, 1)):
         nodata_mask = ~numpy.isclose(data_block, nodata)
         pixel_count += numpy.count_nonzero(nodata_mask)
@@ -947,9 +947,9 @@ def stitch_raster(
         raster_aggregate_nodata_id_tuple]
 
     # get ul of tile and figure out where it goes in global
-    local_tile_info = pygeoprocessing.get_raster_info(
+    local_tile_info = geoprocessing.get_raster_info(
         local_tile_raster_path)
-    global_stitch_info = pygeoprocessing.get_raster_info(
+    global_stitch_info = geoprocessing.get_raster_info(
         global_stitch_raster_path)
     global_inv_gt = gdal.InvGeoTransform(
         global_stitch_info['geotransform'])
@@ -957,7 +957,7 @@ def stitch_raster(
     global_i, global_j = gdal.ApplyGeoTransform(
         global_inv_gt, local_gt[0], local_gt[3])
 
-    for offsect_dict, local_array in pygeoprocessing.iterblocks(
+    for offsect_dict, local_array in geoprocessing.iterblocks(
             (local_tile_raster_path, 1)):
         valid_mask = ~numpy.isclose(
             local_array, local_tile_info['nodata'][0])
@@ -1039,7 +1039,7 @@ def new_raster_from_base(
 
     Parameters:
         base_raster, target_base_id, target_dir, target_datatype,
-        target_nodata are the same as pygeoprocessing.new_raster_from_base.
+        target_nodata are the same as geoprocessing.new_raster_from_base.
 
     Returns:
         None.
@@ -1047,7 +1047,7 @@ def new_raster_from_base(
     """
     target_raster_path = os.path.join(target_dir, '%s.tif' % target_base_id)
     LOGGER.debug('making new raster %s', target_raster_path)
-    pygeoprocessing.new_raster_from_base(
+    geoprocessing.new_raster_from_base(
         base_raster, target_raster_path,
         target_datatype, [target_nodata])
     LOGGER.debug('done making new raster %s', target_raster_path)

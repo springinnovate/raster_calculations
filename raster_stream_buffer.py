@@ -5,13 +5,13 @@ import sys
 import logging
 import zipfile
 
+from ecoshard import geoprocessing
+from ecoshard.geoprocessing import routing
+from ecoshard.geoprocessing import symbolic
+from ecoshard import taskgraph
 from osgeo import gdal
 from osgeo import osr
-import pygeoprocessing
-import pygeoprocessing.routing
-import pygeoprocessing.symbolic
 import numpy
-import taskgraph
 import ecoshard
 
 LOGGER = logging.getLogger(__name__)
@@ -106,9 +106,9 @@ def burn_dem(
         dem_raster_path, streams_raster_path, target_burned_dem_path,
         burn_depth=10):
     """Burn streams into dem."""
-    dem_raster_info = pygeoprocessing.get_raster_info(dem_raster_path)
+    dem_raster_info = geoprocessing.get_raster_info(dem_raster_path)
     dem_nodata = dem_raster_info['nodata'][0]
-    pygeoprocessing.new_raster_from_base(
+    geoprocessing.new_raster_from_base(
         dem_raster_path, target_burned_dem_path, dem_raster_info['datatype'],
         [dem_nodata])
 
@@ -117,7 +117,7 @@ def burn_dem(
     burned_dem_band = burned_dem_raster.GetRasterBand(1)
     stream_raster = gdal.OpenEx(streams_raster_path, gdal.OF_RASTER)
     stream_band = stream_raster.GetRasterBand(1)
-    for offset_dict, dem_block in pygeoprocessing.iterblocks(
+    for offset_dict, dem_block in geoprocessing.iterblocks(
             (dem_raster_path, 1)):
         stream_block = stream_band.ReadAsArray(**offset_dict)
         stream_mask = (
@@ -154,11 +154,11 @@ def length_of_degree(lat):
 def rasterize_streams(
         base_raster_path, stream_vector_path, target_streams_raster_path):
     """Rasterize streams."""
-    pygeoprocessing.new_raster_from_base(
+    geoprocessing.new_raster_from_base(
         base_raster_path, target_streams_raster_path, gdal.GDT_Byte, [2],
         fill_value_list=[2])
     LOGGER.debug(stream_vector_path)
-    pygeoprocessing.rasterize(
+    geoprocessing.rasterize(
         stream_vector_path, target_streams_raster_path,
         burn_values=[1])
 
@@ -284,15 +284,15 @@ if __name__ == '__main__':
     task_graph.join()
 
     base_raster_path_list = [dem_raster_path, lulc_raster_path]
-    dem_raster_info = pygeoprocessing.get_raster_info(dem_raster_path)
-    lulc_raster_info = pygeoprocessing.get_raster_info(lulc_raster_path)
+    dem_raster_info = geoprocessing.get_raster_info(dem_raster_path)
+    lulc_raster_info = geoprocessing.get_raster_info(lulc_raster_path)
     LOGGER.debug(dem_raster_info)
     LOGGER.debug(lulc_raster_info)
     aligned_raster_path_list = [
         '%s/aligned_%s' % (os.path.dirname(path), os.path.basename(path))
         for path in base_raster_path_list]
     align_task = task_graph.add_task(
-        func=pygeoprocessing.align_and_resize_raster_stack,
+        func=geoprocessing.align_and_resize_raster_stack,
         args=(
             base_raster_path_list, aligned_raster_path_list,
             ['near', 'near'], dem_raster_info['pixel_size'],
@@ -343,7 +343,7 @@ if __name__ == '__main__':
     filled_dem_raster_path = os.path.join(
         WORKSPACE_DIR, 'filled_dem.tif')
     fill_pits_task = task_graph.add_task(
-        func=pygeoprocessing.routing.fill_pits,
+        func=routing.fill_pits,
         args=(
             (burned_dem_path, 1), filled_dem_raster_path),
         kwargs={'working_dir': WORKSPACE_DIR},
@@ -353,7 +353,7 @@ if __name__ == '__main__':
 
     slope_raster_path = os.path.join(WORKSPACE_DIR, 'slope.tif')
     slope_task = task_graph.add_task(
-        func=pygeoprocessing.calculate_slope,
+        func=geoprocessing.calculate_slope,
         args=((aligned_raster_path_list[0], 1), slope_raster_path),
         target_path_list=[slope_raster_path],
         dependent_task_list=[align_task],
@@ -361,7 +361,7 @@ if __name__ == '__main__':
 
     flow_direction_path = os.path.join(WORKSPACE_DIR, 'mfd_flow_dir.tif')
     flow_dir_task = task_graph.add_task(
-        func=pygeoprocessing.routing.flow_dir_mfd,
+        func=routing.flow_dir_mfd,
         args=((filled_dem_raster_path, 1), flow_direction_path),
         kwargs={'working_dir': WORKSPACE_DIR},
         target_path_list=[flow_direction_path],
@@ -370,7 +370,7 @@ if __name__ == '__main__':
 
     flow_accum_path = os.path.join(WORKSPACE_DIR, 'flow_accum.tif')
     flow_accum_task = task_graph.add_task(
-        func=pygeoprocessing.routing.flow_accumulation_mfd,
+        func=routing.flow_accumulation_mfd,
         args=((flow_direction_path, 1), flow_accum_path),
         target_path_list=[flow_accum_path],
         dependent_task_list=[flow_dir_task],
@@ -383,7 +383,7 @@ if __name__ == '__main__':
         WORKSPACE_DIR,
         'steep_slope_%.2f_in_50m_mask.tif' % slope_threshold)
     steep_slope_50m_task = task_graph.add_task(
-        func=pygeoprocessing.symbolic.evaluate_raster_calculator_expression,
+        func=symbolic.evaluate_raster_calculator_expression,
         args=(
             'And(slope > %f, buffer_50m_mask)' % slope_threshold,
             {'slope': (slope_raster_path, 1),
@@ -398,7 +398,7 @@ if __name__ == '__main__':
     flow_accum_slope_mask_path = os.path.join(
         WORKSPACE_DIR, 'flow_accum_masked_high_slope.tif')
     slope_flow_accum_task = task_graph.add_task(
-        func=pygeoprocessing.routing.flow_accumulation_mfd,
+        func=routing.flow_accumulation_mfd,
         args=(
             (flow_direction_path, 1), flow_accum_slope_mask_path),
         kwargs={'weight_raster_path_band': (steep_slope_50m_mask_path, 1)},
@@ -434,7 +434,7 @@ if __name__ == '__main__':
     potential_converted_landover_raster_path = os.path.join(
         WORKSPACE_DIR, 'potential_converted_lulc.tif')
     converted_lulc_task = task_graph.add_task(
-        func=pygeoprocessing.reclassify_raster,
+        func=geoprocessing.reclassify_raster,
         args=(
             (aligned_raster_path_list[1], 1), lulc_to_converted_map,
             potential_converted_landover_raster_path, gdal.GDT_Int16,
@@ -450,7 +450,7 @@ if __name__ == '__main__':
         WORKSPACE_DIR, 'converted_lulc.tif')
     base_lulc_nodata = lulc_raster_info['nodata'][0]
     task_graph.add_task(
-        func=pygeoprocessing.raster_calculator,
+        func=geoprocessing.raster_calculator,
         args=(
             ((aligned_raster_path_list[1], 1), (base_lulc_nodata, 'raw'),
              (potential_converted_landover_raster_path, 1),

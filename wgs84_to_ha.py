@@ -4,12 +4,12 @@ import logging
 import math
 import sys
 
+from ecoshard import geoprocessing
 from osgeo import gdal
-import pygeoprocessing
 import numpy
 
 
-gdal.SetCacheMax(2**27)
+gdal.SetCacheMax(2**26)
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -53,7 +53,7 @@ def area_of_pixel(pixel_size, center_lat):
 
 def raster_to_area_raster(base_raster_path, target_raster_path):
     """Convert base to a target raster of same shape with per area pixels."""
-    base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
+    base_raster_info = geoprocessing.get_raster_info(base_raster_path)
 
     # create 1D array of pixel size vs. lat
     n_rows = base_raster_info['raster_size'][1]
@@ -66,7 +66,7 @@ def raster_to_area_raster(base_raster_path, target_raster_path):
     pixel_area_per_lat = 1.0 / 10000.0 * numpy.array([
         [area_of_pixel(pixel_height, lat_val)] for lat_val in lat_vals])
 
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(base_raster_path, 1), pixel_area_per_lat],
         lambda x, y: y, target_raster_path,
         gdal.GDT_Float32, -1)

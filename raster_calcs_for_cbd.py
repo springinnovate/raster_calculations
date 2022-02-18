@@ -2,21 +2,19 @@
 #cd C:\Users\Becky\Documents\raster_calculations
 #conda activate py38_gdal312
 
-import glob
-import sys
-import os
 import logging
 import multiprocessing
-import datetime
-import subprocess
-import raster_calculations_core
+import os
+import sys
+
+from ecoshard import geoprocessing
+from ecoshard import taskgraph
 from osgeo import gdal
 from osgeo import osr
-import taskgraph
-import pygeoprocessing
 import numpy
+import raster_calculations_core
 
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**26)
 
 WORKSPACE_DIR = 'rastercalc_workspace'
 NCPUS = multiprocessing.cpu_count()
@@ -35,6 +33,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def main():
+
 
 #'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertInt.tif",
 #'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertCur.tif",      
@@ -98,10 +97,10 @@ def main():
             'expression': 'raster2 - raster1',
             'symbol_to_path_map': {
                 'raster1': r"D:\results\global_n_export_lulc_sc1_fertilizer_intensified_compressed_md5_2dfa9baf7db8e015fea34c61e4e90b7b.tif",
-                'raster3': r"D:\results\global_n_export_lulc_sc1_fertilizer_intensified_compressed_md5_2dfa9baf7db8e015fea34c61e4e90b7b.tif",
+                'raster2': r"D:\results\global_n_export_lulc_sc2_fertilizer_intensified_compressed_md5_cfd2a69156533f340f044cbc11d89856.tif",
             },
             'target_nodata': -1e34,
-            'target_raster_path': "restoration_nitrogen_Sc2-Sc1_fertInt.tif",
+            'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertInt.tif",
         },
         {
             'expression': 'raster2 - raster1',
@@ -201,14 +200,14 @@ def main():
 
     return
 
-raster_calculation_list = [
+    raster_calculation_list = [
         {
             'expression': '(raster1 - raster2)*(raster1<2)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cbd\Pollination\PNV\ESACCI_PNV_iis_OA_ESAclasses_max_ESAresproj_md5_e6575db589abb52c683d44434d428d80_hab_mask.tif",
                 'raster2': r"C:\Users\Becky\Documents\cbd\Pollination\PNV\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2018-v2.1.1_hab_mask_md5_9afb78a2cc68a7bf6bba947761d74fc3.tif",
             },
-            'target_nodata': -9999
+            'target_nodata': -9999,
             'target_raster_path': "restored_iis-esa.tif",
         },
     ]
@@ -225,10 +224,10 @@ raster_calculation_list = [
 ###################PRE-PROCESSING
 #their scenario maps are weird.
 # here's a snippet that will reproject it to the esa bounding box and size:
-    esa_info = pygeoprocessing.get_raster_info("ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif")
+    esa_info = geoprocessing.get_raster_info("ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7_md5_1254d25f937e6d9bdee5779d377c5aa4.tif")
     base_raster_path = r"ESACCI_PNV_iis_OA_ESAclasses_max_md5_e6575db589abb52c683d44434d428d80.tif"
     target_raster_path = '%s_wgs84%s' % os.path.splitext(base_raster_path)
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         base_raster_path, esa_info['pixel_size'], target_raster_path,
         'near', target_projection_wkt=esa_info['projection_wkt'],
         target_bb=esa_info['bounding_box'])
@@ -334,10 +333,10 @@ raster_calculation_list = [
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
-    esa_info = pygeoprocessing.get_raster_info("MSL_Map_MERGED_Global_AVISO_NoGIA_Adjust_md5_3072845759841d0b2523d00fe9518fee.tif")
+    esa_info = geoprocessing.get_raster_info("MSL_Map_MERGED_Global_AVISO_NoGIA_Adjust_md5_3072845759841d0b2523d00fe9518fee.tif")
     base_raster_path = r"slr_rcp60_md5_99ccaf1319d665b107a9227f2bbbd8b6.tif"
     target_raster_path = '%s_wgs84%s' % os.path.splitext(base_raster_path)
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         base_raster_path, esa_info['pixel_size'], target_raster_path,
         'near', target_projection_wkt=esa_info['projection_wkt'],
         target_bb=esa_info['bounding_box'])
@@ -348,7 +347,7 @@ raster_calculation_list = [
 
 
 ############################### POST PROCESSING
-raster_calculation_list = [
+    raster_calculation_list = [
         {
             'expression': 'raster1/raster2',
             'symbol_to_path_map': {
@@ -476,6 +475,6 @@ raster_calculation_list = [
     return
 
 
-    if __name__ == '__main__':
+if __name__ == '__main__':
     TASK_GRAPH = taskgraph.TaskGraph(WORKSPACE_DIR, NCPUS, 5.0)
     main()

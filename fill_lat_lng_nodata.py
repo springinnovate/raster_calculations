@@ -7,17 +7,11 @@ import logging
 import multiprocessing
 import os
 import shutil
-import warnings
-import threading
-import time
-warnings.filterwarnings('error')
 
+from ecoshard import geoprocessing
 from osgeo import gdal
-import ecoshard
-import pygeoprocessing
 import numpy
 import scipy.ndimage
-import taskgraph
 
 gdal.SetCacheMax(2**26)
 
@@ -29,8 +23,6 @@ logging.basicConfig(
         '%(asctime)s (%(relativeCreated)d) %(processName)s %(levelname)s '
         '%(name)s [%(funcName)s:%(lineno)d] %(message)s'))
 LOGGER = logging.getLogger(__name__)
-logging.getLogger('taskgraph').setLevel(logging.DEBUG)
-logging.getLogger('pygeoprocessing').setLevel(logging.DEBUG)
 
 
 def fill_by_convolution(
@@ -65,7 +57,7 @@ def fill_by_convolution(
             pass
 
         basename = os.path.basename(target_filled_raster_path)
-        base_raster_info = pygeoprocessing.get_raster_info(base_raster_path)
+        base_raster_info = geoprocessing.get_raster_info(base_raster_path)
 
         # this ensures a minimum of 3 pixels in case the pixel size is too
         # chunky
@@ -75,7 +67,7 @@ def fill_by_convolution(
         kernel_array = scipy.ndimage.filters.gaussian_filter(base, n/3)
         kernel_raster_path = os.path.join(working_dir, f'kernel_{basename}')
         geotransform = base_raster_info['geotransform']
-        pygeoprocessing.numpy_array_to_raster(
+        geoprocessing.numpy_array_to_raster(
             kernel_array, None, base_raster_info['pixel_size'],
             (geotransform[0], geotransform[3]),
             base_raster_info['projection_wkt'], kernel_raster_path)
@@ -88,7 +80,7 @@ def fill_by_convolution(
         # mask valid
         valid_raster_path = os.path.join(
             working_dir, f'sanitized_{basename}')
-        pygeoprocessing.raster_calculator(
+        geoprocessing.raster_calculator(
             [(base_raster_path, 1), (base_raster_info['nodata'][0], 'raw')],
             _mask_valid_op, valid_raster_path, gdal.GDT_Byte, None)
         mask_kernel_raster_path = os.path.join(
@@ -96,13 +88,13 @@ def fill_by_convolution(
         geotransform = base_raster_info['geotransform']
         mask_kernel_array = numpy.copy(kernel_array)
         mask_kernel_array[:] = 1
-        pygeoprocessing.numpy_array_to_raster(
+        geoprocessing.numpy_array_to_raster(
             mask_kernel_array, None, base_raster_info['pixel_size'],
             (geotransform[0], geotransform[3]),
             base_raster_info['projection_wkt'], mask_kernel_raster_path)
         coverage_raster_path = os.path.join(
             working_dir, f'coverage_{basename}')
-        pygeoprocessing.convolve_2d(
+        geoprocessing.convolve_2d(
             (valid_raster_path, 1), (mask_kernel_raster_path, 1),
             coverage_raster_path,
             mask_nodata=False,
@@ -121,7 +113,7 @@ def fill_by_convolution(
         LOGGER.info(
             f'create backfill from {sanitized_base_raster_path} to '
             f'{backfill_raster_path}')
-        pygeoprocessing.convolve_2d(
+        geoprocessing.convolve_2d(
             (sanitized_base_raster_path, 1), (kernel_raster_path, 1),
             backfill_raster_path, ignore_nodata_and_edges=True,
             mask_nodata=False, normalize_kernel=True,
@@ -131,7 +123,7 @@ def fill_by_convolution(
 
         LOGGER.info(
             f'fill nodata of {base_raster_path} to {backfill_raster_path}')
-        pygeoprocessing.raster_calculator(
+        geoprocessing.raster_calculator(
             [(base_raster_path, 1),
              (backfill_raster_path, 1), (coverage_raster_path, 1),
              (base_nodata, 'raw')], _fill_nodata_op,
@@ -181,12 +173,12 @@ def sanitize_raster(base_raster_path, target_raster_path):
     Return:
         None.
     """
-    raster_info = pygeoprocessing.get_raster_info(
+    raster_info = geoprocessing.get_raster_info(
         base_raster_path)
     fill_value = raster_info['nodata'][0]
     if fill_value is None:
         fill_value = 0
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(base_raster_path, 1), (fill_value, 'raw')], _non_finite_to_fill_op,
         target_raster_path, raster_info['datatype'],
         raster_info['nodata'][0])
