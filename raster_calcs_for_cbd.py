@@ -41,6 +41,26 @@ def main():
        
     calculation_list = [
         {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\results\ESA_realized_pollination_10s_esa2018_md5_58acac8dc45739943b21b4fd612829d7_ovr.tif",
+                'raster2': r"D:\results\PNV_realized_pollination_ovr_compressed_md5_905ca9a17ae9e236f0f548538ba7c9a0.tif",
+            },
+            'target_nodata': -1e34,
+            'target_raster_path': "restoration_pollination_Sc3-Sc1.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    calculation_list = [
+        {
             'expression': '(raster1>0)*raster1',
             'symbol_to_path_map': {
                 'raster1': r"D:\repositories\raster_calculations\avoided_conversion_nitrogen_Sc2-Sc1_fert2050_compressed_md5_51c49f050fc15a2f0ebe06b57ceae1b4.tif",
