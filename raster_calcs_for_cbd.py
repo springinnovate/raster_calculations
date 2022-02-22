@@ -33,13 +33,37 @@ LOGGER = logging.getLogger(__name__)
 
 
 def main():
-
-
-#'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertInt.tif",
-#'target_raster_path': "avoided_conversion_nitrogen_Sc2-Sc1_fertCur.tif",
-#'target_raster_path': "restoration_nitrogen_Sc1-Sc3_fertInt.tif",
-
     
+    calculation_list = [
+        {
+            'expression': '(raster2>=raster1)*raster1 + (raster1>raster2)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CBD_GBF_IIS\esa_realized_pollination_per_ha_md5_a6a7ffd6629701c0145166ad88b7d7dd.tif",
+                'raster2': r"D:\ecoshard\CBD_GBF_IIS\pnv_realized_pollination_per_ha_md5_88408670a144e45c32e03e92f8edd8fb.tif",
+            },
+            'target_nodata': -1e34,
+            'target_raster_path': "avoided_conversion_pollination_esa2018.tif",
+        },
+        {
+            'expression': '(raster2>raster1)*(raster2-raster1)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CBD_GBF_IIS\esa_realized_pollination_per_ha_md5_a6a7ffd6629701c0145166ad88b7d7dd.tif",
+                'raster2': r"D:\ecoshard\CBD_GBF_IIS\pnv_realized_pollination_per_ha_md5_88408670a144e45c32e03e92f8edd8fb.tif",
+            },
+            'target_nodata': -1e34,
+            'target_raster_path': "restoration_pollination_Sc3-esa2018.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     calculation_list = [
         {
             'expression': '(raster2>=raster1)*raster1 + (raster1>raster2)*raster2',
@@ -51,9 +75,10 @@ def main():
             'target_raster_path': "avoided_conversion_pollination_esa2018.tif",
         },
         {
-            'expression': '(raster1>0)*raster1',
+            'expression': '(raster2>raster1)*(raster2-raster1)',
             'symbol_to_path_map': {
-                'raster1': r"D:\repositories\raster_calculations\restoration_pollination_Sc3-Sc1_compressed_md5_36eb37.tif",
+                'raster1': r"D:\results\ESA_realized_pollination_10s_esa2018_md5_58acac8dc45739943b21b4fd612829d7_ovr.tif",
+                'raster2': r"D:\results\PNV_realized_pollination_ovr_compressed_md5_905ca9a17ae9e236f0f548538ba7c9a0.tif",
             },
             'target_nodata': -1e34,
             'target_raster_path': "restoration_pollination_Sc3-esa2018.tif",
@@ -71,15 +96,6 @@ def main():
 
     
     calculation_list = [
-        {
-            'expression': 'raster2 - raster1',
-            'symbol_to_path_map': {
-                'raster1': r"D:\results\ESA_realized_pollination_10s_esa2018_md5_58acac8dc45739943b21b4fd612829d7_ovr.tif",
-                'raster2': r"D:\results\PNV_realized_pollination_ovr_compressed_md5_905ca9a17ae9e236f0f548538ba7c9a0.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "restoration_pollination_Sc3-Sc1.tif",
-        },
         {
             'expression': '(raster1>0)*raster1',
             'symbol_to_path_map': {
