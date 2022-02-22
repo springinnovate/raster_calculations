@@ -13,7 +13,7 @@ from ecoshard import taskgraph
 import numpy
 
 gdal.SetCacheMax(2**26)
-
+_LARGEST_BLOCK = 2**26
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -23,49 +23,6 @@ logging.basicConfig(
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
-
-
-def _unique(raster_path, offset_data):
-    """Return set of unique elements in array."""
-    raster = gdal.OpenEx(raster_path, gdal.OF_RASTER)
-    band = raster.GetRasterBand(1)
-    nodata = band.GetNoDataValue()
-
-    array = band.ReadAsArray(**offset_data)
-    band = None
-    raster = None
-    if nodata is not None:
-        valid_mask = array != nodata
-        unique_set = set(numpy.unique(array[valid_mask]))
-    else:
-        unique_set = set(numpy.unique(array))
-    return unique_set
-
-
-def get_unique_values(raster_path):
-    """Return a list of non-nodata unique values from `raster_path`."""
-    unique_set = set()
-    offset_list = list(geoprocessing.iterblocks(
-        (raster_path, 1), offset_only=True, largest_block=2**30))
-    offset_list_len = len(offset_list)
-    last_time = time.time()
-    with multiprocessing.Pool() as p:
-        LOGGER.info('build up parallel async')
-        result_list = [
-            p.apply_async(_unique, (raster_path, offset_data))
-            for offset_data in offset_list]
-        LOGGER.info('fetching results')
-        for offset_id, result in enumerate(result_list):
-            if time.time()-last_time > 5.0:
-                LOGGER.info(
-                    f'processing {(offset_id+1)/(offset_list_len)*100:.2f}% '
-                    f'({offset_id+1} of '
-                    f'{offset_list_len}) complete on '
-                    f'{raster_path}. set size: {len(unique_set)}')
-                last_time = time.time()
-            unique_set |= result.get()
-
-    return unique_set
 
 
 def mask_out_op(mask_data, base_data, mask_code, base_nodata):
@@ -100,7 +57,7 @@ def _calculate_stats(
     value_raster = gdal.OpenEx(aligned_raster_path_list[1], gdal.OF_RASTER)
     value_band = value_raster.GetRasterBand(1)
     for offset_dict, base_block in geoprocessing.iterblocks(
-            (aligned_raster_path_list[0], 1), largest_block=2**30):
+            (aligned_raster_path_list[0], 1), largest_block=_LARGEST_BLOCK):
         valid_mask = base_block == mask_code
         value_block = value_band.ReadAsArray(**offset_dict)
         valid_value_block = value_block[valid_mask]
@@ -189,12 +146,13 @@ if __name__ == '__main__':
             task_name=f'aligning {aligned_raster_path_list}')
     else:
         aligned_raster_path_list = base_raster_path_list
+        align_task = task_graph.add_task()
     task_graph.join()
     lulc_nodata = geoprocessing.get_raster_info(
         args.landcover_raster)['nodata']
     LOGGER.info('calculate unique values')
     unique_value_task = task_graph.add_task(
-        func=get_unique_values,
+        func=geoprocessing.get_unique_values,
         args=(args.landcover_raster,),
         store_result=True,
         dependent_task_list=[align_task],
