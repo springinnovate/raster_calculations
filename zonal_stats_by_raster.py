@@ -153,7 +153,7 @@ if __name__ == '__main__':
     LOGGER.info('calculate unique values')
     unique_value_task = task_graph.add_task(
         func=geoprocessing.get_unique_values,
-        args=(args.landcover_raster, 1),
+        args=((args.landcover_raster, 1),),
         store_result=True,
         dependent_task_list=[align_task],
         task_name=f'unique values for {args.landcover_raster}')
