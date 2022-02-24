@@ -17,6 +17,7 @@ if __name__ == '__main__':
     point_vector = gdal.OpenEx(args.point_vector_path, gdal.OF_VECTOR)
     point_layer = point_vector.GetLayer()
     point_srs = point_layer.GetSpatialRef()
+    point_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
     dirname = os.path.basename(os.path.dirname(args.raster_path))
 
@@ -48,6 +49,8 @@ if __name__ == '__main__':
         raster_srs_wkt = raster.GetProjection()
         raster_srs = osr.SpatialReference()
         raster_srs.ImportFromWkt(raster_srs_wkt)
+
+        raster_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
         gt = raster.GetGeoTransform()
         inv_gt = gdal.InvGeoTransform(gt)
