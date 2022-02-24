@@ -100,7 +100,7 @@ if __name__ == '__main__':
             for path in raster_list]
         geoprocessing.align_and_resize_raster_stack(
             raster_list, aligned_raster_list, ['near', 'near'],
-            raster_a_info['pixel_size'], 'intersection',
+            raster_a_info['pixel_size'], 'union',
             target_projection_wkt=raster_a_info['projection_wkt'])
         raster_list = aligned_raster_list
 
