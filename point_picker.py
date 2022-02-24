@@ -62,6 +62,7 @@ if __name__ == '__main__':
             val = point_geom.Transform(point_to_raster_transform)
             result = gdal.ApplyGeoTransform(
                 inv_gt, point_geom.GetX(), point_geom.GetY())
+            print(f'{base_point_geom} converted to {point_geom} found at {result}')
             if (result[0] >= 0 and result[0] < raster.RasterXSize and
                     result[1] >= 0 and result[1] < raster.RasterYSize):
                 print('its in range')
