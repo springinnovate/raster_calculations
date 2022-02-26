@@ -3,7 +3,6 @@ import argparse
 import os
 import logging
 import hashlib
-import sys
 import multiprocessing
 import time
 
