@@ -20,7 +20,7 @@ logging.basicConfig(
     format=(
         '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
         ' [%(pathname)s.%(funcName)s:%(lineno)d] %(message)s'),
-    stream=sys.stdout)
+    filename='zonal_stats_log.log')
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 
