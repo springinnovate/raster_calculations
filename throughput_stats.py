@@ -1,7 +1,16 @@
 """Test how fast we can read and write."""
+import logging
 import time
 
 from ecoshard import geoprocessing
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
+        ' [%(pathname)s.%(funcName)s:%(lineno)d] %(message)s'))
+LOGGER = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":

@@ -144,17 +144,26 @@ def main():
     LOGGER.info('calculating target bounding box')
     target_bounding_box_list = []
     raster_path_set = set()
+    raster_band_count_set = set()
     for raster_path in raster_path_list:
         if raster_path in raster_path_set:
             LOGGER.warning(f'{raster_path} already scheduled')
             continue
         raster_path_set.add(raster_path)
         raster_info = geoprocessing.get_raster_info(raster_path)
+        raster_band_count_set.add(raster_info['n_bands'])
         bounding_box = raster_info['bounding_box']
         target_bounding_box = geoprocessing.transform_bounding_box(
             bounding_box, raster_info['projection_wkt'],
             target_projection.ExportToWkt())
         target_bounding_box_list.append(target_bounding_box)
+
+    if len(raster_band_count_set) > 1:
+        raise ValueError(
+            f'rasters have different band counts including '
+            f'{raster_band_count_set}, raster set should have the same '
+            f'number of bands.')
+    n_bands = next(iter(raster_band_count_set))
 
     target_bounding_box = geoprocessing.merge_bounding_box_list(
         target_bounding_box_list, 'union')
@@ -173,7 +182,7 @@ def main():
         target_bounding_box[3], 0.0, -float(args.target_cell_size))
 
     target_raster = gtiff_driver.Create(
-        os.path.join('.', args.target_raster_path), n_cols, n_rows, 1,
+        os.path.join('.', args.target_raster_path), n_cols, n_rows, n_bands,
         raster_info['datatype'],
         options=(
             'TILED=YES', 'BIGTIFF=YES', 'BLOCKXSIZE=256', 'BLOCKYSIZE=256',
@@ -190,14 +199,16 @@ def main():
     target_raster = None
 
     LOGGER.info('calling stitch_rasters')
-    geoprocessing.stitch_rasters(
-        [(path, 1) for path in raster_path_list],
-        [args.resample_method]*len(raster_path_list),
-        (args.target_raster_path, 1),
-        overlap_algorithm=args.overlap_algorithm,
-        run_parallel=True,
-        working_dir=args.workspace_dir,
-        area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
+    for band_id in range(1, n_bands+1):
+        LOGGER.info(f'stitching band {band_id}')
+        geoprocessing.stitch_rasters(
+            [(path, band_id) for path in raster_path_list],
+            [args.resample_method]*len(raster_path_list),
+            (args.target_raster_path, band_id),
+            overlap_algorithm=args.overlap_algorithm,
+            run_parallel=True,
+            working_dir=args.workspace_dir,
+            area_weight_m2_to_wgs84=args.area_weight_m2_to_wgs84)
 
     LOGGER.debug('build overviews...')
     ecoshard.build_overviews(args.target_raster_path)
