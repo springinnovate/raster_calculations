@@ -167,6 +167,9 @@ def main():
 
     target_bounding_box = geoprocessing.merge_bounding_box_list(
         target_bounding_box_list, 'union')
+    LOGGER.debug(
+        f'target_bounding_box: {target_bounding_box}')
+    return
 
     gtiff_driver = gdal.GetDriverByName('GTiff')
 
