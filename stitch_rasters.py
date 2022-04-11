@@ -169,7 +169,6 @@ def main():
         target_bounding_box_list, 'union')
     LOGGER.debug(
         f'target_bounding_box: {target_bounding_box}')
-    return
 
     gtiff_driver = gdal.GetDriverByName('GTiff')
 
