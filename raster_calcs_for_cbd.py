@@ -33,7 +33,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def main():
-    
+
     calculation_list = [
         {
             'expression': '(raster2>=raster1)*raster1 + (raster1>raster2)*raster2',
@@ -42,7 +42,7 @@ def main():
                 'raster2': r"D:\ecoshard\CBD_GBF_IIS\pnv_realized_pollination_per_ha_md5_88408670a144e45c32e03e92f8edd8fb.tif",
             },
             'target_nodata': -1e34,
-            'target_raster_path': "avoided_conversion_pollination_esa2018.tif",
+            'target_raster_path': "avoided_conversion_pollination_per_ha_esa2018.tif",
         },
         {
             'expression': '(raster2>raster1)*(raster2-raster1)',
@@ -51,7 +51,7 @@ def main():
                 'raster2': r"D:\ecoshard\CBD_GBF_IIS\pnv_realized_pollination_per_ha_md5_88408670a144e45c32e03e92f8edd8fb.tif",
             },
             'target_nodata': -1e34,
-            'target_raster_path': "restoration_pollination_Sc3-esa2018.tif",
+            'target_raster_path': "restoration_pollination_per_ha_Sc3-esa2018.tif",
         },
     ]
 
@@ -94,7 +94,7 @@ def main():
 
     return
 
-    
+
     calculation_list = [
         {
             'expression': '(raster1>0)*raster1',
