@@ -38,22 +38,102 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    # Fixing the clip on Renato so it's the full extent
-    #python stitch_rasters.py --target_projection_epsg 4326 --target_cell_size 0.00277777778 --target_raster_path  pollination_ppl_fed_on_ag_10s_Sc1Renato0_5.tif --resample_method near --overlap_algorithm replace --raster_list "D:\ecoshard\CI_PPC\ESAmodVCFv2_cv_habitat_value_md5_c01e9b17aee323ead79573d66fa4020d.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1v3_clip_md5_8a1f7a28e75aec4859e7c0f07cc6282f.tif"
+calculation_list = [
+        { 
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\ci-global-restoration\workspace\global_sed_export_nlcd2016.tif",
+                'raster2': r"D:\repositories\ci-global-restoration\workspace\global_sed_export_nlcd2016_cotton_to_83.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "sediment_NLCD_organic_cotton_change.tif",
+        },
+        { 
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\ci-global-restoration\workspace\global_n_export_nlcd2016_fertilizer_current.tif",
+                'raster2': r"D:\repositories\ci-global-restoration\workspace\global_n_export_nlcd2016_cotton_to_83_fertilizer_current.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "nitrogen_NLCD_organic_cotton_change.tif",
+        }, 
+    ]
 
-    # Have to use this for differencing because there are missing pixels in restoration (where ag got converted back)
-    #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1Renato0_5_md5_3fe6b3.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
-    #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc2v3_Griscom2050_md5_a86e5f.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
-    #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1v2_md5_28cb0.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
-    #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc2v4_Griscom2035_md5_ffee3.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
-    
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+calculation_list = [
+        {
+            'expression': '(raster1>0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_Sc1v5-ESAmodVCFv2_md5_25d0c5.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc1v5-ESAmod2_v2.tif",
+        }, 
+        {
+            'expression': '(raster1>0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_Sc1v6_-ESAmodVCFv2_md5_75c77a.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc1v6_-ESAmod2_v2.tif",
+        },
+        {
+            'expression': '(raster1>0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_Sc2v5-ESAmodVCFv2_md5_768e57.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc2v5-ESAmod2_v2.tif",
+        },
+        {
+            'expression': '(raster1>0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_Sc2v6-ESAmodVCFv2_md5_217154.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc2v6-ESAmod2_v2.tif",
+        },
+        {
+            'expression': '(raster1>0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_Sc3v1-ESAmodVCFv2_md5_8cad1a.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc3v1-ESAmod2_v2.tif",
+        },
+        {
+            'expression': '(raster1>0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_Sc3v2-ESAmodVCFv2_md5_b696ea.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc3v2-ESAmod2_v2.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     calculation_list = [
         { 
             'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_PPC\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
-                'raster2': r"D:\repositories\pollination_sufficiency\workspace_poll_suff\churn\hab_mask\Sc3v1_PNVnoag_md5_c07865b995f9ab2236b8df0378f9206f_hab_mask.tif",
+                'raster2': r"D:\repositories\raster_calculations\align_to_mask_workspace\Sc3v1_PNVnoag_hab_mask_WARPED_near_md5_aec8d382951593fa531f7716ad56ddce.tif",
             },
             'target_nodata': -9999,
             'target_raster_path': "nature_access_lspop2019_Sc3v1_PNVnoag.tif",
@@ -68,6 +148,91 @@ def main():
     TASK_GRAPH.close()
 
     return
+
+
+
+    calculation_list = [
+        { 
+            'expression': 'raster1*-1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_ESAmodVCFv2_md5_c01e9-Sc1v5_md5_d93c1.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc1v5-ESAmodVCFv2.tif",
+        },
+        { 
+            'expression': 'raster1*-1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_ESAmodVCFv2_md5_c01e9-Sc2v5_md5_6b714f.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc2v5-ESAmodVCFv2.tif",
+        },
+        { 
+            'expression': 'raster1*-1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\ESAmodVCFv2_cv_habitat_value_md5_c01e9b17aee323ead79573d66fa4020d   -  Sc2v6_cv_habitat_value_md5_a14ded315c8e0ce2f2266a1c190e06ee.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc2v6-ESAmodVCFv2.tif",
+        },
+        { 
+            'expression': 'raster1*-1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\ESAmodVCFv2_cv_habitat_value_md5_c01e9b17aee323ead79573d66fa4020d   -  Sc3v1_cv_habitat_value_md5_e889c2dbc5783fc4c782fbd3b473d7de.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc3v1-ESAmodVCFv2.tif",
+        },
+        { 
+            'expression': 'raster1*-1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\diff_maps\ESAmodVCFv2_cv_habitat_value_md5_c01e9b17aee323ead79573d66fa4020d   -  Sc3v2_cv_habitat_value_md5_251c1c934b367c8181b873099d1118b8.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': "cv_habitat_value_Sc3v2-ESAmodVCFv2.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    # Fixing the clip on Renato so it's the full extent
+    #python stitch_rasters.py --target_projection_epsg 4326 --target_cell_size 0.00277777778 --target_raster_path  pollination_ppl_fed_on_ag_10s_Sc1Renato0_5.tif --resample_method near --overlap_algorithm replace --raster_list "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1v3_clip_md5_8a1f7a28e75aec4859e7c0f07cc6282f.tif"
+    #python stitch_rasters.py --target_projection_epsg 4326 --target_cell_size 0.00277777778 --target_raster_path  Sc1Renato0_5_hab_mask.tif --resample_method near --overlap_algorithm replace --raster_list "D:\repositories\pollination_sufficiency\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_2ed6285e6f8ec1e7e0b75309cc6d6f9f_hab_mask.tif" "D:\repositories\pollination_sufficiency\Sc1v3_clip_compressed_md5_182b5f085cbec0dc976135f00f810b7c_hab_mask.tif"
+
+    # Have to use this for differencing because there are missing pixels in restoration (where ag got converted back)
+    #NEED TO REDO THIS ONE!! #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1Renato0_5_md5_3fe6b3.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
+    #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc2v3_Griscom2050_md5_a86e5f.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
+    #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1v2_md5_28cb0.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
+    #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc2v4_Griscom2035_md5_ffee3.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
+    
+    calculation_list = [
+        { 
+            'expression': '(raster1>=9999)*-9999 + (raster1<9999)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\pollination_sufficiency\pollination_ppl_fed_on_ag_10s_Sc1Renato0_5_md5_ccdae4   -  pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "pollination_ppl_fed_on_ag_10s_Sc1Renato0_5_md5_ccdae4-esa2020_md5_0cf902_fixed.tif",
+        }, 
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
 
     calculation_list = [
         { 
@@ -90,129 +255,7 @@ def main():
 
     return
 
-    calculation_list = [
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc1v5_n_export_md5_f507bb53ac95f51e6a5a82867ddc5df3.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc1v5_n_export-v2.tif",
-        }, 
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc1v5_sed_export_md5_791952edc0dd4c3383c6decd3950bdbb.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc1v5_sed_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc1v6_n_export_md5_ebd9ad0d5936c05f5bb451033ac59b38.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc1v6_n_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc1v6_sed_export_md5_b097fbc684ac35a707a34d41e1d8d800.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc1v6_sed_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc1v5_n_export_md5_f507bb53ac95f51e6a5a82867ddc5df3.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc1v5_n_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc2v5_n_export_md5_29ec1b644c1c1f745c73352eae079afa.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc2v5_n_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc1v5_n_export_md5_f507bb53ac95f51e6a5a82867ddc5df3.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc1v5_n_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc2v5_sed_export_md5_5095eba15fa6b590e3fe119ce2a01609.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc2v5_sed_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc2v6_n_export_md5_ec463d389a04f745bd818068d134e3af.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc2v6_n_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc2v6_sed_export_md5_f3845d38dd0acae5efa6ff04665e6612.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc2v6_sed_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc3v1_n_export_md5_dff4e429f760058e3addaf39f14ef833.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc3v1_n_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc3v1_sed_export_md5_561ca975a5f3b53d98d87bc085641954.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc3v1_sed_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc3v2_n_export_md5_f07dddc49c923b893a69a4480b3b1a6a.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc3v2_n_export-v2.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\3rdround_results\difference maps\ESAmod2-Sc3v2_sed_export_md5_4874f6fe61fe3e1fd263501a77bcebb6.tif",
-            },
-            'target_nodata': -1e34,
-            'target_raster_path': "ESAmod2-Sc3v2_sed_export-v2.tif",
-        },
-    ]
-
-    for calculation in calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
+    
 
     calculation_list = [
         {
