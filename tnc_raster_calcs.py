@@ -40,6 +40,35 @@ def main():
 
     calculation_list = [
         {
+            'expression': '(raster1>0)*raster1 + (raster1<0)*-9999',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_compressed_md5_8ba187.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "global_n_export_ESAmar_2020_fertilizer_current_valid.tif",
+        },
+        {
+            'expression': '(raster1>0)*raster1 + (raster1<0)*-9999',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_1992_fertilizer_current_compressed_md5_b1bb72.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "global_n_export_ESAmar_1992_fertilizer_current_valid.tif",
+        },
+
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_compressed_md5_8ba187.tif",
