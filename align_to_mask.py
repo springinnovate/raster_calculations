@@ -28,7 +28,8 @@ logging.getLogger('taskgraph').setLevel(logging.WARN)
 MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
     'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
 
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -41,7 +42,9 @@ RASTER_LIST = [
     #('reclassified_Sc1v4_restoration_pnv0.001_on_ESA2020mVCF_md5_61a44df722532a84a77598fe2a24d46c_esa_to_nathab_forest_mask.tif', False, False, False),
     #('reclassified_Sc2v3_Griscom_CookPatton2050_smithpnv_md5_82c2f863d49f5a25c0b857865bfdb4b0_esa_to_nathab_forest_mask.tif', False, False, False),
     #('reclassified_Sc2v4_Griscom_CookPatton2035_smithpnv_md5_ffde2403583e30d7df4d16a0687d71fe_esa_to_nathab_forest_mask.tif', False, False, False),
-    ('Sc3v1_PNVnoag_md5_c07865b995f9ab2236b8df0378f9206f_hab_mask.tif', False, False, False)
+    #('Sc3v1_PNVnoag_md5_c07865b995f9ab2236b8df0378f9206f_hab_mask.tif', False, False, False)
+    ('marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992-v2.0.7cds_compressed_md5_83ec1b_hab_mask.tif', False, False, False),
+    ('marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_hab_mask.tif', False, False, False)
     ]
 
 
