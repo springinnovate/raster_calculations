@@ -42,6 +42,72 @@ def main():
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\leather\CLUMONDO_livestock_mask_2050ssp1.tif",
+                'raster2': r"C:\Users\Becky\Documents\ci-global-restoration\leather\CLUMONDO_livestock_mask_2000.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "CLUMONDO_livestock_ssp1_change.tif",
+        },
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\leather\CLUMONDO_livestock_mask_2050ssp3.tif",
+                'raster2': r"C:\Users\Becky\Documents\ci-global-restoration\leather\CLUMONDO_livestock_mask_2000.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "CLUMONDO_livestock_ssp3_change.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': '(raster1<13) + (raster1>13)*(raster1<15) + (raster1>17)*(raster1<22)',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\leather\CLUMONDO_ssp1_2050_EckertIV_md5_996864.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "CLUMONDO_livestock_mask_2050ssp1.tif",
+        },
+        {
+            'expression': '(raster1<13) + (raster1>13)*(raster1<15) + (raster1>17)*(raster1<22)',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\leather\CLUMONDO_ssp3_2050_EckertIV_md5_56b1a1.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "CLUMONDO_livestock_mask_2050ssp3.tif",
+        },
+        {
+            'expression': '(raster1<13) + (raster1>13)*(raster1<15) + (raster1>17)*(raster1<22)',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\leather\CLUMONDO_2000_EckertIV_md5_aad69b.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "CLUMONDO_livestock_mask_2000.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
                 'raster1': r"D:\repositories\ci-global-restoration\workspace\data\fc_2019_indonesia_md5_3f6187.tif",
                 'raster2': r"D:\repositories\ci-global-restoration\workspace\data\fc_2019_indonesia_conv_nearest_to_edge_0.2Mha_md5_559903.tif",
             },
@@ -272,7 +338,7 @@ def main():
 
     return
 
-calculation_list = [
+    calculation_list = [
         {
             'expression': '(raster1>0)*raster1',
             'symbol_to_path_map': {
