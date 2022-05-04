@@ -38,23 +38,24 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    
+    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\repositories\raster_calculations\ESA2020_forest_lost_to_livestock_ssp1_md5_44b77f.tif" 0.9 130
+    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\repositories\raster_calculations\ESA2020_forest_lost_to_livestock_ssp3_md5_70d862.tif" 0.9 130
 
     calculation_list = [
         {
-            'expression': '(raster1>=4)*(raster2>0)',
+            'expression': '(raster1>64)*(raster2>0)', #very strange - on my machine QGIS shows values of 1, 2 and 4, but on bigboi it's 1, 64, and 256
             'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\scenarios\scenario_masks\reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
-                'raster2': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\CLUMONDO_livestock_ssp1_change_WARPED_near_md5_b7c0bdc292ffb93ac0571561a01d4f81.tif",
+                'raster1': "reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
+                'raster2': "CLUMONDO_livestock_ssp1_change_WARPED_near_md5_b7c0bdc292ffb93ac0571561a01d4f81.tif",
             },
             'target_nodata': -9999,
             'target_raster_path': "ESA2020_forest_lost_to_livestock_ssp1.tif",
         },
         {
-            'expression': '(raster1>=4)*(raster2>0)',
+            'expression': '(raster1>64)*(raster2>0)',
             'symbol_to_path_map': {
-                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\scenarios\scenario_masks\reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
-                'raster2': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\CLUMONDO_livestock_ssp3_change_WARPED_near_md5_d8eb9043514a23f122587e6a6693a016.tif",
+                'raster1': "reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
+                'raster2': "CLUMONDO_livestock_ssp3_change_WARPED_near_md5_d8eb9043514a23f122587e6a6693a016.tif",
             },
             'target_nodata': -9999,
             'target_raster_path': "ESA2020_forest_lost_to_livestock_ssp3.tif",
@@ -358,7 +359,7 @@ def main():
             },
             'target_nodata': 0,
             'target_raster_path': "nitrogen_NLCD_organic_cotton_change.tif",
-        }, 
+        },
     ]
 
     for calculation in calculation_list:
@@ -378,7 +379,7 @@ def main():
             },
             'target_nodata': 0,
             'target_raster_path': "cv_habitat_value_Sc1v5-ESAmod2_v2.tif",
-        }, 
+        },
         {
             'expression': '(raster1>0)*raster1',
             'symbol_to_path_map': {
@@ -431,7 +432,7 @@ def main():
     return
 
     calculation_list = [
-        { 
+        {
             'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_PPC\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
@@ -439,7 +440,7 @@ def main():
             },
             'target_nodata': -9999,
             'target_raster_path': "nature_access_lspop2019_Sc3v1_PNVnoag.tif",
-        }, 
+        },
     ]
 
     for calculation in calculation_list:
@@ -454,7 +455,7 @@ def main():
 
 
     calculation_list = [
-        { 
+        {
             'expression': 'raster1*-1',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_ESAmodVCFv2_md5_c01e9-Sc1v5_md5_d93c1.tif",
@@ -462,7 +463,7 @@ def main():
             'target_nodata': 0,
             'target_raster_path': "cv_habitat_value_Sc1v5-ESAmodVCFv2.tif",
         },
-        { 
+        {
             'expression': 'raster1*-1',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_PPC\diff_maps\cv_habitat_value_ESAmodVCFv2_md5_c01e9-Sc2v5_md5_6b714f.tif",
@@ -470,7 +471,7 @@ def main():
             'target_nodata': 0,
             'target_raster_path': "cv_habitat_value_Sc2v5-ESAmodVCFv2.tif",
         },
-        { 
+        {
             'expression': 'raster1*-1',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_PPC\diff_maps\ESAmodVCFv2_cv_habitat_value_md5_c01e9b17aee323ead79573d66fa4020d   -  Sc2v6_cv_habitat_value_md5_a14ded315c8e0ce2f2266a1c190e06ee.tif",
@@ -478,7 +479,7 @@ def main():
             'target_nodata': 0,
             'target_raster_path': "cv_habitat_value_Sc2v6-ESAmodVCFv2.tif",
         },
-        { 
+        {
             'expression': 'raster1*-1',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_PPC\diff_maps\ESAmodVCFv2_cv_habitat_value_md5_c01e9b17aee323ead79573d66fa4020d   -  Sc3v1_cv_habitat_value_md5_e889c2dbc5783fc4c782fbd3b473d7de.tif",
@@ -486,7 +487,7 @@ def main():
             'target_nodata': 0,
             'target_raster_path': "cv_habitat_value_Sc3v1-ESAmodVCFv2.tif",
         },
-        { 
+        {
             'expression': 'raster1*-1',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_PPC\diff_maps\ESAmodVCFv2_cv_habitat_value_md5_c01e9b17aee323ead79573d66fa4020d   -  Sc3v2_cv_habitat_value_md5_251c1c934b367c8181b873099d1118b8.tif",
@@ -514,16 +515,16 @@ def main():
     #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc2v3_Griscom2050_md5_a86e5f.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
     #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1v2_md5_28cb0.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
     #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc2v4_Griscom2035_md5_ffee3.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
-    
+
     calculation_list = [
-        { 
+        {
             'expression': '(raster1>=9999)*-9999 + (raster1<9999)*raster1',
             'symbol_to_path_map': {
                 'raster1': r"D:\repositories\pollination_sufficiency\pollination_ppl_fed_on_ag_10s_Sc1Renato0_5_md5_ccdae4   -  pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif",
             },
             'target_nodata': -9999,
             'target_raster_path': "pollination_ppl_fed_on_ag_10s_Sc1Renato0_5_md5_ccdae4-esa2020_md5_0cf902_fixed.tif",
-        }, 
+        },
     ]
 
     for calculation in calculation_list:
@@ -537,7 +538,7 @@ def main():
 
 
     calculation_list = [
-        { 
+        {
             'expression': 'raster2 - raster1',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\scenarios\scenario_masks\reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
@@ -545,7 +546,7 @@ def main():
             },
             'target_nodata': 0,
             'target_raster_path': "Sc3v1-ESAmod2_changemask.tif",
-        }, 
+        },
     ]
 
     for calculation in calculation_list:
@@ -557,7 +558,7 @@ def main():
 
     return
 
-    
+
 
     calculation_list = [
         {
