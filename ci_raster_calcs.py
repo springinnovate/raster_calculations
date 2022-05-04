@@ -38,6 +38,38 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+    
+
+    calculation_list = [
+        {
+            'expression': '(raster1>=4)*(raster2>0)',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\scenarios\scenario_masks\reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
+                'raster2': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\CLUMONDO_livestock_ssp1_change_WARPED_near_md5_b7c0bdc292ffb93ac0571561a01d4f81.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "ESA2020_forest_lost_to_livestock_ssp1.tif",
+        },
+        {
+            'expression': '(raster1>=4)*(raster2>0)',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\scenarios\scenario_masks\reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
+                'raster2': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\CLUMONDO_livestock_ssp3_change_WARPED_near_md5_d8eb9043514a23f122587e6a6693a016.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': "ESA2020_forest_lost_to_livestock_ssp3.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     calculation_list = [
         {
             'expression': 'raster1 - raster2',
