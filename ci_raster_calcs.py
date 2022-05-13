@@ -38,8 +38,8 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\repositories\raster_calculations\ESA2020_forest_lost_to_livestock_ssp1_md5_44b77f.tif" 0.9 130
-    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\repositories\raster_calculations\ESA2020_forest_lost_to_livestock_ssp3_md5_70d862.tif" 0.9 130
+    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\repositories\raster_calculations\ESA2020_forest_lost_to_livestock_ssp1_md5_44b77f.tif" 0.9  --flip_target_val 130
+    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\repositories\raster_calculations\ESA2020_forest_lost_to_livestock_ssp3_md5_70d862.tif" 0.9  --flip_target_val 130
 
     calculation_list = [
         {
