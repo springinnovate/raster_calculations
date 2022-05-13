@@ -38,27 +38,27 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\repositories\raster_calculations\ESA2020_forest_lost_to_livestock_ssp1_md5_44b77f.tif" 0.9 130
-    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\repositories\raster_calculations\ESA2020_forest_lost_to_livestock_ssp3_md5_70d862.tif" 0.9 130
+    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\ecoshard\CI_FP\ESA2020_forest_lost_to_livestock_ssp1_md5_44b77f.tif" 0.9 130
+    # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\ecoshard\CI_FP\ESA2020_forest_lost_to_livestock_ssp3_md5_70d862.tif" 0.9 130
 
     calculation_list = [
         {
             'expression': '(raster1>64)*(raster2>0)', #very strange - on my machine QGIS shows values of 1, 2 and 4, but on bigboi it's 1, 64, and 256
             'symbol_to_path_map': {
-                'raster1': "reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
-                'raster2': "CLUMONDO_livestock_ssp1_change_WARPED_near_md5_b7c0bdc292ffb93ac0571561a01d4f81.tif",
+                'raster1': r"D:\ecoshard\CI_FP\reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
+                'raster2': r"D:\ecoshard\CI_FP\CLUMONDO_livestock_ssp1_change_WARPED_near_md5_b7c0bdc292ffb93ac0571561a01d4f81.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "ESA2020_forest_lost_to_livestock_ssp1.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\ESA2020_forest_lost_to_livestock_ssp1.tif",
         },
         {
             'expression': '(raster1>64)*(raster2>0)',
             'symbol_to_path_map': {
-                'raster1': "reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
-                'raster2': "CLUMONDO_livestock_ssp3_change_WARPED_near_md5_d8eb9043514a23f122587e6a6693a016.tif",
+                'raster1': r"D:\ecoshard\CI_FP\reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif",
+                'raster2': r"D:\ecoshard\CI_FP\CLUMONDO_livestock_ssp3_change_WARPED_near_md5_d8eb9043514a23f122587e6a6693a016.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': "ESA2020_forest_lost_to_livestock_ssp3.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\ESA2020_forest_lost_to_livestock_ssp3.tif",
         },
     ]
 
