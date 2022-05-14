@@ -34,7 +34,6 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
 
-
     calculation_list = [
         {
             'expression': '(raster2*(raster2<10000)/(raster1/100))+((raster2>=10000)*-9999)',
@@ -43,7 +42,7 @@ def main():
                 'raster2': r"D:\ecoshard\CBD_GBF_IIS\IIS_avoided_conversion_nitrogen_Sc2-Sc1_fert2050_md5_5432ac_compressed.tif",
             },
             'target_nodata': -9999,
-             'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+            'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
             'resample_method': 'near',
             'target_raster_path': "IIS_avoided_conversion_nitrogen_persqkm_Sc2-Sc1_fert2050.tif",
         },
@@ -54,7 +53,7 @@ def main():
                 'raster2': r"D:\ecoshard\CBD_GBF_IIS\IIS_restoration_nitrogen_Sc1-Sc3_fert2050_md5_4da71d_compressed.tif",
             },
             'target_nodata': -9999,
-             'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+            'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
             'resample_method': 'near',
             'target_raster_path': "IIS_restoration_nitrogen_persqkm_Sc1-Sc3_fert2050.tif",
         },
