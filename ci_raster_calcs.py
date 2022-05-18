@@ -38,6 +38,44 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+    # Need to come back and clip the correct band (21) to this extent once Rich corrects the output:
+    # gdal_translate -projwin 95.009507541 6.077102897 141.019509595 -11.007775829 -of GTiff -b 2 D:/ecoshard/fc_stack/fc_stack_hansen_forest_cover_2000-2020_md5_fbb58a.tif D:/ecoshard/CI_FP/Indonesia/fc_20001_indonesia.tif
+    # or can do this within QGIS clip raster by extend adding -b 21 to the additional command line parameters in advanced parameters
+
+    calculation_list = [
+        {
+            'expression': '(raster1>0)*(raster1+raster2) + (raster1<1)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\fc_2001_indonesia_compressed_md5_cc1953.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.0002694945852,-0.0002694945852),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\CurrentViscose_FC_Indonesia.tif",
+        },
+        {
+            'expression': '(raster1>0)*(raster1+raster2) + (raster1<1)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\fc_2001_indonesia_compressed_md5_cc1953.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\Viscose_FutureExtent_compressed_md5_bb9ba8.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.0002694945852,-0.0002694945852),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\FutureViscose_FC_Indonesia.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\ecoshard\CI_FP\Argentina\ESA2020_forest_lost_to_livestock_ssp1_md5_44b77f.tif" 0.9  --flip_target_val 130
     # python create_scenario.py "D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif" "D:\ecoshard\CI_FP\Argentina\ESA2020_forest_lost_to_livestock_ssp3_md5_70d862.tif" 0.9  --flip_target_val 130
 
