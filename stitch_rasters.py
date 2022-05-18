@@ -18,7 +18,7 @@ logging.basicConfig(
         '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
         ' [%(funcName)s:%(lineno)d] %(message)s'))
 LOGGER = logging.getLogger(__name__)
-logging.getLogger('taskgraph').setLevel(logging.DEBUG)
+logging.getLogger('ecoshard.taskgraph').setLevel(logging.WARN)
 gdal.SetCacheMax(2**26)
 
 WORLD_ECKERT_IV_WKT = """PROJCRS["unknown",
@@ -164,6 +164,7 @@ def main():
             f'{raster_band_count_set}, raster set should have the same '
             f'number of bands.')
     n_bands = next(iter(raster_band_count_set))
+    LOGGER.debug(f'n_bands: {n_bands}')
 
     target_bounding_box = geoprocessing.merge_bounding_box_list(
         target_bounding_box_list, 'union')
