@@ -38,52 +38,29 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-
-    calculation_list = [
-        {
-            'expression': '(raster1>=190)*(raster1<210)*raster2 + (raster1<190)*raster1 + (raster1>=210)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_PPC\scenarios\Sc3v2_PNVallhab_md5_419ab9f579d10d9abb03635c5fdbc7ca.tif",
-                'raster2': r"D:\archive\nci\PNV_smith_060420_md5_8dd464e0e23fefaaabe52e44aa296330.tif",
-            },
-            'target_nodata': 0,
-            'target_raster_path': r"D:\ecoshard\PNV_full_on_ESA.tif",
-        },
-    ]
-
-    for calculation in calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-
-
     # gdal_translate -projwin 95.009507541 6.077102897 141.019509595 -11.007775829 -of GTiff -b1 2 D:/ecoshard/fc_stack/fc_stack_hansen_forest_cover_2000-2020_v2_compressed_md5_cd1f1f.tif D:/ecoshard/CI_FP/Indonesia/fc_2020_indonesia.tif
     # or can do this within QGIS clip raster by extend adding -b 21 to the additional command line parameters in advanced parameters
 
     calculation_list = [
         {
-            'expression': '(raster1>0)*(raster1+raster2) + (raster1<1)*raster2',
+            'expression': 'raster1 + raster2', #nodata for fc is 0 so anywhere that is forest but not viscose will remain 1 and anywhere that is forest and viscose will be 2
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Indonesia\fc_2001_indonesia_compressed_md5_cc1953.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\fc_2020_indonesia_compressed_md5_acfc1b.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Indonesia\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
             },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.0002694945852,-0.0002694945852),
+            'target_nodata': 0,
+            'target_pixel_size': (0.00088888889,-0.00088888889),
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\CurrentViscose_FC_Indonesia.tif",
         },
         {
-            'expression': '(raster1>0)*(raster1+raster2) + (raster1<1)*raster2',
+            'expression': 'raster1 + raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Indonesia\fc_2001_indonesia_compressed_md5_cc1953.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\fc_2020_indonesia_compressed_md5_acfc1b.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Indonesia\Viscose_FutureExtent_compressed_md5_bb9ba8.tif",
             },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.0002694945852,-0.0002694945852),
+            'target_nodata': 0,
+            'target_pixel_size': (0.00088888889,-0.00088888889),
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\FutureViscose_FC_Indonesia.tif",
         },
@@ -130,6 +107,29 @@ def main():
     TASK_GRAPH.close()
 
     return
+
+    #making a PNV layer that is fully PNV, including bare and urban (which were left alone in the erroniously named "PNVallhab")
+    calculation_list = [
+        {
+            'expression': '(raster1>=190)*(raster1<210)*raster2 + (raster1<190)*raster1 + (raster1>=210)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\scenarios\Sc3v2_PNVallhab_md5_419ab9f579d10d9abb03635c5fdbc7ca.tif",
+                'raster2': r"D:\archive\nci\PNV_smith_060420_md5_8dd464e0e23fefaaabe52e44aa296330.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\ecoshard\PNV_full_on_ESA.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
 
     calculation_list = [
         {
