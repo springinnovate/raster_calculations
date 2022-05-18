@@ -192,10 +192,10 @@ def main():
 
     n_cols = int(math.ceil(
         (target_bounding_box[2]-target_bounding_box[0]) /
-        float(target_pixel_size)))
+        abs(target_pixel_size[0])))
     n_rows = int(math.ceil(
         (target_bounding_box[3]-target_bounding_box[1]) /
-        float(target_pixel_size)))
+        abs(target_pixel_size[1])))
 
     geotransform = (
         target_bounding_box[0], target_pixel_size[0], 0.0,
