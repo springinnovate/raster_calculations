@@ -63,6 +63,9 @@ def main():
             'target_pixel_size': (0.00088888889,-0.00088888889),
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\FutureViscose_FC_Indonesia.tif",
+            'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\PNV_full_on_ESA.tif",
         },
     ]
 
