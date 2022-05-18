@@ -174,31 +174,32 @@ def main():
     gtiff_driver = gdal.GetDriverByName('GTiff')
 
     if args.target_cell_size is None:
-        target_cell_size_set = set([
-            geoprocessing.get_raster_info(path)['cell_size']
+        target_pixel_size_set = set([
+            geoprocessing.get_raster_info(path)['pixel_size']
             for path in raster_path_list])
-        if len(target_cell_size_set) > 1:
+        if len(target_pixel_size_set) > 1:
             raise ValueError(
                 f'No --target_cell_size was passed and there are more than 1 '
-                f'cell sizes in the input rasters:\n{target_cell_size_set}. '
+                f'cell sizes in the input rasters:\n{target_pixel_size_set}. '
                 f'Re-run with a defined --target_cell_size')
-        target_cell_size = next(iter(target_cell_size_set))
+        target_pixel_size = next(iter(target_pixel_size_set))
         LOGGER.info(
-            f'no cell size was passed, using cell size of {target_cell_size} '
+            f'no cell size was passed, using cell size of {target_pixel_size} '
             f'from {raster_path_list[0]}')
     else:
-        target_cell_size = args.target_cell_size
+        # make a square pixel
+        target_pixel_size = [args.target_cell_size, -args.target_cell_size]
 
     n_cols = int(math.ceil(
         (target_bounding_box[2]-target_bounding_box[0]) /
-        float(target_cell_size)))
+        float(target_pixel_size)))
     n_rows = int(math.ceil(
         (target_bounding_box[3]-target_bounding_box[1]) /
-        float(target_cell_size)))
+        float(target_pixel_size)))
 
     geotransform = (
-        target_bounding_box[0], float(target_cell_size), 0.0,
-        target_bounding_box[3], 0.0, -float(target_cell_size))
+        target_bounding_box[0], target_pixel_size[0], 0.0,
+        target_bounding_box[3], 0.0, target_pixel_size[1])
 
     target_raster = gtiff_driver.Create(
         os.path.join('.', args.target_raster_path), n_cols, n_rows, n_bands,
