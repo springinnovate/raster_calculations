@@ -47,6 +47,8 @@ def main():
                 'raster2': r"D:\archive\nci\PNV_smith_060420_md5_8dd464e0e23fefaaabe52e44aa296330.tif",
             },
             'target_nodata': 0,
+            'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+            'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\PNV_full_on_ESA.tif",
         },
     ]
