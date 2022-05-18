@@ -18,7 +18,7 @@ logging.basicConfig(
         '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
         ' [%(funcName)s:%(lineno)d] %(message)s'))
 LOGGER = logging.getLogger(__name__)
-logging.getLogger('taskgraph').setLevel(logging.WARN)
+logging.getLogger('ecoshard.taskgraph').setLevel(logging.WARN)
 gdal.SetCacheMax(2**26)
 
 WORLD_ECKERT_IV_WKT = """PROJCRS["unknown",
