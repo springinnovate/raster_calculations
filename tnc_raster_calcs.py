@@ -1,4 +1,4 @@
-"""These calculations are for the CI global restoration project."""
+"""These calculations are for the TNC NbS project."""
 #conda activate py38_gdal312
 #conda activate py39_ecoprocess
 
