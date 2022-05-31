@@ -37,6 +37,86 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+    calculation_list = [
+        {
+            'expression': '(raster1>=0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\global_n_export_current_viscose_ESA2020_Indonesia_fertilizer_current.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\n_export_current_viscose_ESA2020_Indonesia_fertilizer_current_noneg.tif",
+        },
+        {
+            'expression': '(raster1>=0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\global_n_export_future_viscose_ESA2020_Indonesia_fertilizer_current.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\n_export_future_viscose_ESA2020_Indonesia_fertilizer_current_noneg.tif",
+        },
+        {
+            'expression': '(raster1>=0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\global_n_export_ESA_mod_SSP1_Argentina_fertilizer_current.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod_SSP1_Argentina_fertilizer_current_noneg.tif",
+        },
+        {
+            'expression': '(raster1>=0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\global_n_export_ESA_mod_SSP3_Argentina_fertilizer_current.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod_SSP3_Argentina_fertilizer_current_noneg.tif",
+        },
+        {
+            'expression': '(raster1>=0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\US_nlcd\global_n_export_nlcd2016_cotton_to_83_fertilizer_current.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\n_export_nlcd2016_cotton_to_83_fertilizer_current_noneg.tif",
+        },
+        {
+            'expression': '(raster1>=0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\US_nlcd\global_n_export_nlcd2016_fertilizer_current.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\n_export_nlcd2016_fertilizer_current_noneg.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\global_sed_deposition_current_viscose_ESA2020_Indonesia.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\global_sed_deposition_future_viscose_ESA2020_Indonesia.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\sed_deposition_avoided_viscose_ESA2020_Indonesia.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     # python create_scenario.py D:\ecoshard\CI_FP\Indonesia\scenarios\ESA2020_modVCFv2_Indonesia_compressed_md5_ea5ce6.tif D:\ecoshard\CI_FP\Indonesia\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif 0.9 --flip_target_val 12
     # python create_scenario.py D:\ecoshard\CI_FP\Indonesia\scenarios\ESA2020_modVCFv2_Indonesia_compressed_md5_ea5ce6.tif D:\ecoshard\CI_FP\Indonesia\Viscose_FutureExtent_compressed_md5_bb9ba8.tif 0.9 --flip_target_val 12
