@@ -37,6 +37,34 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+
+    #scenarios!
+    # python create_scenario.py "D:\ecoshard\TNC_NBS\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif" "D:\ecoshard\TNC_NBS\sequestration_rate__mean__aboveground__Griscom_restorn_extent__Mg_C_ha_yr.tif" 0.1 --flip_target_path "D:\ecoshard\CI_PPC\scenarios\Sc3v1_PNVnoag_md5_c07865b995f9ab2236b8df0378f9206f.tif"
+    # python create_scenario.py "D:\ecoshard\TNC_NBS\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif" "D:\ecoshard\TNC_NBS\sequestration_rate__mean__aboveground__Griscom_restorn_extent__Mg_C_ha_yr.tif" 0.1 --flip_target_val 999
+    # python create_scenario.py "D:\ecoshard\TNC_NBS\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif" "D:\ecoshard\TNC_NBS\AFCv1_reversed_conv_rate_global_md5_e62e00.tif" 0.00001 --flip_target_val 30
+
+    calculation_list = [
+        {
+            'expression': 'raster1*-1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\AFCv1_conv_rate_global_md5_7ac543.tif",
+            },
+            'target_nodata': -9999,
+            'default_nan': -9999,
+            'target_raster_path': "AFCv1_reversed_conv_rate_global.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
     # first make sure to ecoshard --ndv to set ndv to something other than 0 (like -1). Then:
     # python nodata_replace.py "D:\repositories\cnc_global_cv\global_cv_workspace\ndv_-1.0_marESA1992_cv_habitat_value_md5_a59070.tif" "D:\repositories\raster_calculations\landmask0_10s_md5_54231a.tif" cv_habitat_value_marESA1992_full_land.tif
     # python nodata_replace.py "D:\repositories\cnc_global_cv\global_cv_workspace\ndv_-1.0_marESA2020_cv_habitat_value_md5_520390.tif" "D:\repositories\raster_calculations\landmask0_10s_md5_54231a.tif" cv_habitat_value_marESA2020_full_land.tif
