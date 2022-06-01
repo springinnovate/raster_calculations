@@ -37,7 +37,118 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-    
+
+    calculation_list = [
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\sed_deposition_current_viscose_ESA2020_Indonesia.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_sed_deposition_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\sed_dep_impact_Indonesia_ESA_rel_to_PNV.tif",
+        },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\sed_export_current_viscose_ESA2020_Indonesia.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_sed_export_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\sed_export_impact_Indonesia_ESA_rel_to_PNV.tif",
+        },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\n_export_current_viscose_ESA2020_Indonesia_fertilizer_current_noneg.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_n_export_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\n_export_impact_Indonesia_ESA_rel_to_PNV.tif",
+        },
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_deposition_ESA_mod2020_Argentina.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_sed_deposition_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\sed_dep_impact_Argentina_ESA_rel_to_PNV.tif",
+        },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_export_ESA_mod2020_Argentina.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_sed_export_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\sed_export_impact_Argentina_ESA_rel_to_PNV.tif",
+        },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod2020_Argentina_fertilizer_current_noneg.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_n_export_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\n_export_impact_Argentina_ESA_rel_to_PNV.tif",
+        },
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\US_nlcd\sed_deposition_nlcd2016.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_sed_deposition_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\sed_dep_impact_US_nlcd_rel_to_PNV.tif",
+        },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\US_nlcd\sed_export_nlcd2016.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_sed_export_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\sed_export_impact_US_nlcd_rel_to_PNV.tif",
+        },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\US_nlcd\n_export_nlcd2016_fertilizer_current_noneg.tif",
+                'raster2': r"D:\ecoshard\CI_FP\global_n_export_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\n_export_impact_US_nlcd_rel_to_PNV.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     calculation_list = [
         {
             'expression': 'raster1 - raster2',
@@ -69,67 +180,55 @@ def main():
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_PPC\global_sed_deposition_esamod2_compressed_md5_ff134776cd7d9d69dc5e2fe14b53474c.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_deposition_ESA_mod2020_Argentina.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Argentina\sed_deposition_ESA_mod_SSP1_Argentina.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\sed_deposition_avoided_livestockSSP1_ESA2020_Argentina.tif",
         },
         {
             'expression': 'raster2 - raster1',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_PPC\global_sed_export_esamod2_compressed_md5_fa10fd3d1942d0c3ce78b5aa544b150f.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_export_ESA_mod2020_Argentina.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Argentina\sed_export_ESA_mod_SSP1_Argentina.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\sed_retention_avoided_livestockSSP1_ESA2020_Argentina.tif",
         },
         {
             'expression': 'raster2 - raster1',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_PPC\global_n_export_esamod2_compressed_md5_96c12f4f833498771d18b131b8cbb49b.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod2020_Argentina_fertilizer_current_noneg.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod_SSP1_Argentina_fertilizer_current_noneg.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\n_retention_avoided_livestockSSP1_ESA2020_Argentina.tif",
         },
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_PPC\global_sed_deposition_esamod2_compressed_md5_ff134776cd7d9d69dc5e2fe14b53474c.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_deposition_ESA_mod2020_Argentina.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Argentina\sed_deposition_ESA_mod_SSP3_Argentina.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\sed_deposition_avoided_livestockSSP3_ESA2020_Argentina.tif",
         },
         {
             'expression': 'raster2 - raster1',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_PPC\global_sed_export_esamod2_compressed_md5_fa10fd3d1942d0c3ce78b5aa544b150f.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_export_ESA_mod2020_Argentina.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Argentina\sed_export_ESA_mod_SSP3_Argentina.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\sed_retention_avoided_livestockSSP3_ESA2020_Argentina.tif",
         },
         {
             'expression': 'raster2 - raster1',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_PPC\global_n_export_esamod2_compressed_md5_96c12f4f833498771d18b131b8cbb49b.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod2020_Argentina_fertilizer_current_noneg.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod_SSP3_Argentina_fertilizer_current_noneg.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\n_retention_avoided_livestockSSP3_ESA2020_Argentina.tif",
         },
         {
@@ -219,6 +318,14 @@ def main():
             },
             'target_nodata': -9999,
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\n_export_future_viscose_ESA2020_Indonesia_fertilizer_current_noneg.tif",
+        },
+        {
+            'expression': '(raster1>=0)*raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\global_n_export_ESA_mod2020_Argentina_fertilizer_current.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod2020_Argentina_fertilizer_current_noneg.tif",
         },
         {
             'expression': '(raster1>=0)*raster1',
