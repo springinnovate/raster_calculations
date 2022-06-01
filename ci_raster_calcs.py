@@ -38,9 +38,142 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+
     calculation_list = [
         {
-            'expression': 'raster1 - raster2',
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\sed_dep_impact_Indonesia_ESA_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\viscose_impact_sed_dep_cur_rel_PNV.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\sed_export_impact_Indonesia_ESA_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\viscose_impact_sed_export_cur_rel_PNV.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\n_export_impact_Indonesia_ESA_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\viscose_impact_n_export_cur_rel_PNV.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_dep_impact_Argentina_ESA_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path':  r"D:\ecoshard\CI_FP\Argentina\livestock_impact_sed_dep_cur_rel_PNV.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_export_impact_Argentina_ESA_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path':  r"D:\ecoshard\CI_FP\Argentina\livestock_impact_sed_export_cur_rel_PNV.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\n_export_impact_Argentina_ESA_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path':  r"D:\ecoshard\CI_FP\Argentina\livestock_impact_n_export_cur_rel_PNV.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\US_nlcd\sed_dep_impact_US_nlcd_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\cotton_impact_sed_dep_cur_rel_PNV.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\US_nlcd\sed_export_impact_US_nlcd_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\cotton_impact_sed_export_cur_rel_PNV.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\US_nlcd\n_export_impact_US_nlcd_rel_to_PNV.tif",
+                'raster2': r"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\cotton_impact_n_export_cur_rel_PNV.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': '(raster2 - raster1)/2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\reclassified_PNVallhab_Argentina_md5_27ddfa_ESA_forest_grassland_mask_md5_d205bd.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\scenarios\reclassified_ESA_mod_2020_Argentina_md5_6640f4_ESA_forest_grassland_mask_md5_d205bd.tif",
+            },
+            'target_nodata':0,
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Indonesia\sed_deposition_current_viscose_ESA2020_Indonesia.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_sed_deposition_PNV_full_on_ESA_global.tif",
@@ -51,7 +184,7 @@ def main():
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\sed_dep_impact_Indonesia_ESA_rel_to_PNV.tif",
         },
         {
-            'expression': 'raster2 - raster1',
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Indonesia\sed_export_current_viscose_ESA2020_Indonesia.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_sed_export_PNV_full_on_ESA_global.tif",
@@ -62,7 +195,7 @@ def main():
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\sed_export_impact_Indonesia_ESA_rel_to_PNV.tif",
         },
         {
-            'expression': 'raster2 - raster1',
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Indonesia\n_export_current_viscose_ESA2020_Indonesia_fertilizer_current_noneg.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_n_export_PNV_full_on_ESA_global.tif",
@@ -73,7 +206,7 @@ def main():
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\n_export_impact_Indonesia_ESA_rel_to_PNV.tif",
         },
         {
-            'expression': 'raster1 - raster2',
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_deposition_ESA_mod2020_Argentina.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_sed_deposition_PNV_full_on_ESA_global.tif",
@@ -84,7 +217,7 @@ def main():
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\sed_dep_impact_Argentina_ESA_rel_to_PNV.tif",
         },
         {
-            'expression': 'raster2 - raster1',
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Argentina\sed_export_ESA_mod2020_Argentina.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_sed_export_PNV_full_on_ESA_global.tif",
@@ -95,7 +228,7 @@ def main():
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\sed_export_impact_Argentina_ESA_rel_to_PNV.tif",
         },
         {
-            'expression': 'raster2 - raster1',
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Argentina\n_export_ESA_mod2020_Argentina_fertilizer_current_noneg.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_n_export_PNV_full_on_ESA_global.tif",
@@ -106,7 +239,7 @@ def main():
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\n_export_impact_Argentina_ESA_rel_to_PNV.tif",
         },
         {
-            'expression': 'raster1 - raster2',
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\US_nlcd\sed_deposition_nlcd2016.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_sed_deposition_PNV_full_on_ESA_global.tif",
@@ -117,7 +250,7 @@ def main():
             'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\sed_dep_impact_US_nlcd_rel_to_PNV.tif",
         },
         {
-            'expression': 'raster2 - raster1',
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\US_nlcd\sed_export_nlcd2016.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_sed_export_PNV_full_on_ESA_global.tif",
@@ -128,7 +261,7 @@ def main():
             'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\sed_export_impact_US_nlcd_rel_to_PNV.tif",
         },
         {
-            'expression': 'raster2 - raster1',
+            'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\US_nlcd\n_export_nlcd2016_fertilizer_current_noneg.tif",
                 'raster2': r"D:\ecoshard\CI_FP\global_n_export_PNV_full_on_ESA_global.tif",
