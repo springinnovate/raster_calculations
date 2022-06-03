@@ -43,6 +43,86 @@ def main():
         {
             'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp1_Argentina_md5_a130c7.tif",
+                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\VulnerableC_lost_to_livestock_ssp1_Argentina.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp3_Argentina_md5_4d2017.tif",
+                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\VulnerableC_lost_to_livestock_ssp3_Argentina.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp1_Argentina_md5_a130c7.tif",
+                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Biomass_2018_compressed_md5_ede06a.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\ManageableC_lost_to_livestock_ssp1_Argentina.tif",
+        },
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp3_Argentina_md5_4d2017.tif",
+                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Biomass_2018_compressed_md5_ede06a.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\ManageableC_lost_to_livestock_ssp3_Argentina.tif",
+        },
+        
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster1 + (raster2*220)',
+            'symbol_to_path_map': {
+                'raster1': r"C:\Users\Becky\Documents\ci-global-restoration\scenarios\final\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif",
+                'raster2': r"C:\Users\Becky\Documents\Ecoregions2017_compressed_md5_316061.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"C:\Users\Becky\Documents\Ecoregions2017_ESA2020modVCFv2_zones.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster1 * raster2',
+            'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Indonesia\sed_dep_impact_Indonesia_ESA_rel_to_PNV.tif",
                 'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
             },
@@ -389,7 +469,7 @@ def main():
                 'raster2': r"D:\ecoshard\CI_FP\US_nlcd\n_export_nlcd2016_cotton_to_83_fertilizer_current_noneg.tif",
             },
             'target_nodata': -9999,
-            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\n_retention_organic_cotton_US_nlcd.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\n_retention_organic_cotton_US_nlcd2.tif",
         },
         {
             'expression': 'raster2 - raster1',
