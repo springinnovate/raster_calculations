@@ -38,7 +38,6 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-
     calculation_list = [
         {
             'expression': 'raster1 * raster2',
@@ -84,7 +83,7 @@ def main():
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\ManageableC_lost_to_livestock_ssp3_Argentina.tif",
         },
-        
+
     ]
 
     for calculation in calculation_list:
