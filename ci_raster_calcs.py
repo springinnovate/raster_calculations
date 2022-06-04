@@ -38,52 +38,83 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+#Scenarios were wrong; future viscose didn't have current viscose in it where current viscose was replacing natural forest so they needed to be combined; current nlcd wasn't crop (82) everywhere cotton should be so made organic look bad where it was replacing non-crop
+    # python stitch_rasters.py --target_projection_epsg 4326 --target_cell_size 0.00277777778 --target_raster_path Viscose_FutureplusCurrent_Extent.tif --resample_method near --overlap_algorithm replace --raster_pattern D:\ecoshard\CI_FP\Indonesia\scenarios\ ndv_0.0_Viscose*.tif
+    # python create_scenario.py D:\ecoshard\CI_FP\Indonesia\scenarios\ESA2020_modVCFv2_Indonesia_compressed_md5_ea5ce6.tif D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_FutureplusCurrentExtent_ndv_0.0_md5_d7967f.tif 0.9 --flip_target_val 12
+        # renamed futurepluscurrent_viscose_ESA2020_modVCFv2_Indonesia.tif
+    #python create_scenario.py D:\ecoshard\CI_FP\US_nlcd\scenarios\nlcd2016_compressed_md5_f372b.tif D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif 0.9 --flip_target_val 82
+        #renamed cotton_to_82_nlcd2016.tif
+
+
     calculation_list = [
         {
-            'expression': 'raster1 * raster2',
+            'expression': 'raster1 * (raster3-raster2)',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp1_Argentina_md5_a130c7.tif",
-                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
+                'raster1': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
+                'raster3': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_FutureplusCurrentExtent_ndv_0.0_md5_d7967f.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'target_pixel_size': (0.002694933524973050758,-0.002694933524973050758),
             'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\VulnerableC_lost_to_livestock_ssp1_Argentina.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\VulnerableC_lost_to_viscose_expansion_Indonesia.tif",
         },
         {
-            'expression': 'raster1 * raster2',
+            'expression': 'raster1 * (raster3-raster2)',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp3_Argentina_md5_4d2017.tif",
-                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
+                'raster1': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Biomass_2018_compressed_md5_ede06a.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
+                'raster3': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_FutureplusCurrentExtent_ndv_0.0_md5_d7967f.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'target_pixel_size': (0.002694933524973050758,-0.002694933524973050758),
             'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\VulnerableC_lost_to_livestock_ssp3_Argentina.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\ManageableC_lost_to_viscose_expansion_Indonesia.tif",
         },
-        {
-            'expression': 'raster1 * raster2',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp1_Argentina_md5_a130c7.tif",
-                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Biomass_2018_compressed_md5_ede06a.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\ManageableC_lost_to_livestock_ssp1_Argentina.tif",
-        },
-        {
-            'expression': 'raster1 * raster2',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp3_Argentina_md5_4d2017.tif",
-                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Biomass_2018_compressed_md5_ede06a.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\ManageableC_lost_to_livestock_ssp3_Argentina.tif",
-        },
-
+        #{
+        #    'expression': 'raster1 * raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp1_Argentina_md5_a130c7.tif",
+        #        'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\VulnerableC_lost_to_livestock_ssp1_Argentina.tif",
+        #},
+        #{
+        #    'expression': 'raster1 * raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp3_Argentina_md5_4d2017.tif",
+        #        'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\VulnerableC_lost_to_livestock_ssp3_Argentina.tif",
+        #},
+        #{
+        #    'expression': 'raster1 * raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp1_Argentina_md5_a130c7.tif",
+        #        'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Biomass_2018_compressed_md5_ede06a.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\ManageableC_lost_to_livestock_ssp1_Argentina.tif",
+        #},
+        #{
+        #    'expression': 'raster1 * raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_forest_lost_to_livestock_ssp3_Argentina_md5_4d2017.tif",
+        #        'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Biomass_2018_compressed_md5_ede06a.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\ManageableC_lost_to_livestock_ssp3_Argentina.tif",
+        #},
     ]
 
     for calculation in calculation_list:
@@ -968,6 +999,7 @@ def main():
 
     # Fixing the clip on Renato so it's the full extent
     #python stitch_rasters.py --target_projection_epsg 4326 --target_cell_size 0.00277777778 --target_raster_path  pollination_ppl_fed_on_ag_10s_Sc1Renato0_5.tif --resample_method near --overlap_algorithm replace --raster_list "D:\ecoshard\CI_PPC\ESAmodVCFv2_cv_habitat_value_md5_c01e9b17aee323ead79573d66fa4020d.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1v3_clip_md5_8a1f7a28e75aec4859e7c0f07cc6282f.tif"
+
 
     # Have to use this for differencing because there are missing pixels in restoration (where ag got converted back)
     #python add_sub_missing_as_0.py --subtract "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_Sc1Renato0_5_md5_3fe6b3.tif" "D:\ecoshard\CI_PPC\pollination_ppl_fed_on_ag_10s_esa2020_md5_0cf902.tif"
