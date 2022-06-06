@@ -38,13 +38,13 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-
 #Scenarios were wrong; future viscose didn't have current viscose in it where current viscose was replacing natural forest so they needed to be combined; current nlcd wasn't crop (82) everywhere cotton should be so made organic look bad where it was replacing non-crop
     # python stitch_rasters.py --target_projection_epsg 4326 --target_cell_size 0.00277777778 --target_raster_path Viscose_FutureplusCurrent_Extent.tif --resample_method near --overlap_algorithm replace --raster_pattern D:\ecoshard\CI_FP\Indonesia\scenarios\ ndv_0.0_Viscose*.tif
     # python create_scenario.py D:\ecoshard\CI_FP\Indonesia\scenarios\ESA2020_modVCFv2_Indonesia_compressed_md5_ea5ce6.tif D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_FutureplusCurrentExtent_ndv_0.0_md5_d7967f.tif 0.9 --flip_target_val 12
         # renamed futurepluscurrent_viscose_ESA2020_modVCFv2_Indonesia.tif
     #python create_scenario.py D:\ecoshard\CI_FP\US_nlcd\scenarios\nlcd2016_compressed_md5_f372b.tif D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif 0.9 --flip_target_val 82
         #renamed cotton_to_82_nlcd2016.tif
+
 
     calculation_list = [
         {
@@ -55,7 +55,7 @@ def main():
                 'raster3': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_FutureplusCurrentExtent_ndv_0.0_md5_d7967f.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'target_pixel_size': (0.002694933524973050758,-0.002694933524973050758),
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\VulnerableC_lost_to_viscose_expansion_Indonesia.tif",
         },
@@ -67,7 +67,7 @@ def main():
                 'raster3': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_FutureplusCurrentExtent_ndv_0.0_md5_d7967f.tif",
             },
             'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'target_pixel_size': (0.002694933524973050758,-0.002694933524973050758),
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\ManageableC_lost_to_viscose_expansion_Indonesia.tif",
         },
@@ -115,7 +115,6 @@ def main():
         #    'resample_method': 'near',
         #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\ManageableC_lost_to_livestock_ssp3_Argentina.tif",
         #},
-        
     ]
 
     for calculation in calculation_list:
