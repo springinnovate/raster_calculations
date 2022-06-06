@@ -27,11 +27,13 @@ logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
 #    'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
-    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif')
+#    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Argentina_compressed_md5_806575.tif')
+#    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Indonesia_compressed_md5_226d32.tif')
+    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif')
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks'
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/carbon_datasets/'
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -47,8 +49,9 @@ RASTER_LIST = [
     #('Sc3v1_PNVnoag_md5_c07865b995f9ab2236b8df0378f9206f_hab_mask.tif', False, False, False)
     #('marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992-v2.0.7cds_compressed_md5_83ec1b_hab_mask.tif', False, False, False),
     #('marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_hab_mask.tif', False, False, False)
-    ('CLUMONDO_livestock_ssp1_change_md5_8b9543.tif', False, False, False),
-    ('CLUMONDO_livestock_ssp3_change_md5_578b3b.tif', False, False, False)
+    #('CLUMONDO_livestock_ssp1_change_md5_8b9543.tif', False, False, False),
+    #('CLUMONDO_livestock_ssp3_change_md5_578b3b.tif', False, False, False)
+    ('Total_Carbon_2010_compressed_md5_62290b.tif', True, False, True)
     ]
 
 
