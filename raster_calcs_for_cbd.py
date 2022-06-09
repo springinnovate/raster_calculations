@@ -33,7 +33,107 @@ LOGGER = logging.getLogger(__name__)
 
 
 def main():
-    
+
+    calculation_list = [
+        {
+            'expression': '(raster2*(raster2<=100000)/(raster1/100))+((raster2>100000)*-9999)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+                'raster2': r"D:\ecoshard\CBD_GBF_IIS\global_n_export_lulc_sc1_fertilizer_2050_compressed_md5_c215e5207337873a4c527b173c0d9ae2.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+            'resample_method': 'near',
+            'target_raster_path': "global_n_export_lulc_sc1_fertilizer_2050_persqkm_.tif",
+        },
+        #{
+        #    'expression': 'raster2/(raster1/100)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\ecoshard\CBD_GBF_IIS\ESA_2015_mod_IIS_cv_habitat_value.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+        #    'resample_method': 'near',
+        #    'target_raster_path': "ESA_2015_mod_IIS_cv_habitat_value_persqkm.tif",
+        #},
+        #{
+        #    'expression': '(raster2*(raster2<10000)/(raster1/100))+((raster2>=10000)*-9999)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\ecoshard\CBD_GBF_IIS\IIS_avoided_conversion_nitrogen_Sc2-Sc1_fert2050_md5_5432ac_compressed.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+        #    'resample_method': 'near',
+        #    'target_raster_path': "IIS_avoided_conversion_nitrogen_persqkm_Sc2-Sc1_fert2050.tif",
+        #},
+        #{
+        #    'expression': '(raster2*(raster2<10000)/(raster1/100))+((raster2>=10000)*-9999)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\ecoshard\CBD_GBF_IIS\IIS_restoration_nitrogen_Sc1-Sc3_fert2050_md5_4da71d_compressed.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+        #    'resample_method': 'near',
+        #    'target_raster_path': "IIS_restoration_nitrogen_persqkm_Sc1-Sc3_fert2050.tif",
+        #},
+        #{
+        #    'expression': '(raster2)/(raster1/100)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\ecoshard\CBD_GBF_IIS\IIS_avoided_conversion_CRR_Sc1-Sc2_md5_198bf3_compressed.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #     'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+        #    'resample_method': 'near',
+        #    'target_raster_path': "IIS_avoided_conversion_CRR_persqkm_Sc1-Sc2",
+        #},
+        #{
+        #    'expression': '(raster2)/(raster1/100)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\ecoshard\CBD_GBF_IIS\IIS_restoration_CRR_Sc3-Sc1_md5_46e98f_compressed.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #     'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+        #    'resample_method': 'near',
+        #    'target_raster_path': "IIS_restoration_CRR_persqkm_Sc3-Sc1.tif",
+        #},
+        #{
+        #    'expression': '(raster2)/(raster1/100)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\ecoshard\CBD_GBF_IIS\cv_pop_on_habitat_PNV_md5_2e35bd.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #     'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+        #    'resample_method': 'near',
+        #    'target_raster_path': "IIS_cv_pop_persqkm.tif",
+        #},
+        #{
+        #    'expression': '(raster2)/(raster1/100)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\repositories\ecoshard\ipbesdata\downstream_bene_2017_500000.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #     'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
+        #    'resample_method': 'near',
+        #    'target_raster_path': "IIS_downstream_pop_persqkm.tif",
+        #},
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     calculation_list = [
         {
             'expression': '(raster2>=raster1)*raster1 + (raster1>raster2)*raster2',
@@ -42,7 +142,7 @@ def main():
                 'raster2': r"D:\ecoshard\CBD_GBF_IIS\pnv_realized_pollination_per_ha_md5_88408670a144e45c32e03e92f8edd8fb.tif",
             },
             'target_nodata': -1e34,
-            'target_raster_path': "avoided_conversion_pollination_esa2018.tif",
+            'target_raster_path': "avoided_conversion_pollination_per_ha_esa2018.tif",
         },
         {
             'expression': '(raster2>raster1)*(raster2-raster1)',
@@ -51,7 +151,7 @@ def main():
                 'raster2': r"D:\ecoshard\CBD_GBF_IIS\pnv_realized_pollination_per_ha_md5_88408670a144e45c32e03e92f8edd8fb.tif",
             },
             'target_nodata': -1e34,
-            'target_raster_path': "restoration_pollination_Sc3-esa2018.tif",
+            'target_raster_path': "restoration_pollination_per_ha_Sc3-esa2018.tif",
         },
     ]
 
@@ -94,7 +194,7 @@ def main():
 
     return
 
-    
+
     calculation_list = [
         {
             'expression': '(raster1>0)*raster1',

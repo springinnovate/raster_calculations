@@ -18,7 +18,7 @@ logging.basicConfig(
         '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
         ' [%(funcName)s:%(lineno)d] %(message)s'))
 LOGGER = logging.getLogger(__name__)
-logging.getLogger('taskgraph').setLevel(logging.DEBUG)
+logging.getLogger('ecoshard.taskgraph').setLevel(logging.WARN)
 gdal.SetCacheMax(2**26)
 
 WORLD_ECKERT_IV_WKT = """PROJCRS["unknown",
@@ -61,7 +61,7 @@ def main():
         '--target_projection_epsg', required=True,
         help='EPSG code of target projection or "eckert_iv"')
     parser.add_argument(
-        '--target_cell_size', required=True,
+        '--target_cell_size', type=float,
         help=(
             'A single float indicating the desired square pixel size of '
             'the stitched raster.'))
@@ -164,6 +164,7 @@ def main():
             f'{raster_band_count_set}, raster set should have the same '
             f'number of bands.')
     n_bands = next(iter(raster_band_count_set))
+    LOGGER.debug(f'n_bands: {n_bands}')
 
     target_bounding_box = geoprocessing.merge_bounding_box_list(
         target_bounding_box_list, 'union')
@@ -172,16 +173,33 @@ def main():
 
     gtiff_driver = gdal.GetDriverByName('GTiff')
 
+    if args.target_cell_size is None:
+        target_pixel_size_set = set([
+            geoprocessing.get_raster_info(path)['pixel_size']
+            for path in raster_path_list])
+        if len(target_pixel_size_set) > 1:
+            raise ValueError(
+                f'No --target_cell_size was passed and there are more than 1 '
+                f'cell sizes in the input rasters:\n{target_pixel_size_set}. '
+                f'Re-run with a defined --target_cell_size')
+        target_pixel_size = next(iter(target_pixel_size_set))
+        LOGGER.info(
+            f'no cell size was passed, using cell size of {target_pixel_size} '
+            f'from {raster_path_list[0]}')
+    else:
+        # make a square pixel
+        target_pixel_size = [args.target_cell_size, -args.target_cell_size]
+
     n_cols = int(math.ceil(
         (target_bounding_box[2]-target_bounding_box[0]) /
-        float(args.target_cell_size)))
+        abs(target_pixel_size[0])))
     n_rows = int(math.ceil(
         (target_bounding_box[3]-target_bounding_box[1]) /
-        float(args.target_cell_size)))
+        abs(target_pixel_size[1])))
 
     geotransform = (
-        target_bounding_box[0], float(args.target_cell_size), 0.0,
-        target_bounding_box[3], 0.0, -float(args.target_cell_size))
+        target_bounding_box[0], target_pixel_size[0], 0.0,
+        target_bounding_box[3], 0.0, target_pixel_size[1])
 
     target_raster = gtiff_driver.Create(
         os.path.join('.', args.target_raster_path), n_cols, n_rows, n_bands,

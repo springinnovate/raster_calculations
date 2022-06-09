@@ -26,10 +26,14 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
-    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
+#    'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
+#    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Argentina_compressed_md5_806575.tif')
+#    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Indonesia_compressed_md5_226d32.tif')
+    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif')
 
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/'
-
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/carbon_datasets/'
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -37,11 +41,17 @@ RASTER_LIST = [
     #('restoration_pnv0.0001_on_ESA2020_v2_md5_47613f8e4d340c92b2c481cc8080cc9d_hab_mask.tif', False, False),
     #('results/global_normalized_people_access_population_2019_60.0m_md5_6a3bf3ec196b3b295930e75d8808fa9c.tif', True, True, False),
     #('results/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif', True, True, False),
-    ('reclassified_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020_modVCFTree1km_md5_1cef3d5ad126b8bb34deb19d9ffc7d46_esa_to_nathab_forest_mask.tif', False, False, False),
-    ('reclassified_Sc1v3_restoration_pnv0.5_on_ESA2020mVCF_md5_403f35b2a8b9b917090703e291f6bc0c_esa_to_nathab_forest_mask.tif', False, False, False),
-    ('reclassified_Sc1v4_restoration_pnv0.001_on_ESA2020mVCF_md5_61a44df722532a84a77598fe2a24d46c_esa_to_nathab_forest_mask.tif', False, False, False),
-    ('reclassified_Sc2v3_Griscom_CookPatton2050_smithpnv_md5_82c2f863d49f5a25c0b857865bfdb4b0_esa_to_nathab_forest_mask.tif', False, False, False),
-    ('reclassified_Sc2v4_Griscom_CookPatton2035_smithpnv_md5_ffde2403583e30d7df4d16a0687d71fe_esa_to_nathab_forest_mask.tif', False, False, False),
+    #('reclassified_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020_modVCFTree1km_md5_1cef3d5ad126b8bb34deb19d9ffc7d46_esa_to_nathab_forest_mask.tif', False, False, False),
+    #('reclassified_Sc1v3_restoration_pnv0.5_on_ESA2020mVCF_md5_403f35b2a8b9b917090703e291f6bc0c_esa_to_nathab_forest_mask.tif', False, False, False),
+    #('reclassified_Sc1v4_restoration_pnv0.001_on_ESA2020mVCF_md5_61a44df722532a84a77598fe2a24d46c_esa_to_nathab_forest_mask.tif', False, False, False),
+    #('reclassified_Sc2v3_Griscom_CookPatton2050_smithpnv_md5_82c2f863d49f5a25c0b857865bfdb4b0_esa_to_nathab_forest_mask.tif', False, False, False),
+    #('reclassified_Sc2v4_Griscom_CookPatton2035_smithpnv_md5_ffde2403583e30d7df4d16a0687d71fe_esa_to_nathab_forest_mask.tif', False, False, False),
+    #('Sc3v1_PNVnoag_md5_c07865b995f9ab2236b8df0378f9206f_hab_mask.tif', False, False, False)
+    #('marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992-v2.0.7cds_compressed_md5_83ec1b_hab_mask.tif', False, False, False),
+    #('marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_hab_mask.tif', False, False, False)
+    #('CLUMONDO_livestock_ssp1_change_md5_8b9543.tif', False, False, False),
+    #('CLUMONDO_livestock_ssp3_change_md5_578b3b.tif', False, False, False)
+    ('Total_Carbon_2010_compressed_md5_62290b.tif', True, False, True)
     ]
 
 
