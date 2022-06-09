@@ -14,6 +14,9 @@ import numpy
 gdal.SetCacheMax(2**26)
 _LARGEST_BLOCK = 2**26
 
+_GTIFF_CREATION_TUPLE_OPTIONS = ('GTIFF', (
+    geoprocessing.DEFAULT_GTIFF_CREATION_TUPLE_OPTIONS + ('SPARSE_OK=TRUE')))
+
 logging.basicConfig(
     level=logging.DEBUG,
     format=(
@@ -41,7 +44,8 @@ def _calculate_stats(
         [(aligned_raster_path_list[0], 1), (aligned_raster_path_list[1], 1),
          (mask_code, 'raw'), (masked_nodata, 'raw')],
         mask_out_op, masked_raster_path, gdal.GDT_Float32,
-        masked_nodata)
+        masked_nodata,
+        raster_driver_creation_tuple=_GTIFF_CREATION_TUPLE_OPTIONS)
     masked_raster = gdal.OpenEx(masked_raster_path, gdal.OF_RASTER)
     masked_band = masked_raster.GetRasterBand(1)
     (raster_min, raster_max, raster_mean, raster_stdev) = (
@@ -56,7 +60,8 @@ def _calculate_stats(
     value_raster = gdal.OpenEx(aligned_raster_path_list[1], gdal.OF_RASTER)
     value_band = value_raster.GetRasterBand(1)
     for offset_dict, base_block in geoprocessing.iterblocks(
-            (aligned_raster_path_list[0], 1), largest_block=_LARGEST_BLOCK):
+            (aligned_raster_path_list[0], 1), largest_block=_LARGEST_BLOCK,
+            skip_sparse=True):
         valid_mask = base_block == mask_code
         value_block = value_band.ReadAsArray(**offset_dict)
         valid_value_block = value_block[valid_mask]
@@ -140,7 +145,8 @@ if __name__ == '__main__':
                 'intersection',
                 ),
             kwargs={
-                'target_projection_wkt': other_raster_info['projection_wkt']},
+                'target_projection_wkt': other_raster_info['projection_wkt'],
+                'raster_driver_creation_tuple': _GTIFF_CREATION_TUPLE_OPTIONS},
             target_path_list=aligned_raster_path_list,
             task_name=f'aligning {aligned_raster_path_list}')
     else:
