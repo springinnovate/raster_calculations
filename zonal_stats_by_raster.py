@@ -15,7 +15,8 @@ gdal.SetCacheMax(2**26)
 _LARGEST_BLOCK = 2**26
 
 _GTIFF_CREATION_TUPLE_OPTIONS = ('GTIFF', (
-    geoprocessing.DEFAULT_GTIFF_CREATION_TUPLE_OPTIONS + ('SPARSE_OK=TRUE')))
+    geoprocessing.DEFAULT_GTIFF_CREATION_TUPLE_OPTIONS[1]) +
+    ('SPARSE_OK=TRUE',))
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -28,8 +29,7 @@ logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 
 def mask_out_op(mask_data, base_data, mask_code, base_nodata):
     """Return 1 where base data == mask_code, 0 or nodata othewise."""
-    result = numpy.empty_like(base_data)
-    result[:] = base_nodata
+    result = numpy.full(base_data.shape, base_nodata, dtype=numpy.float32)
     valid_mask = (mask_data == mask_code) & (~numpy.isnan(base_data))
     result[valid_mask] = base_data[valid_mask]
     return result
@@ -47,33 +47,23 @@ def _calculate_stats(
         raster_driver_creation_tuple=_GTIFF_CREATION_TUPLE_OPTIONS)
     masked_raster = gdal.OpenEx(masked_raster_path, gdal.OF_RASTER)
     masked_band = masked_raster.GetRasterBand(1)
+    n_pixels = masked_band.XSize * masked_band.YSize
+    LOGGER.debug(f'{n_pixels}')
     (raster_min, raster_max, raster_mean, raster_stdev) = (
         masked_band.GetStatistics(0, 1))
-    value_nodata = masked_nodata
     masked_band = None
     masked_raster = None
 
     LOGGER.debug(f'getting stats for {masked_raster_path}')
-    nodata_count = 0
     valid_count = 0
-    value_raster = gdal.OpenEx(aligned_raster_path_list[1], gdal.OF_RASTER)
-    value_band = value_raster.GetRasterBand(1)
-    for offset_dict, base_block in geoprocessing.iterblocks(
-            (aligned_raster_path_list[0], 1), largest_block=_LARGEST_BLOCK,
+    for offset_dict, masked_block in geoprocessing.iterblocks(
+            (masked_raster_path, 1), largest_block=_LARGEST_BLOCK,
             skip_sparse=True):
-        valid_mask = base_block == mask_code
-        value_block = value_band.ReadAsArray(**offset_dict)
-        valid_value_block = value_block[valid_mask]
-        if value_nodata is not None:
-            local_nodata_count = numpy.count_nonzero(
-                numpy.isclose(valid_value_block, value_nodata))
-        else:
-            local_nodata_count = 0
-        nodata_count += local_nodata_count
-        valid_count += valid_value_block.size - local_nodata_count
+        valid_mask = (masked_block != masked_nodata)
+        valid_count += numpy.count_nonzero(valid_mask)
 
-    value_raster = None
-    value_band = None
+    nodata_count = n_pixels - valid_count
+    LOGGER.debug(f'{valid_count}')
 
     return (raster_min, raster_max, raster_mean,
             raster_stdev, valid_count, nodata_count)
@@ -116,15 +106,18 @@ if __name__ == '__main__':
     working_dir = os.path.join(args.working_dir, basename)
     os.makedirs(working_dir, exist_ok=True)
 
-    task_graph = taskgraph.TaskGraph(
-        working_dir, args.n_workers, 10.0)
-
+    task_graph = taskgraph.TaskGraph(args.working_dir, args.n_workers, 15.0)
+    other_raster_info = geoprocessing.get_raster_info(args.other_raster)
+    align_hash = hashlib.md5(
+        f'{other_raster_info["pixel_size"]}_'
+        f'{other_raster_info["projection_wkt"]}'.encode('utf-8')).hexdigest()
+    aligned_raster_dir = os.path.join(
+        args.working_dir, f'aligned_rasters_{align_hash}')
+    os.makedirs(aligned_raster_dir, exist_ok=True)
     base_raster_path_list = [args.landcover_raster, args.other_raster]
     aligned_raster_path_list = [
-        os.path.join(working_dir, os.path.basename(path))
+        os.path.join(aligned_raster_dir, os.path.basename(path))
         for path in base_raster_path_list]
-    other_raster_info = geoprocessing.get_raster_info(
-        args.other_raster)
     other_nodata = other_raster_info['nodata'][0]
     if args.ndv is None and (
             other_nodata is None or
@@ -136,16 +129,29 @@ if __name__ == '__main__':
     if args.ndv is not None:
         other_nodata = args.ndv
     if not args.do_not_align and (args.landcover_raster != args.other_raster):
+
+        # check if target pixel size is not much larger than base
+        landcover_raster_info = geoprocessing.get_raster_info(
+            args.landcover_raster)
+        if any([abs(landcover_raster_info['pixel_size'][ix]) /
+                abs(other_raster_info['pixel_size'][ix]) >= 2
+                for ix in [0, 1]]):
+            interpolation_list = ['mode', 'near']
+        else:
+            interpolation_list = ['near', 'near']
+
         align_task = task_graph.add_task(
             func=geoprocessing.align_and_resize_raster_stack,
             args=(
                 base_raster_path_list, aligned_raster_path_list,
-                ['mode', 'near'], other_raster_info['pixel_size'],
+                interpolation_list, other_raster_info['pixel_size'],
                 'intersection',
                 ),
             kwargs={
                 'target_projection_wkt': other_raster_info['projection_wkt'],
-                'raster_driver_creation_tuple': _GTIFF_CREATION_TUPLE_OPTIONS},
+                'raster_driver_creation_tuple': _GTIFF_CREATION_TUPLE_OPTIONS,
+                'gdal_warp_options': (
+                    'warpMemoryLimit=1000', 'multithread=TRUE')},
             target_path_list=aligned_raster_path_list,
             task_name=f'aligning {aligned_raster_path_list}')
     else:
@@ -181,6 +187,7 @@ if __name__ == '__main__':
             target_path_list=[masked_raster_path],
             task_name=f'mask {masked_raster_path}')
         masked_stats_list.append((stats_task, mask_code))
+        break
 
     LOGGER.debug('waiting for it to gadot')
     for masked_task, mask_code in masked_stats_list:
