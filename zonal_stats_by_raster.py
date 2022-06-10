@@ -31,7 +31,10 @@ def mask_out_op(mask_data, base_data, mask_code, base_nodata):
     """Return 1 where base data == mask_code, 0 or nodata othewise."""
     result = numpy.full(base_data.shape, base_nodata, dtype=numpy.float32)
     valid_mask = (mask_data == mask_code) & (~numpy.isnan(base_data))
-    result[valid_mask] = base_data[valid_mask]
+    if numpy.any(valid_mask):
+        result[valid_mask] = base_data[valid_mask]
+    else:
+        result = None
     return result
 
 
