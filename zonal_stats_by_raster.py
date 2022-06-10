@@ -190,7 +190,6 @@ if __name__ == '__main__':
             target_path_list=[masked_raster_path],
             task_name=f'mask {masked_raster_path}')
         masked_stats_list.append((stats_task, mask_code))
-        break
 
     LOGGER.debug('waiting for it to gadot')
     for masked_task, mask_code in masked_stats_list:
