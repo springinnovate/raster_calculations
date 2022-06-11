@@ -136,8 +136,8 @@ if __name__ == '__main__':
         # check if target pixel size is not much larger than base
         landcover_raster_info = geoprocessing.get_raster_info(
             args.landcover_raster)
-        if any([abs(landcover_raster_info['pixel_size'][ix]) /
-                abs(other_raster_info['pixel_size'][ix]) >= 2
+        if any([abs(other_raster_info['pixel_size'][ix]) /
+                abs(landcover_raster_info['pixel_size'][ix]) >= 2
                 for ix in [0, 1]]):
             interpolation_list = ['mode', 'near']
         else:

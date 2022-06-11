@@ -38,6 +38,10 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+#   python zonal_stats_by_raster.py "D:\ecoshard\CI_FP\Ecoregions2017_ESA2020modVCFv2_zones_Argentina_compressed_md5_806575.tif" "D:\ecoshard\CI_FP\Total_Carbon_2010_aligned_Argentina_md5_8c0974a.tif" --do_not_align --basename argentina
+#   python zonal_stats_by_raster.py "D:\ecoshard\CI_FP\Ecoregions2017_ESA2020modVCFv2_zones_Indonesia_compressed_md5_226d32.tif" "D:\ecoshard\CI_FP\Total_Carbon_2010_aligned_Indonesia_md5_230078.tif" --do_not_align --basename indonesia
+#   python zonal_stats_by_raster.py "D:\ecoshard\CI_FP\Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif" "D:\ecoshard\CI_FP\Total_Carbon_2010_aligned_US_md5_45083c.tif" --do_not_align --basename us
+
 #Scenarios were wrong; future viscose didn't have current viscose in it where current viscose was replacing natural forest so they needed to be combined; current nlcd wasn't crop (82) everywhere cotton should be so made organic look bad where it was replacing non-crop
     # python stitch_rasters.py --target_projection_epsg 4326 --target_cell_size 0.00277777778 --target_raster_path Viscose_FutureplusCurrent_Extent.tif --resample_method near --overlap_algorithm replace --raster_pattern D:\ecoshard\CI_FP\Indonesia\scenarios\ ndv_0.0_Viscose*.tif
     # python create_scenario.py D:\ecoshard\CI_FP\Indonesia\scenarios\ESA2020_modVCFv2_Indonesia_compressed_md5_ea5ce6.tif D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_FutureplusCurrentExtent_ndv_0.0_md5_d7967f.tif 0.9 --flip_target_val 12
