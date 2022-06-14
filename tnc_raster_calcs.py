@@ -49,7 +49,7 @@ def main():
 
     calculation_list = [
         {
-            'expression': 'raster1*-1',
+            'expression': '1*1',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\AFCv1_conv_rate_global_md5_7ac543.tif",
             },
