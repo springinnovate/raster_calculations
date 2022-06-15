@@ -40,6 +40,29 @@ def main():
 
     calculation_list = [
         {
+            'expression': 'raster1 + (raster2*220)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_PPC\scenarios\ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031.tif",
+                'raster2': r"D:\ecoshard\Lesiv_FML_v3-2_compressed_md5_3fe35d.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Lesiv_FML_ESA2020modVCFv2_zones.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Indonesia\sed_deposition_current_viscose_ESA2020_Indonesia.tif",
