@@ -50,6 +50,17 @@ def main():
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\n_retention_potential_change_to_PNV.tif",
         },
+        {
+            'expression': 'raster2 - raster1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_usle_marine_mod_ESA_2020_compressed_md5_99e715.tif",
+                'raster2': r"D:\ecoshard\CI_FP\sed_usle_PNV_full_on_ESA_global.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\usle_potential_change_to_PNV.tif",
+        },
     ]
 
     for calculation in calculation_list:
