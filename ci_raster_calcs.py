@@ -37,6 +37,30 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+    #  python reclassify_by_table_copied_from_costaricasdr.py "D:\ecoshard\PNV_full_on_ESA_md5_24fe98.tif" "D:\ecoshard\CI_PPC\scenarios\ESA_to_ESAmodVCFv2_md5_ba498b.csv" lulc_ above_threshold
+
+    calculation_list = [
+        {
+            'expression': 'raster1 + (raster2*220)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\ci-global-restoration\reclassified_PNV_full_on_ESA_md5_24fe98_ESA_to_ESAmodVCFv2_md5_ba498b.tif",
+                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Ecoregions2017_PNV1_zones.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     calculation_list = [
         {
@@ -60,29 +84,6 @@ def main():
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\usle_potential_change_to_PNV.tif",
-        },
-    ]
-
-    for calculation in calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-
-    calculation_list = [
-        {
-            'expression': 'raster1 + (raster2*220)',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\PNV_full_on_ESA_md5_24fe98.tif",
-                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\Ecoregions2017_PNV_zones.tif",
         },
     ]
 
