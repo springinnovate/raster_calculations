@@ -37,7 +37,8 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-    #  python reclassify_by_table_copied_from_costaricasdr.py "D:\ecoshard\PNV_full_on_ESA_md5_24fe98.tif" "D:\ecoshard\CI_PPC\scenarios\ESA_to_ESAmodVCFv2_md5_ba498b.csv" lulc_ above_threshold
+    #  this was unnecessary because the Spawn 2010 summary didn't have the mod2 classes (51, 52, etc): python reclassify_by_table_copied_from_costaricasdr.py "D:\ecoshard\PNV_full_on_ESA_md5_24fe98.tif" "D:\ecoshard\CI_PPC\scenarios\ESA_to_ESAmodVCFv2_md5_ba498b.csv" lulc_ above_threshold
+    # python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
 
     calculation_list = [
         {

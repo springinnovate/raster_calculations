@@ -38,7 +38,41 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+    # python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
 
+    calculation_list = [
+        {
+            'expression': 'raster1 + (raster2*220)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\TNC_NBS\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992-v2.0.7cds_wgs84_md5_519311.tif",
+                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Ecoregions2017_marESA1992.tif",
+        },
+        {
+            'expression': 'raster1 + (raster2*220)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\TNC_NBS\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Ecoregions2017_marESA2020.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     #python zonal_stats_by_raster.py "D:\ecoshard\Ecoregions2017_ESA2020modVCFv2_zones_compressed_md5_ab2aa0.tif" "D:\ecoshard\esa_due_globbiomass_2010_md5_3597de.tif" --basename globbiomass_2010
     # python zonal_stats_by_raster.py "D:\ecoshard\Ecoregions2017_ESA2020modVCFv2_zones_compressed_md5_ab2aa0.tif" "D:\ecoshard\aboveground_biomass_carbon_2010_md5_4be351.tif" --basename spawn_aboveground
