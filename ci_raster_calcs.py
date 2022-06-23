@@ -41,28 +41,28 @@ def main():
 
     #python zonal_stats_by_raster.py "D:\ecoshard\CI_FP\Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif" "D:\ecoshard\CI_FP\Total_Carbon_2010_aligned_US_md5_45083c.tif" --basename
 
-#    calculation_list = [
-#        {
-#            'expression': 'raster1 - raster2',
-#            'symbol_to_path_map': {
-#                'raster1': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Total_2018_compressed_md5_143388.tif",
-#                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
-#            },
-#            'target_nodata': -9999,
-#            'target_pixel_size': (0.002694933524973,-0.002694933524973),
-#            'resample_method': 'near',
-#            'target_raster_path': r"D:\ecoshard\Manageable_Carbon_2018\carbon\Manageable-Vulnerable_C_2018.tif",
-#        },
-#    ]
-#
-#    for calculation in calculation_list:
-#        raster_calculations_core.evaluate_calculation(
-#            calculation, TASK_GRAPH, WORKSPACE_DIR)
-#
-#    TASK_GRAPH.join()
-#    TASK_GRAPH.close()
-#
-#    return
+    calculation_list = [
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Total_2018_compressed_md5_143388.tif",
+                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_compressed_md5_7aaaf0.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002694933524973,-0.002694933524973),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Manageable_Carbon_2018\Manageable-Vulnerable_C_2018.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     
     calculation_list = [
