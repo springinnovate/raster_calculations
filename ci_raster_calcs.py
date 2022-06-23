@@ -37,7 +37,54 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+    #"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif"
+    #"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif"
+    #"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif"
+    calculation_list = [
+        {
+            'expression': 'raster1 - (raster2/10)', #original spawn needed a rescaling factor; should have done that below
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\total_carbon_spawn_PNV_compressed_md5_c4e583.tif",
+                'raster2': r"D:\ecoshard\total_biomass_carbon_2010_spawn_compressed_md5_fcb8b3.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\total_carbon_change_PNV-2010_spawn.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    
+    calculation_list = [
+        {
+            'expression': '(raster1 + raster2)/10',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\aboveground_biomass_carbon_2010_md5_4be351.tif",
+                'raster2': r"D:\ecoshard\belowground_biomass_carbon_2010_md5_d68b5d.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\total_biomass_carbon_2010_spawn_rescaled.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     # python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
+        #renamed total_carbon_spawn_PNV
     calculation_list = [
         {
             'expression': 'raster1 + raster2',
