@@ -37,7 +37,7 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-    calculation_list = [ 
+    calculation_list = [
         {
             'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
@@ -63,7 +63,7 @@ def main():
         {
             'expression': 'raster1 * raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_mod_2020_Argentina_md5_6640f4.tif",,
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_mod_2020_Argentina_md5_6640f4.tif",
                 'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif"
             },
             'target_nodata': -9999,
@@ -104,7 +104,7 @@ def main():
 
     return
 
-    #python zonal_stats_by_raster.py "D:\ecoshard\CI_FP\Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif" "D:\ecoshard\CI_FP\Total_Carbon_2010_aligned_US_md5_45083c.tif" --basename 
+    #python zonal_stats_by_raster.py "D:\ecoshard\CI_FP\Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif" "D:\ecoshard\CI_FP\Total_Carbon_2010_aligned_US_md5_45083c.tif" --basename
 
 #    calculation_list = [
 #        {
