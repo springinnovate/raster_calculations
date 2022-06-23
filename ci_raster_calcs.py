@@ -37,7 +37,60 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+    #python zonal_stats_by_raster.py "D:\ecoshard\CI_FP\Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif" "D:\ecoshard\CI_FP\Total_Carbon_2010_aligned_US_md5_45083c.tif" --basename 
+
+    calculation_list = [ 
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\Manageable_Carbon_2018\Manageable_C_Total_2018_compressed_md5_143388.tif",
+                'raster2': r"D:\ecoshard\Manageable_Carbon_2018\Vulnerable_C_Total_2018_md5_9ab63337d8b4a6c6fd4f7f597a66ffed.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\ecoshard\Manageable_Carbon_2018\carbon\Manageable-Vulnerable_C_2018.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\ESA_mod_SSP1_Argentina_md5_6f3ded.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.csv" lucode 2010Mean
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\ESA_mod_SSP3_Argentina_md5_29633f.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.csv" lucode 2010Mean
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\ESA_mod_2020_Argentina_md5_6640f4.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.csv" lucode 2010Mean
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Indonesia\scenarios\current_viscose_ESA2020_modVCFv2_Indonesia_md5_b411a2.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.csv" lucode 2010Mean
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Indonesia\scenarios\futurepluscurrent_viscose_ESA2020_modVCFv2_Indonesia_md5_64c967.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.csv" lucode 2010Mean
     
+    calculation_list = [ #haven't done this yet, might want to wait until I know which carbon product to use!
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_ESA_mod_SSP1_Argentina_md5_6f3ded_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_ESA_mod_2020_Argentina_md5_6640f4_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbon_SSP1_change_spawn_Argentina.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+ #   python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
+
     calculation_list = [
         {
             'expression': 'raster1*raster2',
