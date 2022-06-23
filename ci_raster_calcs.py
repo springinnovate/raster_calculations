@@ -37,9 +37,31 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-    #  this was unnecessary because the Spawn 2010 summary didn't have the mod2 classes (51, 52, etc): python reclassify_by_table_copied_from_costaricasdr.py "D:\ecoshard\PNV_full_on_ESA_md5_24fe98.tif" "D:\ecoshard\CI_PPC\scenarios\ESA_to_ESAmodVCFv2_md5_ba498b.csv" lulc_ above_threshold
     # python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
+    calculation_list = [
+        {
+            'expression': 'raster1 + raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\aboveground_biomass_carbon_2010_md5_4be351.tif",
+                'raster2': r"D:\ecoshard\belowground_biomass_carbon_2010_md5_d68b5d.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\total_biomass_carbon_2010_spawn.tif",
+        },
+    ]
 
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    #  this was unnecessary because the Spawn 2010 summary didn't have the mod2 classes (51, 52, etc): python reclassify_by_table_copied_from_costaricasdr.py "D:\ecoshard\PNV_full_on_ESA_md5_24fe98.tif" "D:\ecoshard\CI_PPC\scenarios\ESA_to_ESAmodVCFv2_md5_ba498b.csv" lulc_ above_threshold
     calculation_list = [
         {
             'expression': 'raster1 + (raster2*220)',
