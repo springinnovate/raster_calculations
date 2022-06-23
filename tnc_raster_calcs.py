@@ -161,7 +161,6 @@ def main():
     calculation_list = [
         {
             'expression': 'raster1*-1',
->>>>>>> cdb002183c3e4011a61e4b4a9e935173112539da
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\AFCv1_conv_rate_global_md5_7ac543.tif",
             },
