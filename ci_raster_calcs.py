@@ -38,8 +38,7 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    #   python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
-
+    
     calculation_list = [
         #{
         #    'expression': 'raster1*raster2*raster3',
@@ -116,8 +115,8 @@ def main():
         {
             'expression': '(raster1 - raster2)*raster3',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP1livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP1livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
                 'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
             },
             'target_nodata': 0,
@@ -128,8 +127,8 @@ def main():
         {
             'expression': '(raster1 - raster2)*raster3',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP3livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP3livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
                 'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
             },
             'target_nodata': 0,
@@ -140,8 +139,8 @@ def main():
         {
             'expression': '(raster1 - raster2)*raster3',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_futureviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_currentviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_futureviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_currentviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
                 'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
             },
             'target_nodata': 0,
