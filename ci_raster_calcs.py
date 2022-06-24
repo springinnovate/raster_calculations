@@ -47,7 +47,7 @@ def main():
 
     calculation_list = [
         {
-            'expression': 'raster1 * raster2',
+            'expression': 'raster1 + (raster2*220)',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_mod_SSP1_Argentina_md5_6f3ded.tif",
                 'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif"
@@ -55,11 +55,10 @@ def main():
             'target_nodata': -9999,
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
-            'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\BYTE_FIXED_Ecoregionfi_SSP1livestock_Argentina.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregions_SSP1livestock_Argentina.tif",
         },
         {
-            'expression': 'raster1 * raster2',
+            'expression': 'raster1 + (raster2*220)',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_mod_SSP3_Argentina_md5_29633f.tif",
                 'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif"
@@ -67,11 +66,10 @@ def main():
             'target_nodata': -9999,
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
-            'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\BYTE_FIXED_Ecoregionfi_SSP3livestock_Argentina.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregions_SSP3livestock_Argentina.tif",
         },
         {
-            'expression': 'raster1 * raster2',
+            'expression': 'raster1 + (raster2*220)',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Argentina\scenarios\ESA_mod_2020_Argentina_md5_6640f4.tif",
                 'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif"
@@ -79,11 +77,10 @@ def main():
             'target_nodata': -9999,
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
-            'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\BYTE_FIXED_Ecoregionfi_ESA2020_Argentina.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregions_ESA2020_Argentina.tif",
         },
         {
-            'expression': 'raster1 * raster2',
+            'expression': 'raster1 + (raster2*220)',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Indonesia\scenarios\futurepluscurrent_viscose_ESA2020_modVCFv2_Indonesia_md5_64c967.tif",
                 'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
@@ -91,11 +88,10 @@ def main():
             'target_nodata': -9999,
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
-            'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\BYTE_FIXED_Ecoregionfi_futureviscose_Indonesia.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregions_futureviscose_Indonesia.tif",
         },
         {
-            'expression': 'raster1 * raster2',
+            'expression': 'raster1 + (raster2*220)',
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\CI_FP\Indonesia\scenarios\current_viscose_ESA2020_modVCFv2_Indonesia_md5_b411a2.tif",
                 'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
@@ -103,8 +99,7 @@ def main():
             'target_nodata': -9999,
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
-            'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\BYTE_FIXED_Ecoregionfi_currentviscose_Indonesia.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregions_currentviscose_Indonesia.tif",
         },
     ]
 
