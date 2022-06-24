@@ -56,7 +56,7 @@ def main():
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregionfi_SSP1livestock_Argentina.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\BYTE_FIXED_Ecoregionfi_SSP1livestock_Argentina.tif",
         },
         {
             'expression': 'raster1 * raster2',
@@ -68,7 +68,7 @@ def main():
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregionfi_SSP3livestock_Argentina.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\BYTE_FIXED_Ecoregionfi_SSP3livestock_Argentina.tif",
         },
         {
             'expression': 'raster1 * raster2',
@@ -80,7 +80,7 @@ def main():
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregionfi_ESA2020_Argentina.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\scenarios\BYTE_FIXED_Ecoregionfi_ESA2020_Argentina.tif",
         },
         {
             'expression': 'raster1 * raster2',
@@ -92,7 +92,7 @@ def main():
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregionfi_futureviscose_Indonesia.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\BYTE_FIXED_Ecoregionfi_futureviscose_Indonesia.tif",
         },
         {
             'expression': 'raster1 * raster2',
@@ -104,7 +104,7 @@ def main():
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_datatype': gdal.GDT_Float32,
-            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregionfi_currentviscose_Indonesia.tif",
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\BYTE_FIXED_Ecoregionfi_currentviscose_Indonesia.tif",
         },
     ]
 
@@ -116,7 +116,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
     #   python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
 
     calculation_list = [
