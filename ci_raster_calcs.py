@@ -116,8 +116,8 @@ def main():
         {
             'expression': '(raster1 - raster2)*raster3',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_SSP1livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP1livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
                 'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
             },
             'target_nodata': 0,
@@ -128,8 +128,8 @@ def main():
         {
             'expression': '(raster1 - raster2)*raster3',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_SSP3livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP3livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
                 'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
             },
             'target_nodata': 0,
@@ -140,8 +140,8 @@ def main():
         {
             'expression': '(raster1 - raster2)*raster3',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregion_futureviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregion_currentviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_futureviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_currentviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
                 'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
             },
             'target_nodata': 0,
