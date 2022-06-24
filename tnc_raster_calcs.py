@@ -115,7 +115,7 @@ def main():
 
     calculation_list = [
         {
-            'expression': 'raster1 + (raster2*221)',
+            'expression': 'raster1 + (raster2*220)', #Rich says I should actually have multiplied by 221 (max(raster1)+1) but this seems to work 
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2010-v2.0.7_smooth_compressed.tif",
                 'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
