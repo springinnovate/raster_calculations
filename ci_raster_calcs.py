@@ -38,11 +38,133 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
-    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregion_SSP1livestock_Argentina.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
-    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregion_SSP3livestock_Argentina.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
-    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregion_ESA2020_Argentina.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
-    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregion_futureviscose_Indonesia.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
-    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregion_currentviscose_Indonesia.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
+    #   python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
+
+    calculation_list = [
+        #{
+        #    'expression': 'raster1*raster2*raster3',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\total_carbon_change_PNV-2010_spawn.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif",
+        #        'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbonperpixel_change_PNV-2010_spawn_Argentina_livestock.tif",
+        #},
+        #{
+        #    'expression': 'raster1*raster2*raster3',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\total_carbon_change_PNV-2010_spawn.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
+        #        'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\carbon\total_carbonperpixel_change_PNV-2010_spawn_Indonesia_viscose.tif",
+        #},
+        #{
+        #    'expression': 'raster1*raster2*raster3',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\total_carbon_change_PNV-2010_spawn.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif",
+        #        'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\carbon\total_carbonperpixel_change_PNV-2010_spawn_US_Cotton.tif",
+        #},
+        #{
+        #    'expression': 'raster1*raster2*raster3',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\total_biomass_carbon_2010_spawn_rescaled.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif",
+        #        'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbonperpixel_2010_spawn_Argentina_livestock.tif",
+        #},
+        #{
+        #    'expression': 'raster1*raster2*raster3',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\total_biomass_carbon_2010_spawn_rescaled.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
+        #        'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\carbon\total_carbonperpixel_2010_spawn_Indonesia_viscose.tif",
+        #},
+        #{
+        #    'expression': 'raster1*raster2*raster3',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\total_biomass_carbon_2010_spawn_rescaled.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif",
+        #        'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #    },
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\carbon\total_carbonperpixel_2010_spawn_US_Cotton.tif",
+        #},
+        {
+            'expression': '(raster1 - raster2)*raster3',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_SSP1livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbonperpixel_SSP1_change_spawn_Argentina.tif",
+        },
+        {
+            'expression': '(raster1 - raster2)*raster3',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_SSP3livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbonperpixel_SSP3_change_spawn_Argentina.tif",
+        },
+        {
+            'expression': '(raster1 - raster2)*raster3',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregion_futureviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster2': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregion_currentviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
+                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\carbon\total_carbonperpixel_future_change_spawn_Indonesia.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregions_SSP1livestock_Argentina.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregions_SSP3livestock_Argentina.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Argentina\scenarios\Ecoregions_ESA2020_Argentina.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregions_futureviscose_Indonesia.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
+    #python reclassify_by_table_copied_from_costaricasdr.py D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregions_currentviscose_Indonesia.tif "D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv" lucode 2010Mean
 
 
     calculation_list = [
@@ -100,128 +222,6 @@ def main():
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Ecoregions_currentviscose_Indonesia.tif",
-        },
-    ]
-
-    for calculation in calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-
-    #   python reclassify_by_table_copied_from_costaricasdr.py  D:\ecoshard\Ecoregions2017_PNV_zones_md5_21585a.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
-
-    calculation_list = [
-        {
-            'expression': 'raster1*raster2*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\total_carbon_change_PNV-2010_spawn.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbonperpixel_change_PNV-2010_spawn_Argentina_livestock.tif",
-        },
-        {
-            'expression': 'raster1*raster2*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\total_carbon_change_PNV-2010_spawn.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\carbon\total_carbonperpixel_change_PNV-2010_spawn_Indonesia_viscose.tif",
-        },
-        {
-            'expression': 'raster1*raster2*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\total_carbon_change_PNV-2010_spawn.tif",
-                'raster2': r"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\carbon\total_carbonperpixel_change_PNV-2010_spawn_US_Cotton.tif",
-        },
-        {
-            'expression': 'raster1*raster2*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\total_biomass_carbon_2010_spawn_rescaled.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\scenarios\forest_lost_to_livestock_ESA2020_rel_to_PNV.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbonperpixel_2010_spawn_Argentina_livestock.tif",
-        },
-        {
-            'expression': 'raster1*raster2*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\total_biomass_carbon_2010_spawn_rescaled.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Indonesia\scenarios\Viscose_BaselineExtent_compressed_md5_7bb6eb.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\carbon\total_carbonperpixel_2010_spawn_Indonesia_viscose.tif",
-        },
-        {
-            'expression': 'raster1*raster2*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\total_biomass_carbon_2010_spawn_rescaled.tif",
-                'raster2': r"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_Layer_2011_to_2020.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\carbon\total_carbonperpixel_2010_spawn_US_Cotton.tif",
-        },
-        {
-            'expression': '(raster1 - raster2)*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_SSP1livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbonperpixel_SSP1_change_spawn_Argentina.tif",
-        },
-        {
-            'expression': '(raster1 - raster2)*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_SSP3livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregion_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbonperpixel_SSP3_change_spawn_Argentina.tif",
-        },
-        {
-            'expression': '(raster1 - raster2)*raster3',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregion_futureviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregion_currentviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_e4a81a.tif",
-                'raster3': r"D:\ecoshard\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\carbon\total_carbonperpixel_future_change_spawn_Indonesia.tif",
         },
     ]
 
