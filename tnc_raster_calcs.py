@@ -42,10 +42,10 @@ def main():
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\total_carbon_spawn_marESA1992.tif",
-                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\total_carbon_spawn_marESA2020.tif",
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\total_carbon_spawn_marESA2020.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\total_carbon_spawn_marESA1992.tif",
             },
-            'target_nodata': -9999,
+            'target_nodata': 0,
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_raster_path': r"D:\ecoshard\TNC_NBS\total_carbon_change_2020-1992.tif",
@@ -61,8 +61,8 @@ def main():
 
     return
     
-    # python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_marESA1992_md5_312ef3.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
-    # python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_marESA2020_md5_9e2b63.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_15fa91.csv lucode 2010Mean
+    # python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_marESA1992_md5_312ef3.tif D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv lucode 2010Mean
+    # python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_marESA2020_md5_9e2b63.tif D:\ecoshard\SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.csv lucode 2010Mean
         #renamed to total_carbon_spawn_marESA1992 and total_carbon_spawn_marESA2020
 
     calculation_list = [
