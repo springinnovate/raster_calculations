@@ -42,6 +42,31 @@ def main():
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\reclassified_reforestation_intermediate_reclass_forest.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\reclassified_marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_reclass_forest.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'target_datatype': gdal.GDT_Int32,
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\forest_ESA2020-intermediate",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+    
+
+    calculation_list = [
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
                 'raster1': r"D:\repositories\tnc-sci-ncscobenefits\total_carbon_spawn_marESA2020.tif",
                 'raster2': r"D:\repositories\tnc-sci-ncscobenefits\total_carbon_spawn_marESA1992.tif",
             },
