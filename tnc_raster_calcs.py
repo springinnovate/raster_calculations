@@ -39,18 +39,69 @@ def main():
     """Write your expression here."""
 
     calculation_list = [
+        #{
+        #    'expression': '(raster1>179)*(raster1<181)+ (raster1>159)*(raster1<161)*3',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+        #    },
+        #    'target_nodata': 255,
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\wetland1_swamp3_mask_ESA2020.tif",
+        #},
+        #{
+        #    'expression': '(raster1>179)*(raster1<181) + (raster1>159)*(raster1<161)*3',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\repositories\ci-global-restoration\scenarios\PNV_all_ecosystems\PNV_smith_060420_md5_8dd464e0e23fefaaabe52e44aa296330.tif"
+        #    },
+        #    'target_nodata': 255,
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\wetland1_swamp3_mask_PNV.tif",
+        #},
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\reclassified_reforestation_intermediate_reclass_forest.tif",
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\wetland1_swamp3_mask_PNV.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\wetland1_swamp3_mask_ESA2020.tif"
+            },
+            'target_nodata': 255,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\DIFF_PNV-ESA_wetlandswamps.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\reclassified_reforestation_2050_reclass_forest.tif",
                 'raster2': r"D:\repositories\tnc-sci-ncscobenefits\reclassified_marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_reclass_forest.tif",
             },
             'target_nodata': 0,
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'target_datatype': gdal.GDT_Int32,
             'resample_method': 'near',
-            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\forest_ESA2020-intermediate",
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\DIFF_forest_Reforest2050-ESA2020.tif",
         },
+        #{
+        #    'expression': 'raster1 - raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\reclassified_marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_reclass_forest.tif",
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\reclassified_marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992-v2.0.7cds_wgs84_md5_519311_reclass_forest.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    #'target_datatype': gdal.GDT_Int32,
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\DIFF_forest_ESA2020-ESA1992.tif",
+        #},
     ]
 
     for calculation in calculation_list:
