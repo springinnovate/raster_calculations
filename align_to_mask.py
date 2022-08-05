@@ -27,11 +27,17 @@ logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
 #    'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
-    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/reclassified_ESAmodVCFv2_md5_05407ed305c24604eb5a38551cddb031_esa_to_nathab_forest_mask_v2.tif')
+#    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Argentina_compressed_md5_806575.tif')
+#    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Indonesia_compressed_md5_226d32.tif')
+#    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif')
+#2#    'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/iucn_ecosystems/T2_4_Warm_temp_rainforests.tif')
+    'https://storage.googleapis.com/sci-ncscobenefits-spring/data/AFC_Tree2050_compressed_md5_3e88e1.tif')
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/carbon_datasets/'
+#2#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results/single_service'
+ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/sci-ncscobenefits-spring/data'
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -47,8 +53,17 @@ RASTER_LIST = [
     #('Sc3v1_PNVnoag_md5_c07865b995f9ab2236b8df0378f9206f_hab_mask.tif', False, False, False)
     #('marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992-v2.0.7cds_compressed_md5_83ec1b_hab_mask.tif', False, False, False),
     #('marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_hab_mask.tif', False, False, False)
-    ('CLUMONDO_livestock_ssp1_change_md5_8b9543.tif', False, False, False),
-    ('CLUMONDO_livestock_ssp3_change_md5_578b3b.tif', False, False, False)
+    #('CLUMONDO_livestock_ssp1_change_md5_8b9543.tif', False, False, False),
+    #('CLUMONDO_livestock_ssp3_change_md5_578b3b.tif', False, False, False)
+    #('Total_Carbon_2010_compressed_md5_62290b.tif', True, False, True)
+    #2#('A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif', False, False, False),
+    #2#('D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif', False, False, False),
+    #2#('B1_90_md5_14484122eba5a970559c57a48621d3fd.tif', False, False, False),
+    #2#('U_90_md5_258160b638e742e91b84979e6b2c748f.tif', False, False, False),
+    #2#('S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif', False, False, False),
+    #2#('H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif', False, False, False),
+    #2#('I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif', False, False, False)
+    ('AFC_threats_Curtis_orig_proj_md5_f2c653.tif', False, False, False)
     ]
 
 
