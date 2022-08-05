@@ -18,42 +18,46 @@ LOGGER = logging.getLogger(__name__)
 def _add_with_0(array_a, array_b, a_nodata, b_nodata):
     if a_nodata is not None:
         result = numpy.full(array_a.shape, a_nodata)
-        a_nodata_mask = (array_a != a_nodata)
+        a_valid_mask = (array_a != a_nodata)
     else:
         result = numpy.copy(array_a)
-        a_nodata_mask = numpy.full(array_a.shape, True)
+        a_valid_mask = numpy.full(array_a.shape, True)
 
     if b_nodata is not None:
-        b_nodata_mask = (array_b != b_nodata)
+        b_valid_mask = (array_b != b_nodata)
     else:
-        b_nodata_mask = numpy.full(array_b.shape, True)
+        b_valid_mask = numpy.full(array_b.shape, True)
 
-    valid_mask = (a_nodata_mask & b_nodata_mask)
+    valid_mask = (a_valid_mask & b_valid_mask)
     result[valid_mask] = array_a[valid_mask] + array_b[valid_mask]
 
-    missing_a_mask = a_nodata_mask & ~b_nodata_mask
+    missing_a_mask = ~a_valid_mask & b_valid_mask
     result[missing_a_mask] = array_b[missing_a_mask]
+    missing_b_mask = a_valid_mask & ~b_valid_mask
+    result[missing_b_mask] = array_a[missing_b_mask]
     return result
 
 
 def _sub_with_0(array_a, array_b, a_nodata, b_nodata):
     if a_nodata is not None:
         result = numpy.full(array_a.shape, a_nodata)
-        a_nodata_mask = (array_a != a_nodata)
+        a_valid_mask = (array_a != a_nodata)
     else:
         result = numpy.copy(array_a)
-        a_nodata_mask = numpy.full(array_a.shape, True)
+        a_valid_mask = numpy.full(array_a.shape, True)
 
     if b_nodata is not None:
-        b_nodata_mask = (array_b != b_nodata)
+        b_valid_mask = (array_b != b_nodata)
     else:
-        b_nodata_mask = numpy.full(array_b.shape, True)
+        b_valid_mask = numpy.full(array_b.shape, True)
 
-    valid_mask = (a_nodata_mask & b_nodata_mask)
+    valid_mask = (a_valid_mask & b_valid_mask)
     result[valid_mask] = array_a[valid_mask] - array_b[valid_mask]
 
-    missing_a_mask = a_nodata_mask & ~b_nodata_mask
+    missing_a_mask = ~a_valid_mask & b_valid_mask
     result[missing_a_mask] = -array_b[missing_a_mask]
+    missing_b_mask = a_valid_mask & ~b_valid_mask
+    result[missing_b_mask] = array_a[missing_b_mask]
     return result
 
 
