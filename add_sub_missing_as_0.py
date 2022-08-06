@@ -66,8 +66,8 @@ def _sub_with_0(target_nodata):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='calculate (Raster A - Raster B) but treat nodata as 0')
-    parser.add_argument('raster_a_path', help='Path to raster a.')
-    parser.add_argument('raster_b_path', help='Path to raster a.')
+    parser.add_argument('raster_a_path', help='Path to raster a can have a comma after indicating band')
+    parser.add_argument('raster_b_path', help='Path to raster b can have a comma after indicating band')
     parser.add_argument(
         '--working_dir', default='subtract_missing_as_0_workspace',
         help='location to store temporary files')
