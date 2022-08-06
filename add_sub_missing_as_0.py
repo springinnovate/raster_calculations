@@ -40,7 +40,7 @@ def _add_with_0(target_nodata):
 
 
 def _sub_with_0(target_nodata):
-    def _sub_with_0(array_a, array_b, a_nodata, b_nodata):
+    def __sub_with_0(array_a, array_b, a_nodata, b_nodata):
         result = numpy.full(array_a.shape, target_nodata)
         if a_nodata is not None:
             a_valid_mask = (array_a != a_nodata)
