@@ -87,18 +87,6 @@ if __name__ == '__main__':
     if not args.add and not args.subtract:
         raise ValueError('choose --add or --subtract')
 
-    if args.target_nodata is None:
-        target_nodata = raster_a_info['nodata'][0]
-    else:
-        target_nodata = args.target_nodata
-    
-    if args.add:
-        _func = _add_with_0(target_nodata)
-        sep = ' + '
-    if args.subtract:
-        _func = _sub_with_0(target_nodata)
-        sep = ' - '
-
     if ',' in args.raster_a_path:
         raster_a_path, raster_a_band = args.raster_a_path.split(',')
         raster_a_band = int(raster_a_band)
@@ -115,6 +103,18 @@ if __name__ == '__main__':
 
     raster_a_info = geoprocessing.get_raster_info(raster_a_path)
     raster_b_info = geoprocessing.get_raster_info(raster_b_path)
+
+    if args.target_nodata is None:
+        target_nodata = raster_a_info['nodata'][0]
+    else:
+        target_nodata = args.target_nodata
+    
+    if args.add:
+        _func = _add_with_0(target_nodata)
+        sep = ' + '
+    if args.subtract:
+        _func = _sub_with_0(target_nodata)
+        sep = ' - '
 
     raster_list = [raster_a_path, raster_b_path]
 
