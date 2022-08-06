@@ -94,7 +94,7 @@ if __name__ == '__main__':
         raster_a_path = args.raster_a_path
         raster_a_band = 1
 
-    if ',' in args.raster_a_path:
+    if ',' in args.raster_b_path:
         raster_b_path, raster_b_band = args.raster_b_path.split(',')
         raster_b_band = int(raster_b_band)
     else:
