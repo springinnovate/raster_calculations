@@ -51,18 +51,6 @@ def main():
 # Don't actually want to do it this way because the biggest errors will be where baccini has data and fc_stack doesn't, which is not what we're interested in at all
 #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\carbon_rasters_2022\reduce_factor\fc_stack_hansen_forest_cover2003_carbon_reduce8x.tif" "D:\Documents\unilever_archive\carbon_edge_model\carbon_model_workspace\data\baccini_carbon_data_2003_2014_compressed_md5_11d1455ee8f091bf4be12c4f7ff9451b.tif",1 --sub
 
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",12 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",11 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",11 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",10 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",10 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",9 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",9 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",8 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",8 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",7 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",7 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",6 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",6 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",5 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",5 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",4 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",4 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",3 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",3 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",2 --sub
-python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",2 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",1 --sub
-
     calculation_list = [
         #{
         #    'expression': 'raster1 - raster2',
@@ -191,11 +179,18 @@ python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_dat
     TASK_GRAPH.close()
 
     return
-   
 
-
-
-
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",12 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",11 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",11 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",10 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",10 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",9 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",9 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",8 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",8 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",7 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",7 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",6 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",6 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",5 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",5 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",4 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",4 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",3 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",3 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",2 --sub
+    #python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",2 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",1 --sub
 
 if __name__ == '__main__':
     TASK_GRAPH = taskgraph.TaskGraph(WORKSPACE_DIR, NCPUS, 5.0)
