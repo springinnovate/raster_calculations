@@ -64,89 +64,123 @@ python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_dat
 python add_sub_missing_as_0.py "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",2 "D:\Documents\unilever_archive\baccini_carbon_data_2003_2014_md5_11d145_b.tif",1 --sub
 
     calculation_list = [
+        #{
+        #    'expression': 'raster1 - raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2000_compressed_full_forest_edge_result.tif",
+        #        'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2000_compressed_no_forest_edge_result.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_edge_carbon_2000.tif",
+        #},
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2000_compressed_full_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2000_compressed_no_forest_edge_result.tif",
+                'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2007_compressed_std_forest_edge_result.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2006_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            #'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            #'resample_method': 'near',
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_edge_carbon_2000.tif",
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_2007-2006.tif",
         },
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2001_compressed_full_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2001_compressed_no_forest_edge_result.tif",
+                'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2013_compressed_std_forest_edge_result.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2012_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_edge_carbon_2001.tif",
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_2013-2012.tif",
         },
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2002_compressed_full_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2002_compressed_no_forest_edge_result.tif",
+                'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2012_compressed_std_forest_edge_result.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2011_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_edge_carbon_2002.tif",
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_2012-2011.tif",
         },
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2003_compressed_full_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2003_compressed_no_forest_edge_result.tif",
+                'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2011_compressed_std_forest_edge_result.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2010_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_edge_carbon_2003.tif",
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_2011-2010.tif",
         },
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2004_compressed_full_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2004_compressed_no_forest_edge_result.tif",
+                'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2010_compressed_std_forest_edge_result.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2009_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_edge_carbon_2004.tif",
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_2010-2009.tif",
         },
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2004_compressed_std_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2003_compressed_std_forest_edge_result.tif",
+                'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2009_compressed_std_forest_edge_result.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2008_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_carbon_2004-2003.tif",
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_2009-2008.tif",
         },
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2003_compressed_std_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2002_compressed_std_forest_edge_result.tif",
+                'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2008_compressed_std_forest_edge_result.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2007_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_carbon_2003-2002.tif",
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_2008-2007.tif",
         },
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2002_compressed_std_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2001_compressed_std_forest_edge_result.tif",
+                'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2007_compressed_std_forest_edge_result.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\fc_stack_hansen_forest_cover2006_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_carbon_2002-2001.tif",
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_2007-2006.tif",
         },
-        {
-            'expression': 'raster1 - raster2',
-            'symbol_to_path_map': {
-                'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2001_compressed_std_forest_edge_result.tif",
-                'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2000_compressed_std_forest_edge_result.tif",
-            },
-            'target_nodata': 0,
-            'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_carbon_2001-2000.tif",
-        },
+        #{
+        #    'expression': 'raster1 - raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2004_compressed_std_forest_edge_result.tif",
+        #        'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2003_compressed_std_forest_edge_result.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_carbon_2004-2003.tif",
+        #},
+        #{
+        #    'expression': 'raster1 - raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2003_compressed_std_forest_edge_result.tif",
+        #        'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2002_compressed_std_forest_edge_result.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_carbon_2003-2002.tif",
+        #},
+        #{
+        #    'expression': 'raster1 - raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2002_compressed_std_forest_edge_result.tif",
+        #        'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2001_compressed_std_forest_edge_result.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_carbon_2002-2001.tif",
+        #},
+        #{
+        #    'expression': 'raster1 - raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2001_compressed_std_forest_edge_result.tif",
+        #        'raster2': r"D:\Documents\unilever_archive\carbon_rasters_2022\fc_stack_hansen_forest_cover2000_compressed_std_forest_edge_result.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_raster_path': r"D:\Documents\unilever_archive\carbon_rasters_2022\DIFF_forest_carbon_2001-2000.tif",
+        #},
     ]
 
     for calculation in calculation_list:
