@@ -108,7 +108,7 @@ if __name__ == '__main__':
         target_nodata = raster_a_info['nodata'][0]
     else:
         target_nodata = args.target_nodata
-    
+
     if args.add:
         _func = _add_with_0(target_nodata)
         sep = ' + '
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     LOGGER.info('doing subtraction')
     geoprocessing.raster_calculator(
-        [(raster_a_path, raster_a_band), (raster_a_path, raster_a_band)] +
+        [(raster_a_path, raster_a_band), (raster_b_path, raster_b_band)] +
         [(raster_a_info['nodata'][0], 'raw'),
          (raster_b_info['nodata'][0], 'raw')], _func, target_path,
         raster_a_info['datatype'], target_nodata)
