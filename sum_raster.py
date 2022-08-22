@@ -38,8 +38,7 @@ if __name__ == '__main__':
 
     raster_path_list = (
         raster_path for raster_glob in args.raster_list
-        for raster_path in glob.glob(raster_glob)
-        )
+        for raster_path in glob.glob(raster_glob))
 
     with open('sum_report.csv', 'w') as sum_file:
         sum_file.write('filename,sum\n')
