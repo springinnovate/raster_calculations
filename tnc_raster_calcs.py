@@ -46,8 +46,6 @@ def main():
                 'raster2': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_sed_export_tnc_nbs_reforest_compressed_md5_d2f085.tif",
             },
             'target_nodata': 0,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'average',
             'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\NBSdiff_sed_export_reforest.tif",
         },
         {
@@ -57,8 +55,6 @@ def main():
                 'raster2': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_sed_export_marine_mod_ESA_2020_compressed_md5_a988c0.tif",
             },
             'target_nodata': 0,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'average',
             'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\NBSdiff_sed_export_afc.tif",
         },
         {
@@ -68,8 +64,6 @@ def main():
                 'raster2': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_reforest_fertilizer_current_compressed_md5_f4086f.tif",
             },
             'target_nodata': 0,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'average',
             'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\NBSdiff_n_export_reforest.tif",
         },
         {
@@ -79,8 +73,6 @@ def main():
                 'raster2': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_compressed_md5_932883.tif",
             },
             'target_nodata': 0,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'average',
             'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\NBSdiff_n_export_afc.tif",
         },
     ]
