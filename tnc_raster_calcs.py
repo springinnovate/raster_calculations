@@ -93,13 +93,13 @@ def main():
         #    'expression': 'raster1*raster2',
         #    'symbol_to_path_map': {
         #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Reforest_Tree2050_compressed_md5_5972ce.tif",
-        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Griscom_extent_wgs_compressed_md5_43f6a5.tif" 
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Griscom_extent_wgs_compressed_md5_43f6a5.tif"
         #    },
         #    'target_nodata': 255,
         #    'target_datatype': gdal.GDT_Byte,
         #    'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
         #    'resample_method': 'near',
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Reforest_Tree2050_Griscom_extent.tif", 
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Reforest_Tree2050_Griscom_extent.tif",
         #},
         #{
         #    'expression': '(raster1>0)*(raster1<2)*10 + (raster1>4)*(raster1<6)*190',
@@ -107,7 +107,7 @@ def main():
         #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\AFC_threats_Curtis_orig_proj_WARPED_near_md5_b56f148c77edb03fa516fe4188440186.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Curtis_ag10_urban190_mask.tif", 
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Curtis_ag10_urban190_mask.tif",
         #},
         #{
         #    'expression': '1-(raster1/100)',
@@ -116,7 +116,7 @@ def main():
         #    },
         #    'target_nodata': -9999,
         #    'target_datatype': gdal.GDT_Float32,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\AFC_1-Tree2050_0-1.tif", 
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\AFC_1-Tree2050_0-1.tif",
         #},
         #{
         #    'expression': '(raster1<50)*raster1+(raster1>92)*(raster1<160)*raster1+(raster1>170)*raster1',
@@ -124,7 +124,7 @@ def main():
         #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marESA2020_forestnodata.tif", 
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marESA2020_forestnodata.tif",
         #},
         #{
         #    'expression': '(raster1>61)*(raster1<63)*(raster2>14)*(raster2<40)+(raster1>71)*(raster1<73)*(raster2>14)*(raster2<40)+(raster1>81)*(raster1<83)*(raster2>14)*(raster2<40)',
@@ -153,7 +153,7 @@ def main():
         #        'raster1': r"D:\repositories\ci-global-restoration\scenarios\potential_forest_regeneration_layers-griscom\sequestration_rate__mean__aboveground__Griscom_restorn_extent__Mg_C_ha_yr.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Griscom_restorn_extent.tif", 
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Griscom_restorn_extent.tif",
         #},
     ]
 
@@ -164,7 +164,7 @@ def main():
     TASK_GRAPH.join()
     TASK_GRAPH.close()
     return
-    
+
     calculation_list = [
         {
             'expression': 'raster1 - raster2',
@@ -252,7 +252,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
 
     calculation_list = [
         {
@@ -276,7 +276,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
     #python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_marESA1992_md5_312ef3.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_f09bca.csv lucode 2010Mean
     #python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_marESA2020_md5_9e2b63.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_f09bca.csv lucode 2010Mean
         #renamed to total_carbon_spawn_marESA1992 and total_carbon_spawn_marESA2020
@@ -324,7 +324,7 @@ def main():
     # python zonal_stats_by_raster.py "D:\ecoshard\Ecoregions2017_ESA2010smooth_zones_md5_d9fe48.tif" "D:\ecoshard\aboveground_biomass_carbon_2010_md5_4be351.tif" --basename spawn_aboveground_ESA2010zones
     # python zonal_stats_by_raster.py "D:\ecoshard\Ecoregions2017_Lesiv_FML_zones_compressed_md5_795ab7.tif" "D:\ecoshard\belowground_biomass_carbon_2010_md5_d68b5d.tif" --basename spawn_belowground_FMLzones
     # python zonal_stats_by_raster.py "D:\ecoshard\Ecoregions2017_ESA2010smooth_zones_md5_d9fe48.tif" "D:\ecoshard\total_biomass_carbon_2010_spawn_rescaled.tif" --basename spawn_total_rescaled_ESA2010zones
-    
+
     #scenarios!
     # python create_scenario.py "D:\ecoshard\TNC_NBS\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif" "D:\ecoshard\TNC_NBS\sequestration_rate__mean__aboveground__Griscom_restorn_extent__Mg_C_ha_yr.tif" 0.1 --flip_target_path "D:\ecoshard\CI_PPC\scenarios\Sc3v1_PNVnoag_md5_c07865b995f9ab2236b8df0378f9206f.tif"
     # python create_scenario.py "D:\ecoshard\TNC_NBS\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif" "D:\ecoshard\TNC_NBS\sequestration_rate__mean__aboveground__Griscom_restorn_extent__Mg_C_ha_yr.tif" 0.1 --flip_target_val 999
@@ -332,7 +332,7 @@ def main():
 
     calculation_list = [
         {
-            'expression': 'raster1 + (raster2*220)', #Rich says I should actually have multiplied by 221 (max(raster1)+1) but this seems to work 
+            'expression': 'raster1 + (raster2*220)', #Rich says I should actually have multiplied by 221 (max(raster1)+1) but this seems to work
             'symbol_to_path_map': {
                 'raster1': r"D:\ecoshard\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2010-v2.0.7_smooth_compressed.tif",
                 'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",

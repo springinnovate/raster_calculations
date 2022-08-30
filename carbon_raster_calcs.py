@@ -36,6 +36,36 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+    calculation_list = [
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\carbon_edge_model\output\regression_carbon_esa.tif",
+                'raster2': r"D:\repositories\raster_calculations\align_to_mask_workspace\baccini_carbon_data_2014_compressed_WARPED_near_md5_38d78c7aa3e61d7314f3e78edc28ed2a.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_regression-baccini.tif",
+        },
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\carbon_edge_model\output\ipcc_carbon_esa.tif",
+                'raster2': r"D:\repositories\raster_calculations\align_to_mask_workspace\baccini_carbon_data_2014_compressed_WARPED_near_md5_38d78c7aa3e61d7314f3e78edc28ed2a.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_ipcc-baccini.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     #python -m ecoshard process "fc_stack_hansen_forest_cover2003_compressed_std_forest_edge_result.tif" --reduce_factor 8 average ./reduce_factor/fc_stack_hansen_forest_cover2003_carbon_reduce8x.tif
     #python -m ecoshard process "fc_stack_hansen_forest_cover2004_compressed_std_forest_edge_result.tif" --reduce_factor 8 average ./reduce_factor/fc_stack_hansen_forest_cover2004_carbon_reduce8x.tif
     #python -m ecoshard process "fc_stack_hansen_forest_cover2006_compressed_std_forest_edge_result.tif" --reduce_factor 8 average ./reduce_factor/fc_stack_hansen_forest_cover2006_carbon_reduce8x.tif
