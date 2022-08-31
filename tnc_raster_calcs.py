@@ -38,6 +38,43 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+    # python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_reforest_md5_e2c9c4.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_f09bca.csv lucode 2010Mean
+        #renamed to total_carbon_spawn_reforest
+
+    calculation_list = [
+        {
+            'expression': 'raster1 + (raster2*220)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\data\reforestation_full_griscom_extent_compressed_md5_e42c6c.tif",
+                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Ecoregions2017_reforest.tif",
+        },
+        {
+            'expression': 'raster1 + (raster2*220)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\data\forest_conversion_2050_md5_abda51.tif",
+                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
+            },
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Ecoregions2017_afc.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     calculation_list = [
         {
             'expression': 'raster1 - raster2',
