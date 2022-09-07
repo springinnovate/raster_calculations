@@ -40,6 +40,36 @@ def main():
 
     calculation_list = [
         {
+            'expression': '(raster1>0)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\TNC_NBS\DIFF_forest_ReforestGriscom-ESA2020_compressed_md5_4a835e.tif",
+                'raster2': r"D:\ecoshard\TNC_NBS\results\NBSdiff_cv_habitat_value_reforest_md5_e17194.tif"
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\NBSdiff_cv_habitat_value_reforest_f.tif",
+        },
+        {
+            'expression': '(raster1<0)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\ecoshard\TNC_NBS\DIFF_forest_Conversion2050-ESA2020_avovr_md5_809e85.tif",
+                'raster2': r"D:\ecoshard\TNC_NBS\results\NBSdiff_cv_habitat_value_afc_md5_ab326e.tif"
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\NBSdiff_cv_habitat_value_afc_f.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+
+
+    calculation_list = [
+        {
             'expression': '(raster1>0)*raster1',
             'symbol_to_path_map': {
                 'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_compressed_md5_932883.tif",
@@ -70,8 +100,6 @@ def main():
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
-   
-
 
 
     calculation_list = [
