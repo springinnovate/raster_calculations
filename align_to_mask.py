@@ -31,13 +31,19 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Indonesia_compressed_md5_226d32.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif')
 #2#    'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/iucn_ecosystems/T2_4_Warm_temp_rainforests.tif')
-    'https://storage.googleapis.com/sci-ncscobenefits-spring/data/AFC_Tree2050_compressed_md5_3e88e1.tif')
+#    'https://storage.googleapis.com/sci-ncscobenefits-spring/data/AFC_Tree2050_compressed_md5_3e88e1.tif')
+#    "file:///D:/Documents/unilever_archive/carbon_edge_model/carbon_model_workspace/data/baccini_carbon_data_2003_2014_compressed_md5_11d1455ee8f091bf4be12c4f7ff9451b.tif")
+#    "file:///D:/repositories/tnc-sci-ncscobenefits/ecoshards/AFC_Tree2050_compressed_md5_3e88e1.tif")
+    "file:///D:/repositories/carbon_edge_model/output/regression_carbon_esa.tif")
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/carbon_datasets/'
 #2#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results/single_service'
-ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/sci-ncscobenefits-spring/data'
+#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/sci-ncscobenefits-spring/data'
+#ECOSHARD_URL_PREFIX = "file:///D:/Documents/unilever_archive/carbon_rasters_2022/"
+#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/NCS_Refor11_map/"
+ECOSHARD_URL_PREFIX = "file:///D:/repositories/carbon_edge_model/processed_rasters/"
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -63,7 +69,18 @@ RASTER_LIST = [
     #2#('S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif', False, False, False),
     #2#('H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif', False, False, False),
     #2#('I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif', False, False, False)
-    ('AFC_threats_Curtis_orig_proj_md5_f2c653.tif', False, False, False)
+    #('AFC_threats_Curtis_orig_proj_md5_f2c653.tif', False, False, False)
+    #unilever#('fc_stack_hansen_forest_cover2003_carbon_reduce8x.tif', False, False, False),
+    #('fc_stack_hansen_forest_cover2004_carbon_reduce8x.tif', False, False, False),
+    #('fc_stack_hansen_forest_cover2006_carbon_reduce8x.tif', False, False, False),
+    #('fc_stack_hansen_forest_cover2007_carbon_reduce8x.tif', False, False, False),
+    #('fc_stack_hansen_forest_cover2008_carbon_reduce8x.tif', False, False, False),
+    #('fc_stack_hansen_forest_cover2009_carbon_reduce8x.tif', False, False, False),
+    #('fc_stack_hansen_forest_cover2010_carbon_reduce8x.tif', False, False, False),
+    #('fc_stack_hansen_forest_cover2011_carbon_reduce8x.tif', False, False, False),
+    #('fc_stack_hansen_forest_cover2012_carbon_reduce8x.tif', False, False, False),
+    #tnc#('reclassified_NCS_Refor11_map_NCS_Refor_reclass.tif', False, False, False), #rename output Griscom_extent_wgs
+    ('baccini_carbon_data_2014_compressed.tif', False, False, False)
     ]
 
 
@@ -72,6 +89,8 @@ MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
 RESCALED_VALUE_SUFFIX = '_AREA_SCALED_VALUE'
 RESAMPLE_MODE = 'near'
+#tnc#RESAMPLE_MODE = 'near'
+#unilever#RESAMPLE_MODE = 'average'
 
 WORKSPACE_DIR = 'align_to_mask_workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')
