@@ -38,24 +38,170 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+    
+
+    calculation_list = [
+        #{
+        #    'expression': 'raster1*raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\outer_folder_Documents\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\mangrove_restore_mask_md5_8bf73b.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\mangroves_restore_ha.tif",
+        #},
+        #{
+        #    'expression': 'raster1*raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\outer_folder_Documents\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\silvoculture_extra_mask_md5_d0541c.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\silvoculture_extra_ha.tif",
+        #},
+        #{
+        #    'expression': 'raster1*raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\outer_folder_Documents\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\silvoculture_mask_md5_def9ad.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\silvoculture_ha.tif",
+        #},
+        #{
+        #    'expression': 'raster1*raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\Documents\outer_folder_Documents\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\silvopasture_mask_md5_e5cff9.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\silvopasture_ha.tif",
+        #},
+        {
+            'expression': 'raster1*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\Documents\outer_folder_Documents\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\reforestation_mask_md5_0d13c1.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\reforestation_ha.tif",
+        },
+        {
+            'expression': 'raster1*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\Documents\outer_folder_Documents\esa_pixel_area_ha_md5_1dd3298a7c4d25c891a11e01868b5db6.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\forest_conversion_mask.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\forest_conversion_ha.tif",
+        },    
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': '((raster1>raster2)+(raster2>raster1))*((raster1*2)-raster2)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\agroforestry_2050_md5_e32698.tif"
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_datatype': gdal.GDT_Int32,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\ESAx2-agroforestry.tif",
+        },
+        {
+            'expression': 'raster1-raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\mangroves_restore_2050_md5_eaa31b.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_datatype': gdal.GDT_Int32,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\mangroves-ESA.tif",
+        },
+        {
+            'expression': '((raster1>raster2)+(raster2>raster1))*((raster1*2)-raster2)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\reforestation_full_griscom_extent_compressed_md5_e42c6c.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_datatype': gdal.GDT_Int32,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\ESAx2-reforestation.tif",
+        },
+        {
+            'expression': '((raster1>raster2)+(raster2>raster1))*(raster1-(raster2*2))',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\forest_conversion_2050_md5_abda51.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_datatype': gdal.GDT_Int32,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\ESA-forestconversionX2.tif",
+        },    
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+
     calculation_list = [
         {
             'expression': '(raster1>0)*raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\TNC_NBS\DIFF_forest_ReforestGriscom-ESA2020_compressed_md5_4a835e.tif",
-                'raster2': r"D:\ecoshard\TNC_NBS\results\NBSdiff_cv_habitat_value_reforest_md5_e17194.tif"
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\DIFF_forest_ReforestGriscom-ESA2020_compressed_md5_4a835e.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\NBSdiff_cv_habitat_value_reforest_md5_e17194.tif"
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\NBSdiff_cv_habitat_value_reforest_f.tif",
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\NBSdiff_cv_habitat_value_reforest_f.tif",
         },
         {
             'expression': '(raster1<0)*raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\TNC_NBS\DIFF_forest_Conversion2050-ESA2020_avovr_md5_809e85.tif",
-                'raster2': r"D:\ecoshard\TNC_NBS\results\NBSdiff_cv_habitat_value_afc_md5_ab326e.tif"
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\DIFF_forest_Conversion2050-ESA2020_avovr_md5_809e85.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\NBSdiff_cv_habitat_value_afc_md5_ab326e.tif"
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\NBSdiff_cv_habitat_value_afc_f.tif",
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\NBSdiff_cv_habitat_value_afc_f.tif",
         },
     ]
 
@@ -66,7 +212,7 @@ def main():
     TASK_GRAPH.join()
     TASK_GRAPH.close()
 
-
+    return
 
     calculation_list = [
         {
@@ -247,48 +393,48 @@ def main():
         #{
         #    'expression': 'raster1*raster2',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Reforest_Tree2050_compressed_md5_5972ce.tif",
-        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Griscom_extent_wgs_compressed_md5_43f6a5.tif"
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\Reforest_Tree2050_compressed_md5_5972ce.tif",
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\Griscom_extent_wgs_compressed_md5_43f6a5.tif"
         #    },
         #    'target_nodata': 255,
         #    'target_datatype': gdal.GDT_Byte,
         #    'target_pixel_size': (0.0027777777777777778,-0.0027777777777777778),
         #    'resample_method': 'near',
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Reforest_Tree2050_Griscom_extent.tif",
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\Reforest_Tree2050_Griscom_extent.tif",
         #},
         #{
         #    'expression': '(raster1>0)*(raster1<2)*10 + (raster1>4)*(raster1<6)*190',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\AFC_threats_Curtis_orig_proj_WARPED_near_md5_b56f148c77edb03fa516fe4188440186.tif",
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\AFC_threats_Curtis_orig_proj_WARPED_near_md5_b56f148c77edb03fa516fe4188440186.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Curtis_ag10_urban190_mask.tif",
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\Curtis_ag10_urban190_mask.tif",
         #},
         #{
         #    'expression': '1-(raster1/100)',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\AFC_Tree2050_compressed_md5_3e88e1.tif",
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\AFC_Tree2050_compressed_md5_3e88e1.tif",
         #    },
         #    'target_nodata': -9999,
         #    'target_datatype': gdal.GDT_Float32,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\AFC_1-Tree2050_0-1.tif",
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\AFC_1-Tree2050_0-1.tif",
         #},
         #{
         #    'expression': '(raster1<50)*raster1+(raster1>92)*(raster1<160)*raster1+(raster1>170)*raster1',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marESA2020_forestnodata.tif",
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marESA2020_forestnodata.tif",
         #},
         #{
         #    'expression': '(raster1>61)*(raster1<63)*(raster2>14)*(raster2<40)+(raster1>71)*(raster1<73)*(raster2>14)*(raster2<40)+(raster1>81)*(raster1<83)*(raster2>14)*(raster2<40)',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
-        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\AFC_Tree2050_compressed_md5_3e88e1.tif",
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\AFC_Tree2050_compressed_md5_3e88e1.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marESA2020_savanna_back_to_savanna_mask.tif", #because my scenario changed all forest (including classes 62, 72) <40% tree cover and shouldn't have ## but turns out this only accounts for 0.0024% of forest so I'm gonna not worry about it
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marESA2020_savanna_back_to_savanna_mask.tif", #because my scenario changed all forest (including classes 62, 72) <40% tree cover and shouldn't have ## but turns out this only accounts for 0.0024% of forest so I'm gonna not worry about it
         #},
         #{
         #    'expression': 'raster1 - raster2',
@@ -308,7 +454,7 @@ def main():
         #        'raster1': r"D:\repositories\ci-global-restoration\scenarios\potential_forest_regeneration_layers-griscom\sequestration_rate__mean__aboveground__Griscom_restorn_extent__Mg_C_ha_yr.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\Griscom_restorn_extent.tif",
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\Griscom_restorn_extent.tif",
         #},
     ]
 
@@ -373,7 +519,7 @@ def main():
         {
             'expression': '(raster1>179)*(raster1<181)+ (raster1>159)*(raster1<161)*3',
             'symbol_to_path_map': {
-                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\ecoshards\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif",
             },
             'target_nodata': 255,
             'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\wetland1_swamp3_mask_ESA2020.tif",
