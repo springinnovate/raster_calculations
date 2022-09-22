@@ -38,6 +38,8 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
     
+# python nodata_replace.py D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_app_md5_a7e22.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\extensification_current_practices_n_app_compressed_WARPED_near_md5_eb36647c00aa312194ff6fd5ec0434a9.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens.tif
+# python nodata_replace.py D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\ExtensificationNapp_allcrops_rainfedfootprint_gapfilled_observedNappRevB_capped_to_backgroundN_WARPED_near_md5_786db7df0b3e4db9fe17d19fb5a3e78e.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens_background.tif
 
 
     calculation_list = [
