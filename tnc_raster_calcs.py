@@ -37,59 +37,60 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-    
-# python nodata_replace.py D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_app_md5_a7e22.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\extensification_current_practices_n_app_compressed_WARPED_near_md5_eb36647c00aa312194ff6fd5ec0434a9.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens.tif
-# python nodata_replace.py D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\ExtensificationNapp_allcrops_rainfedfootprint_gapfilled_observedNappRevB_capped_to_backgroundN_WARPED_near_md5_786db7df0b3e4db9fe17d19fb5a3e78e.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens_background.tif
 
+# python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_reforest_md5_e2c9c4.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_f09bca.csv lucode 2010Mean
+        #renamed to total_carbon_spawn_reforest
+# python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_afc_md5_07db6d.tif D:\repositories\tnc-sci-ncscobenefits\SpawnESA2010_Carbon_Lookup_Table_md5_f09bca.csv lucode 2010Mean
+        ##renamed to total_carbon_spawn_afc
+#python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\carbon_data\Ecoregions2017_agroforest.tif D:\repositories\tnc-sci-ncscobenefits\carbon_data\SpawnESA2010_Carbon_Lookup_Table_md5_af3024.csv lucode 2010Mean
+     ##renamed to total_carbon_spawn_agroforest
+#python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\carbon_data\Ecoregions2017_mangroverestf.tif D:\repositories\tnc-sci-ncscobenefits\carbon_data\SpawnESA2010_Carbon_Lookup_Table_md5_af3024.csv lucode 2010Mean
+     ##renamed to total_carbon_spawn_agroforest
 
     calculation_list = [
         #{
-        #    'expression': '(raster1>0)*raster1',
+        #    'expression': 'raster1 + (raster2*220)',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_compressed_md5_932883.tif",
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\data\reforestation_full_griscom_extent_compressed_md5_e42c6c.tif",
+        #        'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
         #    },
-        #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_fixed.tif",
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\Ecoregions2017_reforest.tif",
         #},
         #{
-        #    'expression': '(raster1>0)*raster1',
+        #    'expression': 'raster1 + (raster2*220)',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_reforest_fertilizer_current_compressed_md5_f4086f.tif",
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\data\forest_conversion_2050_md5_abda51.tif",
+        #        'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
         #    },
-        #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_reforest_fertilizer_current_fixed.tif",
-        #},
-        #{
-        #    'expression': '(raster1>0)*raster1',
-        #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_afc_fertilizer_current_compressed_md5_26fee0.tif",
-        #    },
-        #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_afc_fertilizer_current_fixed.tif",
+        #    'target_nodata': -9999,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\Ecoregions2017_afc.tif",
         #},
         {
-            'expression': '(raster1>0)*raster1',
+            'expression': 'raster1 + (raster2*220)',
             'symbol_to_path_map': {
-                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020_md5_9bf10b.tif", # this is a new baseline with the agroforestry parameterization
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\data\agroforestry_2050_md5_e32698.tif",
+                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
             },
-            'target_nodata': 0,
-            'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020agrof_fixed.tif",
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Ecoregions2017_agroforest.tif",
         },
-        {
-            'expression': '(raster1>0)*raster1',
+         {
+            'expression': 'raster1 + (raster2*220)',
             'symbol_to_path_map': {
-                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_agroforest_md5_99a26b.tif",
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\mangroves_restore_2050_WARPED_near_md5_c8804296c74b6b8dba737e2b25bc0a08.tif",
+                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
             },
-            'target_nodata': 0,
-            'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_agroforest_fixed.tif",
-        },
-        {
-            'expression': '(raster1>0)*raster1',
-            'symbol_to_path_map': {
-                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_mangroverest_md5_56c7ea.tif",
-            },
-            'target_nodata': 0,
-            'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_mangroverest_fixed.tif",
+            'target_nodata': -9999,
+            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\ecoshard\Ecoregions2017_mangroverestf.tif",
         },
     ]
 
@@ -98,44 +99,69 @@ def main():
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+# python nodata_replace.py D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_app_md5_a7e22.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\extensification_current_practices_n_app_compressed_WARPED_near_md5_eb36647c00aa312194ff6fd5ec0434a9.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens.tif
+# python nodata_replace.py D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\ExtensificationNapp_allcrops_rainfedfootprint_gapfilled_observedNappRevB_capped_to_backgroundN_WARPED_near_md5_786db7df0b3e4db9fe17d19fb5a3e78e.tif D:\repositories\tnc-sci-ncscobenefits\scenarios\fertilizers\nci_current_n_extens_background.tif
 
 
     calculation_list = [
+        #{
+        #    'expression': 'raster1 - raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_sed_export_marine_mod_ESA_2020_compressed_md5_a988c0.tif",
+        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_sed_export_tnc_nbs_agroforest_compressed_md5_91e77b.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\NBSdiff_sed_export_agroforest.tif",
+        #},
         {
             'expression': 'raster1 - raster2',
             'symbol_to_path_map': {
-                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020agrof_fixed.tif",
-                'raster2': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_agroforest_fixed.tif",
+                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_sed_export_tnc_esa2020.tif",
+                'raster2': r"D:\repositories\ndr_sdr_global\workspace\global_sed_export_tnc_nbs_mangroverest_f.tif",
             },
             'target_nodata': 0,
-            'target_raster_path': r"D:\repositories\ndr_sdr_global\NBSdiff_n_export_agroforest_f.tif",
-        },
-        {
-            'expression': 'raster1 - raster2',
-            'symbol_to_path_map': {
-                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020agrof_fixed.tif",
-                'raster2': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_mangroverest_fixed.tif",
-            },
-            'target_nodata': 0,
-            'target_raster_path': r"D:\repositories\ndr_sdr_global\NBSdiff_n_export_mangroverest_f.tif",
+            'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\NBSdiff_sed_export_mangroverestf.tif",
         },
         #{
         #    'expression': 'raster1 - raster2',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_fixed.tif",
-        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_reforest_fertilizer_current_fixed.tif",
+        #        'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020.tif",
+        #        'raster2': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_agroforest.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\NBSdiff_n_export_reforest_f.tif",
+        #    'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\NBSdiff_n_export_2020-agroforest.tif",
+        #},
+        {
+            'expression': 'raster1 - raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020.tif",
+                'raster2': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_mangroverest_f.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\NBSdiff_n_export_2020-mangroverestf.tif",
+        },
+        #{
+        #    'expression': 'raster1 - raster2',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020.tif",
+        #        'raster2': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_reforest.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\NBSdiff_n_export_2020-reforest.tif",
         #},
         #{
         #    'expression': 'raster1 - raster2',
         #    'symbol_to_path_map': {
-        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_afc_fertilizer_current_fixed.tif",
-        #        'raster2': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_fixed.tif",
+        #        'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_afc.tif",
+        #        'raster2': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020.tif",
         #    },
         #    'target_nodata': 0,
-        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\NBSdiff_n_export_afc_f.tif",
+        #    'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\NBSdiff_n_export_afc-2020.tif",
         #},
         #{
         #    'expression': 'raster1 - raster2',
@@ -199,6 +225,66 @@ def main():
     TASK_GRAPH.close()
 
     return
+
+#        calculation_list = [  ###not needed anymore because we fixed ndr to not treat nodata as negative
+#        {
+#            'expression': '(raster1>0)*raster1',
+#            'symbol_to_path_map': {
+#                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_compressed_md5_932883.tif",
+#            },
+#            'target_nodata': 0,
+#            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_marine_mod_ESA_2020_fertilizer_current_fixed.tif",
+#        },
+#        {
+#            'expression': '(raster1>0)*raster1',
+#            'symbol_to_path_map': {
+#                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_reforest_fertilizer_current_compressed_md5_f4086f.tif",
+#            },
+#            'target_nodata': 0,
+#            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_reforest_fertilizer_current_fixed.tif",
+#        },
+#        {
+#            'expression': '(raster1>0)*raster1',
+#            'symbol_to_path_map': {
+#                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_afc_fertilizer_current_compressed_md5_26fee0.tif",
+#            },
+#            'target_nodata': 0,
+#            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\workspace\global_n_export_tnc_nbs_afc_fertilizer_current_fixed.tif",
+#        },
+#        {
+#            'expression': '(raster1>0)*raster1',
+#            'symbol_to_path_map': {
+#                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020_md5_9bf10b.tif", # this is a new baseline with the agroforestry parameterization
+#            },
+#            'target_nodata': 0,
+#            'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_esa2020agrof_fixed.tif",
+#        },
+#        {
+#            'expression': '(raster1>0)*raster1',
+#            'symbol_to_path_map': {
+#                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_agroforest_md5_99a26b.tif",
+#            },
+#            'target_nodata': 0,
+#            'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_agroforest_fixed.tif",
+#        },
+#        {
+#            'expression': '(raster1>0)*raster1',
+#            'symbol_to_path_map': {
+#                'raster1': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_mangroverest_md5_56c7ea.tif",
+#            },
+#            'target_nodata': 0,
+#            'target_raster_path': r"D:\repositories\ndr_sdr_global\workspace\global_n_export_tnc_nbs_mangroverest_fixed.tif",
+#        },
+#    ]
+#
+#    for calculation in calculation_list:
+#        raster_calculations_core.evaluate_calculation(
+#            calculation, TASK_GRAPH, WORKSPACE_DIR)
+#
+#    TASK_GRAPH.join()
+#    TASK_GRAPH.close()
+#
+#    return
 
     calculation_list = [
         #{
@@ -266,7 +352,7 @@ def main():
             'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
             'resample_method': 'near',
             'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\forest_conversion_ha.tif",
-        },    
+        },
     ]
 
     for calculation in calculation_list:
@@ -326,46 +412,6 @@ def main():
             'resample_method': 'near',
             'target_datatype': gdal.GDT_Int32,
             'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\ESA-forestconversionX2.tif",
-        },    
-    ]
-
-    for calculation in calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
-
-
-    # python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_reforest_md5_e2c9c4.tif D:\ecoshard\SpawnESA2010_Carbon_Lookup_Table_md5_f09bca.csv lucode 2010Mean
-        #renamed to total_carbon_spawn_reforest
-    # python reclassify_by_table_copied_from_costaricasdr.py  D:\repositories\tnc-sci-ncscobenefits\Ecoregions2017_afc_md5_07db6d.tif D:\repositories\tnc-sci-ncscobenefits\SpawnESA2010_Carbon_Lookup_Table_md5_f09bca.csv lucode 2010Mean
-        ##renamed to total_carbon_spawn_afc
-
-    calculation_list = [
-        {
-            'expression': 'raster1 + (raster2*220)',
-            'symbol_to_path_map': {
-                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\data\reforestation_full_griscom_extent_compressed_md5_e42c6c.tif",
-                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\Ecoregions2017_reforest.tif",
-        },
-        {
-            'expression': 'raster1 + (raster2*220)',
-            'symbol_to_path_map': {
-                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\workspace\data\forest_conversion_2050_md5_abda51.tif",
-                'raster2': r"D:\ecoshard\Ecoregions2017_compressed_md5_316061.tif",
-            },
-            'target_nodata': -9999,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\Ecoregions2017_afc.tif",
         },
     ]
 
@@ -377,6 +423,9 @@ def main():
     TASK_GRAPH.close()
 
     return
+
+
+
 
     calculation_list = [
         {

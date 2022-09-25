@@ -36,7 +36,9 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #    "file:///D:/repositories/tnc-sci-ncscobenefits/ecoshards/AFC_Tree2050_compressed_md5_3e88e1.tif")
 #unilever2#    "file:///D:/repositories/carbon_edge_model/output/regression_carbon_esa.tif")
 #tnc#    "file:///D:/repositories/tnc-sci-ncscobenefits/ecoshards/area_suit_SilvoArable_frac_md5_15b589.tif")
-    "file:///D:/repositories/tnc-sci-ncscobenefits/scenarios/fertilizers/nci_current_n_app_md5_a7e22.tif")
+#    "file:///D:/repositories/pollination_sufficiency/workspace_poll_suff/outputs_tnc_esa2020/pollination_ppl_fed_on_ag_10s_tnc_esa2020.tif")
+#    "file:///D:/ecoshard/TNC_NBS/results/cv_habitat_value_marESA2020_md5_bc7bb3.tif")
+    "file:///D:/repositories/ndr_sdr_global/workspace/data/marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif")
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
@@ -47,8 +49,10 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/NCS_Refor11_map/"
 #unilever2#ECOSHARD_URL_PREFIX = "file:///D:/repositories/carbon_edge_model/processed_rasters/"
 #tnc#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/ecoshards/"
-ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/scenarios/fertilizers/"
-
+#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/scenarios/fertilizers/"
+#ECOSHARD_URL_PREFIX = "file:///D:/repositories/pollination_sufficiency/workspace_poll_suff/outputs_tnc_nbs_mangroverest/"
+#ECOSHARD_URL_PREFIX = "file:///D:/ecoshard/TNC_NBS/results/"
+ECOSHARD_URL_PREFIX = "file:///D:/repositories/ndr_sdr_global/workspace/data/"
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -87,8 +91,11 @@ RASTER_LIST = [
     #tnc#('reclassified_NCS_Refor11_map_NCS_Refor_reclass.tif', False, False, False), #rename output Griscom_extent_wgs
     #unilever2#('baccini_carbon_data_2014_compressed.tif', False, False, False)
     #tnc#('area_suit_SilvoPasture_Tot_frac_md5_6f300c.tif', False, False, False)
-    ('ExtensificationNapp_allcrops_rainfedfootprint_gapfilled_observedNappRevB_capped_to_backgroundN_md5_3de812.tif', False, False, False),
-    ('extensification_current_practices_n_app_compressed_md5_3005a1.tif', False, False, False)
+    #('ExtensificationNapp_allcrops_rainfedfootprint_gapfilled_observedNappRevB_capped_to_backgroundN_md5_3de812.tif', False, False, False),
+    #('extensification_current_practices_n_app_compressed_md5_3005a1.tif', False, False, False)
+    #('pollination_ppl_fed_on_ag_10s_tnc_nbs_mangroverest.tif', False, False, False)
+    #('cv_habitat_value_tnc_mangroverest.tif', False, False, False)
+    ('mangroves_restore_2050_md5_eaa31b.tif', False, False, False)
     ]
 
 WARPED_SUFFIX = '_WARPED'
