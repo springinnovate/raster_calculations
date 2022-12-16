@@ -26,6 +26,6 @@ if __name__ == '__main__':
     band = raster.GetRasterBand(args.band_index)
     LOGGER.info(f'raster {args.raster_path} at band index {args.band_index} current nodata is {band.GetNoDataValue()}')
     band.SetNoDataValue(args.new_nodata)
-    LOGGER.info(f'raster {args.raster_path} at band index {args.band_index} NEW nodata is {band.GetNoDataValue()}')
+    LOGGER.info(f'NEW nodata value is {band.GetNoDataValue()}')
     band = None
     raster = None

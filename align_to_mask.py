@@ -26,24 +26,34 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
-#    'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
+    'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Argentina_compressed_md5_806575.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Indonesia_compressed_md5_226d32.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif')
 #2#    'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/iucn_ecosystems/T2_4_Warm_temp_rainforests.tif')
 #    'https://storage.googleapis.com/sci-ncscobenefits-spring/data/AFC_Tree2050_compressed_md5_3e88e1.tif')
-#    "file:///D:/Documents/unilever_archive/carbon_edge_model/carbon_model_workspace/data/baccini_carbon_data_2003_2014_compressed_md5_11d1455ee8f091bf4be12c4f7ff9451b.tif")
+#unilever#    "file:///D:/Documents/unilever_archive/carbon_edge_model/carbon_model_workspace/data/baccini_carbon_data_2003_2014_compressed_md5_11d1455ee8f091bf4be12c4f7ff9451b.tif")
 #    "file:///D:/repositories/tnc-sci-ncscobenefits/ecoshards/AFC_Tree2050_compressed_md5_3e88e1.tif")
-    "file:///D:/repositories/carbon_edge_model/output/regression_carbon_esa.tif")
+#unilever2#    "file:///D:/repositories/carbon_edge_model/output/regression_carbon_esa.tif")
+#tnc#    "file:///D:/repositories/tnc-sci-ncscobenefits/ecoshards/area_suit_SilvoArable_frac_md5_15b589.tif")
+#    "file:///D:/repositories/pollination_sufficiency/workspace_poll_suff/outputs_tnc_esa2020/pollination_ppl_fed_on_ag_10s_tnc_esa2020.tif")
+#    "file:///D:/ecoshard/TNC_NBS/results/cv_habitat_value_marESA2020_md5_bc7bb3.tif")
+#    "file:///D:/repositories/ndr_sdr_global/workspace/data/marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif")
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
-#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/carbon_datasets/'
+#unilever#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/carbon_datasets/'
 #2#ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/critical-natural-capital-ecoshards/optimization_results/single_service'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/sci-ncscobenefits-spring/data'
 #ECOSHARD_URL_PREFIX = "file:///D:/Documents/unilever_archive/carbon_rasters_2022/"
 #ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/NCS_Refor11_map/"
-ECOSHARD_URL_PREFIX = "file:///D:/repositories/carbon_edge_model/processed_rasters/"
+#unilever2#ECOSHARD_URL_PREFIX = "file:///D:/repositories/carbon_edge_model/processed_rasters/"
+#tnc#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/ecoshards/"
+#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/scenarios/fertilizers/"
+#ECOSHARD_URL_PREFIX = "file:///D:/repositories/pollination_sufficiency/workspace_poll_suff/outputs_tnc_nbs_mangroverest/"
+#ECOSHARD_URL_PREFIX = "file:///D:/ecoshard/TNC_NBS/results/"
+#ECOSHARD_URL_PREFIX = "file:///D:/repositories/ndr_sdr_global/workspace/data/"
+ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits"
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -80,9 +90,19 @@ RASTER_LIST = [
     #('fc_stack_hansen_forest_cover2011_carbon_reduce8x.tif', False, False, False),
     #('fc_stack_hansen_forest_cover2012_carbon_reduce8x.tif', False, False, False),
     #tnc#('reclassified_NCS_Refor11_map_NCS_Refor_reclass.tif', False, False, False), #rename output Griscom_extent_wgs
-    ('baccini_carbon_data_2014_compressed.tif', False, False, False)
+    #unilever2#('baccini_carbon_data_2014_compressed.tif', False, False, False)
+    #tnc#('area_suit_SilvoPasture_Tot_frac_md5_6f300c.tif', False, False, False)
+    #('ExtensificationNapp_allcrops_rainfedfootprint_gapfilled_observedNappRevB_capped_to_backgroundN_md5_3de812.tif', False, False, False),
+    #('extensification_current_practices_n_app_compressed_md5_3005a1.tif', False, False, False)
+    #('pollination_ppl_fed_on_ag_10s_tnc_nbs_mangroverest.tif', False, False, False)
+    #('cv_habitat_value_tnc_mangroverest.tif', False, False, False)
+    #('mangroves_restore_2050_md5_eaa31b.tif', False, False, False)
+    ('reclassified_agroforestry_2050_md5_e32698_esa_nathab_reclass.tif', False, False, False),
+    ('reclassified_forest_conversion_2050_md5_abda51_esa_nathab_reclass.tif', False, False, False),
+    ('reclassified_mangroves_restore_2050_WARPED_near_md5_c88042_esa_nathab_reclass.tif', False, False, False),
+    ('reclassified_marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_esa_nathab_reclass.tif', False, False, False),
+    ('reclassified_reforestation_full_griscom_extent_compressed_md5_e42c6c_esa_nathab_reclass.tif', False, False, False),
     ]
-
 
 WARPED_SUFFIX = '_WARPED'
 MASKED_SUFFIX = '_MASKED'
