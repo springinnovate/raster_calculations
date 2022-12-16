@@ -39,14 +39,6 @@ if __name__ == '__main__':
     raster_b_info = geoprocessing.get_raster_info(args.raster_b_path)
     b_nodata = raster_b_info['nodata'][0]
 
-    LOGGER.info(
-        f'warping {args.raster_a_path} to align with {args.raster_b_path} '
-        f'to {args.target_raster_path}')
-    LOGGER.info(
-        f'\n\traster a bb: {raster_a_info["bounding_box"]}\n'
-        f'\traster b bb: {raster_b_info["bounding_box"]}\n'
-        )
-    sys.exit()
     geoprocessing.warp_raster(
         args.raster_a_path, raster_b_info['pixel_size'],
         args.target_raster_path,
