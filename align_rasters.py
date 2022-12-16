@@ -23,14 +23,14 @@ if __name__ == '__main__':
     parser.add_argument('raster_a_path', type=str, help='path to raster A (input)')
     parser.add_argument('raster_b_path', type=str, help='path to raster B (context)')
     parser.add_argument(
-        'target_path', type=str, help='path to name of aligned raster A')
+        'target_raster_path', type=str, help='path to name of aligned raster A')
     parser.add_argument(
         '--overwrite', action='store_true',
         help='Pass this flag to overwrite flags.')
     args = parser.parse_args()
-    if os.path.exists(args.target_path) and not args.overwrite:
+    if os.path.exists(args.target_raster_path) and not args.overwrite:
         LOGGER.error(
-            f'the target {args.target_path} exists. to overwrite this, add '
+            f'the target {args.target_raster_path} exists. to overwrite this, add '
             'the --overwrite flag and run again')
         sys.exit(-1)
 
@@ -41,10 +41,10 @@ if __name__ == '__main__':
 
     LOGGER.info(
         f'warping {args.raster_a_path} to align with {args.raster_b_path} '
-        f'to {args.target_path}')
+        f'to {args.target_raster_path}')
     geoprocessing.warp_raster(
         args.raster_a_path, raster_b_info['pixel_size'],
         args.target_raster_path,
         'near', target_bb=raster_b_info['bounding_box'],
         target_projection_wkt=raster_b_info['projection_wkt'],
-        working_dir=os.path.dirname(args.target_path))
+        working_dir=os.path.dirname(args.target_raster_path))
