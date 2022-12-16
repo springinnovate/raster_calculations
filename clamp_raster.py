@@ -36,7 +36,7 @@ if __name__ == '__main__':
         if args.lower is not None:
             result[array < args.lower] = args.lower
         if args.upper is not None:
-            result[array < args.upper] = args.upper
+            result[array > args.upper] = args.upper
         return result
 
     LOGGER.info(f'clipping to {target_raster_path}')
