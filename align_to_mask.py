@@ -26,7 +26,7 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
-    'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
+#    'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Argentina_compressed_md5_806575.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Indonesia_compressed_md5_226d32.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif')
@@ -39,6 +39,9 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #    "file:///D:/repositories/pollination_sufficiency/workspace_poll_suff/outputs_tnc_esa2020/pollination_ppl_fed_on_ag_10s_tnc_esa2020.tif")
 #    "file:///D:/ecoshard/TNC_NBS/results/cv_habitat_value_marESA2020_md5_bc7bb3.tif")
 #    "file:///D:/repositories/ndr_sdr_global/workspace/data/marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif")
+#sd#    "file:///D:/repositories/raster_calculations/reclassed_iucn_ecotypes_md5_b0f3be.tif")
+#c    "file:///D:/repositories/carbon_edge_model/output_global/regression_optimization/regressioncoarsened_marginal_value_regression_mask_3500000280000.0.tif")
+    "file:///D:/repositories/raster_calculations/align_to_mask_workspace/ecoshards/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_2ed6285e6f8ec1e7e0b75309cc6d6f9f.tif")
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
@@ -53,7 +56,10 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #ECOSHARD_URL_PREFIX = "file:///D:/repositories/pollination_sufficiency/workspace_poll_suff/outputs_tnc_nbs_mangroverest/"
 #ECOSHARD_URL_PREFIX = "file:///D:/ecoshard/TNC_NBS/results/"
 #ECOSHARD_URL_PREFIX = "file:///D:/repositories/ndr_sdr_global/workspace/data/"
-ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits"
+#tnc2#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits"
+#sd#ECOSHARD_URL_PREFIX = "file:///D:/repositories/raster_calculations"
+ECOSHARD_URL_PREFIX = "file:///D:/repositories/carbon_edge_model/supporting_data"
+
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -97,11 +103,15 @@ RASTER_LIST = [
     #('pollination_ppl_fed_on_ag_10s_tnc_nbs_mangroverest.tif', False, False, False)
     #('cv_habitat_value_tnc_mangroverest.tif', False, False, False)
     #('mangroves_restore_2050_md5_eaa31b.tif', False, False, False)
-    ('reclassified_agroforestry_2050_md5_e32698_esa_nathab_reclass.tif', False, False, False),
-    ('reclassified_forest_conversion_2050_md5_abda51_esa_nathab_reclass.tif', False, False, False),
-    ('reclassified_mangroves_restore_2050_WARPED_near_md5_c88042_esa_nathab_reclass.tif', False, False, False),
-    ('reclassified_marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_esa_nathab_reclass.tif', False, False, False),
-    ('reclassified_reforestation_full_griscom_extent_compressed_md5_e42c6c_esa_nathab_reclass.tif', False, False, False),
+    #tnc2#('reclassified_agroforestry_2050_md5_e32698_esa_nathab_reclass.tif', False, False, False),
+    #tnc2#('reclassified_forest_conversion_2050_md5_abda51_esa_nathab_reclass.tif', False, False, False),
+    #tnc2#('reclassified_mangroves_restore_2050_WARPED_near_md5_c88042_esa_nathab_reclass.tif', False, False, False),
+    #tnc2#('reclassified_marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da_esa_nathab_reclass.tif', False, False, False),
+    #tnc2#('reclassified_reforestation_full_griscom_extent_compressed_md5_e42c6c_esa_nathab_reclass.tif', False, False, False),
+    #sd#('A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif', False, False, False),
+    #sd#('C90_nonoverlapping_A90_md5_226cd195e0cb83760f866fb1f474ecb8.tif', False, False, False)
+    #c ('LPD.tif', False, False, False),
+    ('degraded_lands_on_regression_350mha.tif', False, False, False)
     ]
 
 WARPED_SUFFIX = '_WARPED'

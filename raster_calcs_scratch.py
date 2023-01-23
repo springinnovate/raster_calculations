@@ -36,15 +36,13 @@ def main():
 
     calculation_list = [
         {
-            'expression': '(raster1>=0)*raster2',
+            'expression': 'raster1-raster2',
             'symbol_to_path_map': {
-                'raster1': "landmask_1km_Costa_Rica.tif",
-                'raster2': "EFD_MODIS_CR_b2_win3_nodata0_compressed.tif",
+                'raster1': "D:\repositories\carbon_edge_model\c_stack_hansen_forest_cover2014_compressed_full_forest_edge_result.tif",
+                'raster2': "D:\repositories\carbon_edge_model\c_stack_hansen_forest_cover2014_compressed_std_forest_edge_result.tif",
             },
             'target_nodata': 0,
-            'target_pixel_size': (0.00833333333333,-0.00833333333333),
-            'resample_method': 'average',
-            'target_raster_path': "EFD_MODIS_CR_b2_win3_nodata0_1km.tif",
+            'target_raster_path': "fc_hansen_2014_missing_carbon.tif",
         },
     ]
 
@@ -53,7 +51,7 @@ def main():
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
 
-    TASK_GRAPH.join()    
+    TASK_GRAPH.join()
     TASK_GRAPH.close()
 
     return
