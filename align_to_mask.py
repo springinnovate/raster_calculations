@@ -41,7 +41,7 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #    "file:///D:/repositories/ndr_sdr_global/workspace/data/marine_ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_e6a8da.tif")
 #sd#    "file:///D:/repositories/raster_calculations/reclassed_iucn_ecotypes_md5_b0f3be.tif")
 #c    "file:///D:/repositories/carbon_edge_model/output_global/regression_optimization/regressioncoarsened_marginal_value_regression_mask_3500000280000.0.tif")
-    "file:///D:/repositories/raster_calculations/align_to_mask_workspace/ecoshards/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_2ed6285e6f8ec1e7e0b75309cc6d6f9f.tif")
+#c    "file:///D:/repositories/raster_calculations/align_to_mask_workspace/ecoshards/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_2ed6285e6f8ec1e7e0b75309cc6d6f9f.tif")
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
@@ -58,8 +58,7 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #ECOSHARD_URL_PREFIX = "file:///D:/repositories/ndr_sdr_global/workspace/data/"
 #tnc2#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits"
 #sd#ECOSHARD_URL_PREFIX = "file:///D:/repositories/raster_calculations"
-ECOSHARD_URL_PREFIX = "file:///D:/repositories/carbon_edge_model/supporting_data"
-
+#c#ECOSHARD_URL_PREFIX = "file:///D:/repositories/carbon_edge_model/supporting_data"
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -110,17 +109,18 @@ RASTER_LIST = [
     #tnc2#('reclassified_reforestation_full_griscom_extent_compressed_md5_e42c6c_esa_nathab_reclass.tif', False, False, False),
     #sd#('A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif', False, False, False),
     #sd#('C90_nonoverlapping_A90_md5_226cd195e0cb83760f866fb1f474ecb8.tif', False, False, False)
-    #c ('LPD.tif', False, False, False),
-    ('degraded_lands_on_regression_350mha.tif', False, False, False)
+    #c#('LPD.tif', False, False, False),
+    #c#('degraded_lands_on_regression_350mha.tif', False, False, False)
     ]
 
 WARPED_SUFFIX = '_WARPED'
 MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
 RESCALED_VALUE_SUFFIX = '_AREA_SCALED_VALUE'
-RESAMPLE_MODE = 'near'
+#RESAMPLE_MODE = 'near'
 #tnc#RESAMPLE_MODE = 'near'
-#unilever#RESAMPLE_MODE = 'average'
+#unilever#
+RESAMPLE_MODE = 'average'
 
 WORKSPACE_DIR = 'align_to_mask_workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')

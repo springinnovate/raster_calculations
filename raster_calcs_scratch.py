@@ -33,6 +33,21 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+"D:\repositories\ndr_sdr_global\workspace\stitched_n_retention_pnv_fillfert_compressed_md5_5de720.tif"
+"D:\repositories\ndr_sdr_global\workspace\global_sed_deposition_pnv_compressed_md5_6f537b.tif"
+"D:\repositories\ndr_sdr_global\workspace\global_sed_retention_pnv_compressed_md5_2df0bd.tif"
+"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\reefs_pop_on_hab.tif"
+"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\seagrass_pop_on_hab.tif"
+"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\sparse_pop_on_hab.tif"
+"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\mangroves_forest_pop_on_hab.tif"
+"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\saltmarsh_wetland_pop_on_hab.tif"
+"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\shrub_pop_on_hab.tif"
+"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\seagrass_value.tif"
+"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\sparse_value.tif"
+"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\wetland_saltmarsh_value.tif"
+"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\reefs_value.tif"
+"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\scrub_shrub_value.tif"
+"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\total_value_sum.tif"
 
     calculation_list = [
         {
