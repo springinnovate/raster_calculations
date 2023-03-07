@@ -1,18 +1,14 @@
 """See python [scriptname] --help"""
 import argparse
 import logging
+import os
 import sys
 
-import numpy
+from osgeo import gdal
 from ecoshard import geoprocessing
 from ecoshard.geoprocessing.geoprocessing_core import \
     DEFAULT_GTIFF_CREATION_TUPLE_OPTIONS
-
-
-RASTER_CREATE_OPTIONS = DEFAULT_GTIFF_CREATION_TUPLE_OPTIONS[1]
-COG_CREATE_OPTIONS = ('COG', (
-            'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=LZW',
-            'BLOCKXSIZE=256', 'BLOCKYSIZE=256'))
+import numpy
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -23,12 +19,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 
-def subtract_op(a_path, b_path, target_nodata):
-    a_nodata = geoprocessing.get_raster_info(a_path)['nodata'][0]
-    b_nodata = geoprocessing.get_raster_info(b_path)['nodata'][0]
-    if target_nodata is None:
-        target_nodata = a_nodata
-
+def subtract_op(a_nodata, b_nodata, target_nodata):
     def _subtract_op(array_a, array_b):
         result = numpy.full(array_a.shape, target_nodata)
         valid_mask = numpy.ones(array_a.shape, dtype=bool)
@@ -56,18 +47,31 @@ def main():
         'raster A'))
     args = parser.parse_args()
 
-    if args.cog:
-        raster_create_options = COG_CREATE_OPTIONS
-    else:
-        raster_create_options = RASTER_CREATE_OPTIONS
-
     raster_info = geoprocessing.get_raster_info(args.raster_A_path)
+
+    a_nodata = geoprocessing.get_raster_info(args.raster_A_path)['nodata'][0]
+    b_nodata = geoprocessing.get_raster_info(args.raster_A_path)['nodata'][0]
+    target_nodata = args.target_nodata
+    if target_nodata is None:
+        target_nodata = a_nodata
+
     geoprocessing.raster_calculator(
         [(args.raster_A_path, 1), (args.raster_B_path, 1)],
-        subtract_op(
-            args.raster_A_path, args.raster_B_path, args.target_nodata),
-        args.target_raster_path, raster_info['datatype'],
-        raster_driver_creation_tuple=raster_create_options)
+        subtract_op(a_nodata, b_nodata, target_nodata),
+        args.target_raster_path, raster_info['datatype'], target_nodata)
+
+    if args.cog:
+        cog_driver = gdal.GetDriverByName('COG')
+        base_raster = gdal.OpenEx(args.target_raster_path, gdal.OF_RASTER)
+        cog_file_path = os.path.join(
+            f'cog_{os.path.basename(args.target_raster_path)}')
+        options = ('COMPRESS=LZW', 'NUM_THREADS=ALL_CPUS', 'BIGTIFF=YES')
+        LOGGER.info(f'convert {args.target_raster_path} to COG {cog_file_path} with {options}')
+        cog_raster = cog_driver.CreateCopy(
+            cog_file_path, base_raster, options=options,
+            callback=geoprocessing._make_logger_callback(
+                f"COGing {cog_file_path} %.1f%% complete %s"))
+        del cog_raster
 
 
 if __name__ == '__main__':
