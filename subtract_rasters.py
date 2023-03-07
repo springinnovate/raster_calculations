@@ -56,7 +56,7 @@ def main():
     if target_nodata is None:
         target_nodata = a_nodata
 
-    geoprocessing.raster_calculator(
+    geoprocessing.single_thread_raster_calculator(
         [(args.raster_A_path, 1), (args.raster_B_path, 1)],
         subtract_op(a_nodata, b_nodata, target_nodata),
         args.target_raster_path, raster_info['datatype'], target_nodata)
