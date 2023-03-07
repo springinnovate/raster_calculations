@@ -67,7 +67,7 @@ def main():
         subtract_op(
             args.raster_A_path, args.raster_B_path, args.target_nodata),
         args.target_raster_path, raster_info['datatype'],
-        raster_create_options=raster_create_options)
+        raster_driver_creation_tuple=raster_create_options)
 
 
 if __name__ == '__main__':
