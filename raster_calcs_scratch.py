@@ -33,38 +33,22 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
-"D:\repositories\ndr_sdr_global\workspace\stitched_n_retention_pnv_fillfert_compressed_md5_5de720.tif"
-"D:\repositories\ndr_sdr_global\workspace\global_sed_deposition_pnv_compressed_md5_6f537b.tif"
-"D:\repositories\ndr_sdr_global\workspace\global_sed_retention_pnv_compressed_md5_2df0bd.tif"
-"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\reefs_pop_on_hab.tif"
-"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\seagrass_pop_on_hab.tif"
-"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\sparse_pop_on_hab.tif"
-"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\mangroves_forest_pop_on_hab.tif"
-"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\saltmarsh_wetland_pop_on_hab.tif"
-"D:\repositories\people_protected_by_coastal_habitat\workspace_PNV\shrub_pop_on_hab.tif"
-"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\seagrass_value.tif"
-"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\sparse_value.tif"
-"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\wetland_saltmarsh_value.tif"
-"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\reefs_value.tif"
-"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\scrub_shrub_value.tif"
-"D:\repositories\coastal_risk_reduction\workspace\pnv\value_rasters\total_value_sum.tif"
 
     calculation_list = [
         {
-            'expression': 'raster1-raster2',
+            'expression': '(raster1*(raster2<7))+(raster1*(raster2>7))+(raster2*(raster2>6)*(raster2<8))',
             'symbol_to_path_map': {
-                'raster1': "D:\repositories\carbon_edge_model\c_stack_hansen_forest_cover2014_compressed_full_forest_edge_result.tif",
-                'raster2': "D:\repositories\carbon_edge_model\c_stack_hansen_forest_cover2014_compressed_std_forest_edge_result.tif",
+                'raster1': r"D:\repositories\wwf-sipa\data\landcover_rasters\ind_infra_impact_gradient_1_5_25_50_md5_3415ff.tif",
+                'raster2': r"D:\repositories\wwf-sipa\data\landcover_rasters\ind_baseline_lulc_nodatato22_compressed_md5_88bf6d.tif",
             },
-            'target_nodata': 0,
-            'target_raster_path': "fc_hansen_2014_missing_carbon.tif",
+            'target_nodata': 128,
+            'target_raster_path': "ind_infra_impact_gradient_1_5_25_50.tif",
         },
     ]
 
     for calculation in calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
-
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
