@@ -30,6 +30,7 @@ def subtract_op(a_nodata, b_nodata, target_nodata):
             valid_mask &= array_b == b_nodata
         result[valid_mask] = array_a[valid_mask]-array_b[valid_mask]
         return result
+    return _subtract_op
 
 
 def main():
