@@ -36,15 +36,13 @@ def main():
 
     calculation_list = [
         {
-            'expression': '(raster1>=0)*raster2',
+            'expression': '(raster1*(raster2<7))+(raster1*(raster2>7))+(raster2*(raster2>6)*(raster2<8))',
             'symbol_to_path_map': {
-                'raster1': "landmask_1km_Costa_Rica.tif",
-                'raster2': "EFD_MODIS_CR_b2_win3_nodata0_compressed.tif",
+                'raster1': r"D:\repositories\wwf-sipa\data\landcover_rasters\ind_infra_impact_gradient_1_5_25_50_md5_3415ff.tif",
+                'raster2': r"D:\repositories\wwf-sipa\data\landcover_rasters\ind_baseline_lulc_nodatato22_compressed_md5_88bf6d.tif",
             },
-            'target_nodata': 0,
-            'target_pixel_size': (0.00833333333333,-0.00833333333333),
-            'resample_method': 'average',
-            'target_raster_path': "EFD_MODIS_CR_b2_win3_nodata0_1km.tif",
+            'target_nodata': 128,
+            'target_raster_path': "ind_infra_impact_gradient_1_5_25_50.tif",
         },
     ]
 
@@ -52,8 +50,7 @@ def main():
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
-
-    TASK_GRAPH.join()    
+    TASK_GRAPH.join()
     TASK_GRAPH.close()
 
     return
