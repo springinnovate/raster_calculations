@@ -104,6 +104,5 @@ if __name__ == '__main__':
         raster_info = geoprocessing.get_raster_info(args.raster_path)
         geoprocessing.reclassify_raster(
             (args.raster_path, 1), value_map, target_raster_path,
-            raster_target_type, raster_info['nodata'][0],
-            values_required=True)
+            raster_target_type, raster_info['nodata'][0])
         LOGGER.info('all done!')
