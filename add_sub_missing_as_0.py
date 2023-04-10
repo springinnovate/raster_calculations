@@ -75,6 +75,10 @@ if __name__ == '__main__':
     parser.add_argument('raster_a_path', help='Path to raster a can have a comma after indicating band')
     parser.add_argument('raster_b_path', help='Path to raster b can have a comma after indicating band')
     parser.add_argument(
+        '--target_path', help=(
+            'Path to target file, if not defined create unique name in '
+            'current directory.'))
+    parser.add_argument(
         '--working_dir', default='subtract_missing_as_0_workspace',
         help='location to store temporary files')
     parser.add_argument(
@@ -154,11 +158,14 @@ if __name__ == '__main__':
             target_projection_wkt=raster_a_info['projection_wkt'])
         raster_list = aligned_raster_list
 
-    target_path = (
-        f'{os.path.splitext(os.path.basename(raster_a_path))[0]}{raster_a_band}'
-        f' {sep} '
-        f'{os.path.splitext(os.path.basename(raster_b_path))[0]}{raster_b_band}.tif')
-
+    if args.target_path is not None:
+        target_path = args.target_path
+    else:
+        target_path = (
+            f'{os.path.splitext(os.path.basename(raster_a_path))[0]}'
+            f'{raster_a_band} {sep} '
+            f'''{os.path.splitext(os.path.basename(raster_b_path))[0]}{
+                raster_b_band}.tif''')
 
     LOGGER.info('doing subtraction')
     geoprocessing.raster_calculator(
