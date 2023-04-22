@@ -43,7 +43,8 @@ def mask_raster(base_raster_path, mask_raster_path, target_raster_path):
 def main():
     """Entry point."""
     parser = argparse.ArgumentParser(description=(
-        'Mask raster by another raster. Results are in a subdirectory called '
+        'Mask raster by another raster. Input data is set to nodata where mask '
+        'is nodata. Results are in a subdirectory called '
         f'"{WORKSPACE_DIR}".'))
     parser.add_argument(
         'input_raster_path', nargs='+', help='Path(s) to rasters to mask.')

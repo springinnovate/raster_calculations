@@ -27,6 +27,7 @@ logging.getLogger('taskgraph').setLevel(logging.WARN)
 
 MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATTER
 #    'https://storage.googleapis.com/ecoshard-root/population/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif')
+    "file:///D:/repositories/raster_calculations/align_to_mask_workspace/ecoshards/global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif")
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Argentina_compressed_md5_806575.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_Indonesia_compressed_md5_226d32.tif')
 #    'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/habitat_masks/Ecoregions2017_ESA2020modVCFv2_zones_US_compressed_md5_b62ebe.tif')
@@ -43,7 +44,7 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #c    "file:///D:/repositories/carbon_edge_model/output_global/regression_optimization/regressioncoarsened_marginal_value_regression_mask_3500000280000.0.tif")
 #c    "file:///D:/repositories/raster_calculations/align_to_mask_workspace/ecoshards/ESACCI-LC-L4-LCCS-Map-300m-P1Y-2020-v2.1.1_md5_2ed6285e6f8ec1e7e0b75309cc6d6f9f.tif")
 #tnc0414_1#    "file:///D:/repositories/tnc-sci-ncscobenefits/scenarios/DIFF_reforest2-ESA.tif")
-    "file:///D:/repositories/tnc-sci-ncscobenefits/scenarios/DIFF_agroforest-ESA.tif")
+#tnc0414_2#    "file:///D:/repositories/tnc-sci-ncscobenefits/scenarios/DIFF_agroforest-ESA.tif")
 
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/ci_global_restoration/results/pollination'
 #ECOSHARD_URL_PREFIX = 'https://storage.googleapis.com/ecoshard-root/sci-ncscobenefits-spring/data'
@@ -61,7 +62,8 @@ MASK_ECOSHARD_URL = ( #NOTE THIS IS JUST FOR DATA/NODATA MASKS, 1/0 DOESN'T MATT
 #tnc2#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits"
 #sd#ECOSHARD_URL_PREFIX = "file:///D:/repositories/raster_calculations"
 #c#ECOSHARD_URL_PREFIX = "file:///D:/repositories/carbon_edge_model/supporting_data"
-ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/carbon_data"
+#tnc0414#ECOSHARD_URL_PREFIX = "file:///D:/repositories/tnc-sci-ncscobenefits/carbon_data"
+ECOSHARD_URL_PREFIX = "file:///D:/repositories/raster_calculations/align_to_mask_workspace/ecoshards"
 
 # Format of these are (ecoshard filename, mask(t/f), perarea(t/f), in wgs84 projection)
 RASTER_LIST = [
@@ -115,17 +117,22 @@ RASTER_LIST = [
     #c#('LPD.tif', False, False, False),
     #c#('degraded_lands_on_regression_350mha.tif', False, False, False)
     #tnc0414_1#('carbon_seq_30yrs_Mg_C_ha.tif', True, False, False)
-    ('carbon_seq_30yrs_10pct_Mg_C_ha.tif', True, False, False)
+    #tnc0414_2#('carbon_seq_30yrs_10pct_Mg_C_ha.tif', True, False, False)
+    #tnc0414#('hab_mask_tnc_nbs_afc2.tif', False, False, False),
+    #tnc0414#('hab_mask_tnc_nbs_reforest2.tif', False, False, False)
+    ('DIFF_agroforest-ESA_md5_3d054f.tif', False, False, False),
+    ('DIFF_mangroverest-ESA_md5_a53b7a.tif', False, False, False),
+    ('DIFF_reforest2-ESA_md5_d53d15.tif', False, False, False),
+    ('DIFF_afc2-ESA_md5_ce1730.tif', False, False, False)
     ]
 
 WARPED_SUFFIX = '_WARPED'
 MASKED_SUFFIX = '_MASKED'
 PERAREA_SUFFIX = '_PERAREA'
 RESCALED_VALUE_SUFFIX = '_AREA_SCALED_VALUE'
-RESAMPLE_MODE = 'near'
+RESAMPLE_MODE = 'average'
 #tnc#RESAMPLE_MODE = 'near'
-#unilever#
-#RESAMPLE_MODE = 'average'
+#unilever#RESAMPLE_MODE = 'average'
 
 WORKSPACE_DIR = 'align_to_mask_workspace'
 PERAREA_DIR = os.path.join(WORKSPACE_DIR, 'per_area_rasters')
