@@ -136,6 +136,5 @@ def main():
         simplified_vector_path, target_raster_path, args.field_to_rasterize)
 
 
-
 if __name__ == '__main__':
     main()
