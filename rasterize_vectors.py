@@ -61,7 +61,6 @@ def rasterize_id_by_value(vector_path, raster_path, field_id):
         vector_path (str): path to existing vector
         raster_path (str): path to existing raster
         field_id (str): field index in `vector_path` to reference
-
     Returns:
         None
     """
@@ -125,7 +124,7 @@ def main():
     task_graph.join()
 
     vector_info = geoprocessing.get_vector_info(simplified_vector_path)
-    LOGGER.info(f'expected raster size for {basename} is ({n_cols}x{n_rows})')
+    LOGGER.info(f'creating raster at {target_raster_path}')
 
     geoprocessing.create_raster_from_vector_extents(
         simplified_vector_path, target_raster_path,
