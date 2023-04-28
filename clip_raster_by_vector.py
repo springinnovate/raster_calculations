@@ -36,7 +36,6 @@ if __name__ == '__main__':
         'vector_to_clip_with', help='Path to arbitrary vector to clip')
     args = parser.parse_args()
 
-
     temp_dir = tempfile.mkdtemp(dir=os.getcwd(), prefix='clip_raster_workspace')
 
     raster_info = geoprocessing.get_raster_info(args.input_raster)

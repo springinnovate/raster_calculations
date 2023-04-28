@@ -36,6 +36,27 @@ LOGGER = logging.getLogger(__name__)
 def main():
     """Write your expression here."""
 
+     #Don't forget the r before the "  !
+
+
+
+    single_expression = {
+        'expression': '(raster1>0)*raster1',
+        'symbol_to_path_map': {
+            'raster1': r"D:\repositories\carbon_edge_model\fc_stack_hansen_2014_missing_carbon_compressed_nr_md5_63366a.tif",
+        },
+        'target_nodata': -1,
+        'target_raster_path': "fc_stack_hansen_2014_missing_carbon_positive_only.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
     calculation_list = [
         {
             'expression': '(raster1<-10000)*65535 + (raster1>-10000)*raster1',
@@ -60,20 +81,22 @@ def main():
             calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
-    TASK_GRAPH.close()
 
-    return
-
-    single_expression = {
-        'expression': '(raster1<-10000)*65535 + (raster1>-10000)*raster1',
-        'symbol_to_path_map': {
-            'raster1': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_ipcc-baccini.tif",
+    calculation_list = [
+        {
+            'expression': '(raster1>-10000)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_regression-baccini_c_nr_md5_890f1c.tif",
+                'raster2': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_ipcc-baccini_c_nr_md5_cfd45b.tif",
+            },
+            'target_nodata': 66535,
+            'target_raster_path': "DIFF_forest_carbon_ipcc-baccini_c_regression_extent.tif",
         },
-        'target_raster_path': "DIFF_forest_carbon_ipcc-baccini_c.tif",
-    }
+    ]
 
-    raster_calculations_core.evaluate_calculation(
-        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
@@ -131,29 +154,7 @@ def main():
 
     return
 
-    #Don't forget the r before the "  !
 
-    calculation_list = [
-        {
-            'expression': '(raster1>1)*raster2',
-            'symbol_to_path_map': {
-                'raster1': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_regression-baccini_near_compressed_md5_b410e6.tif",
-                'raster2': r"D:\repositories\carbon_edge_model\DIFF_forest_carbon_ipcc-baccini_near_compressed_md5_6437e8.tif",
-            },
-            'target_nodata': 0,
-            'target_raster_path': "hansen_2014_missing_carbon.tif",
-        },
-    ]
-
-    for calculation in calculation_list:
-        raster_calculations_core.evaluate_calculation(
-            calculation, TASK_GRAPH, WORKSPACE_DIR)
-
-
-    TASK_GRAPH.join()
-    TASK_GRAPH.close()
-
-    return
 
     calculation_list = [
         {

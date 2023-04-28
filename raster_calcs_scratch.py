@@ -36,20 +36,19 @@ def main():
 
     calculation_list = [
         {
-            'expression': 'raster1-raster2',
+            'expression': '(raster1*(raster2<7))+(raster1*(raster2>7))+(raster2*(raster2>6)*(raster2<8))',
             'symbol_to_path_map': {
-                'raster1': "D:\repositories\carbon_edge_model\c_stack_hansen_forest_cover2014_compressed_full_forest_edge_result.tif",
-                'raster2': "D:\repositories\carbon_edge_model\c_stack_hansen_forest_cover2014_compressed_std_forest_edge_result.tif",
+                'raster1': r"D:\repositories\wwf-sipa\data\landcover_rasters\ind_infra_impact_gradient_1_5_25_50_md5_3415ff.tif",
+                'raster2': r"D:\repositories\wwf-sipa\data\landcover_rasters\ind_baseline_lulc_nodatato22_compressed_md5_88bf6d.tif",
             },
-            'target_nodata': 0,
-            'target_raster_path': "fc_hansen_2014_missing_carbon.tif",
+            'target_nodata': 128,
+            'target_raster_path': "ind_infra_impact_gradient_1_5_25_50.tif",
         },
     ]
 
     for calculation in calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
-
 
     TASK_GRAPH.join()
     TASK_GRAPH.close()
