@@ -37,6 +37,35 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+    
+    calculation_list = [
+        {
+            'expression': '(raster1>0.0001)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\area_suit_SilvoPasture_Tot_frac_WARPED_near_md5_2d56a7.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\area_suit_SilvoPasture_mask.tif",
+        },
+        {
+            'expression': '(raster1>0.0001)',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\area_suit_SilvoArable_frac_md5_15b589.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\area_suit_SilvoArable_mask.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
 
 
     calculation_list = [

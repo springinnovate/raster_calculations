@@ -40,6 +40,60 @@ def main():
 
     
     calculation_list = [
+        {
+            'expression': '(raster1>0)*(raster1<2)*raster2+(raster1>2)*(raster1<4)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\Sc1v5-ESAmod2_WARPED_near_md5_aa7179044f01c9ebafbe11223c5a7dae.tif",
+                'raster2': r"D:\repositories\ci-global-restoration\nature_access\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\repositories\ci-global-restoration\nature_access\nature_access_diff_Sc1v5.tif",
+        },
+        {
+            'expression': '(raster1>0)*(raster1<2)*raster2+(raster1>2)*(raster1<4)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\Sc1v6-ESAmod2_WARPED_near_md5_baf3f5f718191b95ddf579dc81a2a415.tif",
+                'raster2': r"D:\repositories\ci-global-restoration\nature_access\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\repositories\ci-global-restoration\nature_access\nature_access_diff_Sc1v6.tif",
+        },
+        {
+            'expression': '(raster1>0)*(raster1<2)*raster2+(raster1>2)*(raster1<4)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\Sc2v5-ESAmod2_WARPED_near_md5_fe5ecd9ee1dd2dd0d94c8fa976d9e69c.tif",
+                'raster2': r"D:\repositories\ci-global-restoration\nature_access\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\repositories\ci-global-restoration\nature_access\nature_access_diff_Sc2v5.tif",
+        },
+        {
+            'expression': '(raster1>0)*(raster1<2)*raster2+(raster1>2)*(raster1<4)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\Sc2v6-ESAmod2_WARPED_near_md5_a8f055444ca84ef8accaab7c860258a2.tif",
+                'raster2': r"D:\repositories\ci-global-restoration\nature_access\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\repositories\ci-global-restoration\nature_access\nature_access_diff_Sc2v6.tif",
+        },
+        {
+            'expression': '(raster1>0)*(raster1<2)*raster2+(raster1>2)*(raster1<4)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\Sc3v1-ESAmod2_WARPED_near_md5_45d54ab9d4fde1272e9e3f90dfe47cb1.tif",
+                'raster2': r"D:\repositories\ci-global-restoration\nature_access\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\repositories\ci-global-restoration\nature_access\nature_access_diff_Sc3v1.tif",
+        },
+        {
+            'expression': '(raster1>0)*(raster1<2)*raster2+(raster1>2)*(raster1<4)*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\Sc3v2-ESAmod2_WARPED_near_md5_4f896771dd43b9279013d411d28169bc.tif",
+                'raster2': r"D:\repositories\ci-global-restoration\nature_access\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': -9999,
+            'target_raster_path': r"D:\repositories\ci-global-restoration\nature_access\nature_access_diff_Sc3v2.tif",
+        },
         #{
         #    'expression': 'raster1*raster2*raster3',
         #    'symbol_to_path_map': {
@@ -159,39 +213,39 @@ def main():
         #    'resample_method': 'near',
         #    'target_raster_path': r"D:\ecoshard\CI_FP\US_nlcd\scenarios\Confident_Cotton_ha.tif",
         #},
-        {
-            'expression': '(raster1 - raster2)',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP1livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
-            },
-            'target_nodata': 0,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbon_SSP1_change_spawn_Argentina.tif",
-        },
-        {
-            'expression': '(raster1 - raster2)',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP3livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
-            },
-            'target_nodata': 0,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbon_SSP3_change_spawn_Argentina.tif",
-        },
-        {
-            'expression': '(raster1 - raster2)',
-            'symbol_to_path_map': {
-                'raster1': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_futureviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
-                'raster2': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_currentviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
-            },
-            'target_nodata': 0,
-            'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
-            'resample_method': 'near',
-            'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\carbon\total_carbon_future_change_spawn_Indonesia.tif",
-        },
+        #{
+        #    'expression': '(raster1 - raster2)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP1livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbon_SSP1_change_spawn_Argentina.tif",
+        #},
+        #{
+        #    'expression': '(raster1 - raster2)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_SSP3livestock_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\Argentina\carbon\reclassified_Ecoregions_ESA2020_Argentina_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Argentina\carbon\total_carbon_SSP3_change_spawn_Argentina.tif",
+        #},
+        #{
+        #    'expression': '(raster1 - raster2)',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_futureviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+        #        'raster2': r"D:\ecoshard\CI_FP\Indonesia\carbon\reclassified_Ecoregions_currentviscose_Indonesia_SpawnESAmod2_Carbon_Lookup_Table_md5_03d493.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_pixel_size': (0.002777777777777777884,-0.002777777777777777884),
+        #    'resample_method': 'near',
+        #    'target_raster_path': r"D:\ecoshard\CI_FP\Indonesia\carbon\total_carbon_future_change_spawn_Indonesia.tif",
+        #},
     ]
 
     for calculation in calculation_list:
