@@ -24,10 +24,10 @@ def subtract_op(a_nodata, b_nodata, target_nodata):
         result = numpy.full(array_a.shape, target_nodata)
         valid_mask = numpy.ones(array_a.shape, dtype=bool)
         if a_nodata is not None:
-            valid_mask &= array_a == a_nodata
+            valid_mask &= array_a != a_nodata
 
         if b_nodata is not None:
-            valid_mask &= array_b == b_nodata
+            valid_mask &= array_b != b_nodata
         result[valid_mask] = array_a[valid_mask]-array_b[valid_mask]
         return result
     return _subtract_op
@@ -48,7 +48,7 @@ def main():
     raster_info = geoprocessing.get_raster_info(args.raster_A_path)
 
     a_nodata = geoprocessing.get_raster_info(args.raster_A_path)['nodata'][0]
-    b_nodata = geoprocessing.get_raster_info(args.raster_A_path)['nodata'][0]
+    b_nodata = geoprocessing.get_raster_info(args.raster_B_path)['nodata'][0]
     target_nodata = args.target_nodata
     if target_nodata is None:
         target_nodata = a_nodata

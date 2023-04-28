@@ -37,7 +37,214 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+    # python add_sub_missing_as_0.py "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" "D:\repositories\tnc-sci-ncscobenefits\nature_access_lspop2019_afc2_compressed_md5_73d45b.tif" --subtract
+    # python add_sub_missing_as_0.py "D:\repositories\tnc-sci-ncscobenefits\upload\nature_access_lspop2019_reforest2_compressed_md5_d31ae6.tif" "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" --subtract
+    #python add_sub_missing_as_0.py "D:\repositories\tnc-sci-ncscobenefits\upload\nature_access_avg_lspop2019_reforest2_compressed_md5_5f7de4.tif" "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" --subtract
+    #python add_sub_missing_as_0.py "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" "D:\repositories\tnc-sci-ncscobenefits\upload\nature_access_avg_lspop2019_afc2_compressed_md5_f67b6d.tif" --subtract
 
+    calculation_list = [
+        #{
+        #    'expression': 'raster1*0.1',
+        #    'symbol_to_path_map': {
+        #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\aboveground_biomass_carbon_2010_md5_4be351.tif",
+        #    },
+        #    'target_nodata': 0,
+        #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn.tif",
+        #},
+        {
+            'expression': 'raster1+raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn_compressed_md5_5f64b4.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_carbon_v2_agroforest_md5_e55019.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.00277777778,-0.00277777778),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\carbon_v2_agroforest_2050.tif",
+        },
+        {
+            'expression': 'raster1+raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn_compressed_md5_5f64b4.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_carbon_v2_reforest2_md5_e72214.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.00277777778,-0.00277777778),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\carbon_v2_reforest2_2050.tif",
+        },
+        {
+            'expression': 'raster1-raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn_compressed_md5_5f64b4.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_carbon_v2_afc2_md5_4d53f0.tif",
+            },
+            'target_nodata': 0,
+            'target_pixel_size': (0.00277777778,-0.00277777778),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\carbon_v2_afc2_2050.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster1*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\hab_mask_tnc_nbs_reforest2_WARPED_average_md5_442d33e524fc3d2eecf70c279e31f20e.tif",
+                'raster2': r"D:\repositories\raster_calculations\align_to_mask_workspace\ecoshards\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\nature_access_avg_lspop2019_reforest2.tif",
+        },
+        {
+            'expression': 'raster1*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\hab_mask_tnc_nbs_afc2_WARPED_average_md5_3ba406edbd1147eae1e2b6fe59a47cc3.tif",
+                'raster2': r"D:\repositories\raster_calculations\align_to_mask_workspace\ecoshards\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\nature_access_avg_lspop2019_afc2.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': 'raster1*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\hab_mask_tnc_nbs_reforest2_WARPED_near_md5_dacc59cb224c9be3163d2a1002935d4b.tif",
+                'raster2': r"D:\repositories\raster_calculations\align_to_mask_workspace\ecoshards\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\nature_access_lspop2019_reforest2.tif",
+        },
+        {
+            'expression': 'raster1*raster2',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\raster_calculations\align_to_mask_workspace\hab_mask_tnc_nbs_afc2_WARPED_near_md5_35e69b8d57b355dc126a2ff136016654.tif",
+                'raster2': r"D:\repositories\raster_calculations\align_to_mask_workspace\ecoshards\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif",
+            },
+            'target_nodata': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\nature_access_lspop2019_afc2.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
+    calculation_list = [ #This raster seems to be a problem with nans that raster calcs can't handle. This didn't work.>> RICH FIXED IT
+        {
+            'expression': 'raster1*30',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\sequestration_rate__mean__aboveground__full_extent__Mg_C_ha_yr.tif",
+            },
+            'target_nodata': 0,
+            'default_nan': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\carbon_seq_30yrs_Mg_C_ha.tif",
+        },
+        {
+            'expression': 'raster1*30*0.1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\sequestration_rate__mean__aboveground__full_extent__Mg_C_ha_yr.tif",
+            },
+            'target_nodata': 0,
+            'default_nan': 0,
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\carbon_seq_30yrs_10pct_Mg_C_ha.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [ #This is what I was originally trying to do and it didn't work so I took just the first step (above) and even that didn't work
+        {
+            'expression': '(raster1>0)*raster2*30',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\DIFF_reforest2-ESA.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\sequestration_rate__mean__aboveground__full_extent__Mg_C_ha_yr.tif",
+            },
+            'target_nodata': 0,
+            'default_nan': 0,
+            'target_pixel_size': (0.00277777778,-0.00277777778),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_reforest2_carbon_seq_Mg_C_ha.tif",
+        },
+        {
+            'expression': '(raster1>0)*raster2*30*0.1',
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\DIFF_agroforest-ESA.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\sequestration_rate__mean__aboveground__full_extent__Mg_C_ha_yr.tif",
+            },
+            'target_nodata': 0,
+            'default_nan': 0,
+            'target_pixel_size': (0.00277777778,-0.00277777778),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_agroforest_carbon_seq_Mg_C_ha.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+    calculation_list = [
+        {
+            'expression': '(raster1>0)*0.1*raster2', #multiply by 0.1 because raster2 has weird scaling - see https://daac.ornl.gov/VEGETATION/guides/Global_Maps_C_Density_2010.html
+            'symbol_to_path_map': {
+                'raster1': r"D:\repositories\tnc-sci-ncscobenefits\scenarios\DIFF_afc2-ESA.tif",
+                'raster2': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\aboveground_biomass_carbon_2010_md5_4be351.tif",
+            },
+            'target_nodata': 0,
+            'default_nan': 0,
+            'target_pixel_size': (0.00277777778,-0.00277777778),
+            'resample_method': 'near',
+            'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_afc2_carbon_Mg_C_ha.tif",
+        },
+    ]
+
+    for calculation in calculation_list:
+        raster_calculations_core.evaluate_calculation(
+            calculation, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
 
     calculation_list = [
         {
