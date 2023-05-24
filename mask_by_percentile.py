@@ -27,7 +27,7 @@ WORKSPACE_DIR = 'mask_by_histogram_workspace'
 
 def check_percentile(value):
     try:
-        op, num, path = value.split('|')
+        op, num, path = value.split('-')
         num = float(num)
         if op not in ['gte', 'lte']:
             raise argparse.ArgumentTypeError("Operator must be 'gte' or 'lte'")
@@ -36,8 +36,8 @@ def check_percentile(value):
                 "Number must be between 0 and 100")
     except ValueError:
         raise argparse.ArgumentTypeError(
-            "Invalid percentile format. Must be 'gte|<number>|target_path' or "
-            "'lte|<number>|target_path'")
+            "Invalid percentile format. Must be 'gte-<number>-target_path' or "
+            "'lte-<number>-target_path'")
 
     return value
 
@@ -73,15 +73,15 @@ def main():
         'input_raster_path', help='Path to raster to mask.')
     parser.add_argument(
         'percentile_to_path', nargs='+', type=check_percentile, help=(
-            "Percentile in the form of 'gte|<number>|target_path' or "
-            "'lte|<number>|target_path'"))
+            "Percentile in the form of 'gte-<number>-target_path' or "
+            "'lte-<number>-target_path'"))
     args = parser.parse_args()
 
     task_graph = taskgraph.TaskGraph(
         WORKSPACE_DIR, min(os.cpu_count(), len(args.percentile_to_path)))
 
     percentile_to_path_list = [
-        arg.split('|') for arg in args.percentile_to_path]
+        arg.split('-') for arg in args.percentile_to_path]
 
     percentile_value_task = task_graph.add_task(
         func=geoprocessing.raster_band_percentile,
@@ -92,15 +92,24 @@ def main():
             'heap_buffer_size': 2**28,
             'ffi_buffer_size': 2**10
         },
-        task_name=f'percentile find')
+        store_result=True,
+        task_name='percentile find')
 
     percentile_value_list = percentile_value_task.get()
 
     for percentile_value, (op, _, target_raster_path) in zip(
             percentile_value_list, percentile_to_path_list):
-        mask_raster_by_value(
-            args.input_raster_path, percentile_value, op, target_raster_path)
+        task_graph.add_task(
+            func=mask_raster_by_value,
+            args=(
+                args.input_raster_path, percentile_value, op,
+                target_raster_path),
+            target_path_list=[target_raster_path],
+            task_name=f'percentile for {target_raster_path}')
     LOGGER.info('all done!')
+
+    task_graph.join()
+    task_graph.close()
 
 
 if __name__ == '__main__':
