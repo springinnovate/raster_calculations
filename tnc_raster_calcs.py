@@ -52,6 +52,7 @@ def main():
     #python add_sub_missing_as_0.py "D:\repositories\tnc-sci-ncscobenefits\upload\nature_access_avg_lspop2019_reforest2_compressed_md5_5f7de4.tif" "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" --subtract
     #python add_sub_missing_as_0.py "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" "D:\repositories\tnc-sci-ncscobenefits\upload\nature_access_avg_lspop2019_afc2_compressed_md5_f67b6d.tif" --subtract
 
+
     calculation_list = [
         #{
         #    'expression': 'raster1*0.1', #this is right, how to convert spawn data from its weirdo scaling to normal
