@@ -80,8 +80,12 @@ def main():
     task_graph = taskgraph.TaskGraph(
         WORKSPACE_DIR, min(os.cpu_count(), len(args.percentile_to_path)))
 
+    # sort so we get percentiles in the right order
+    sorted_percentiles = sorted(
+        args.percentile_to_path, key=lambda x: float(x.split('-')[1]))
+
     percentile_to_path_list = [
-        arg.split('-') for arg in args.percentile_to_path]
+        arg.split('-') for arg in sorted_percentiles]
 
     percentile_value_task = task_graph.add_task(
         func=geoprocessing.raster_band_percentile,
@@ -96,7 +100,7 @@ def main():
         task_name='percentile find')
 
     percentile_value_list = percentile_value_task.get()
-
+    LOGGER.debug(f'this is the percentile list ********** {percentile_value_list} from {percentile_to_path_list}')
     for percentile_value, (op, _, target_raster_path) in zip(
             percentile_value_list, percentile_to_path_list):
         task_graph.add_task(
