@@ -37,6 +37,16 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Write your expression here."""
+
+    #python add_sub_missing_as_0.py "D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn_compressed_md5_5f64b4.tif" "D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_carbon_v2_afc2_md5_4d53f0.tif" --target_path D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\carbon_v2_afc2.tif --subtract
+    #python add_sub_missing_as_0.py "D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn_compressed_md5_5f64b4.tif" "D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_carbon_v2_reforest2_md5_e72214.tif" --target_path D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\carbon_v2_reforest2.tif --add
+    #python add_sub_missing_as_0.py "D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn_compressed_md5_5f64b4.tif" "D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_carbon_v2_agroforest_md5_e55019.tif" --target_path D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\carbon_v2_agroforest.tif --add
+
+    #python mask_by_raster.py "D:\repositories\raster_calculations\align_to_mask_workspace\ecoshards\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif" "D:\repositories\raster_calculations\align_to_mask_workspace\DIFF_agroforest-ESA_WARPED_average_md5_29298d4e3f4cc2b4dd28697d861fa194.tif" --target_filename "NBSdiffs_nature_access_agroforest.tif"
+    #python mask_by_raster.py "D:\repositories\raster_calculations\align_to_mask_workspace\ecoshards\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif" "D:\repositories\raster_calculations\align_to_mask_workspace\DIFF_afc2-ESA_WARPED_average_md5_5bec2eb17a0920f8c5a5b1722b49210d.tif" --target_filename "NBSdiffs_nature_access_afc2.tif"
+    #python mask_by_raster.py "D:\repositories\raster_calculations\align_to_mask_workspace\ecoshards\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif" "D:\repositories\raster_calculations\align_to_mask_workspace\DIFF_mangroverest-ESA_WARPED_average_md5_47386261f91d3edbbcfad2334f230b0e.tif" --target_filename "NBSdiffs_nature_access_mangroverest.tif"
+    #python mask_by_raster.py "D:\repositories\raster_calculations\align_to_mask_workspace\ecoshards\global_people_access_population_2019_60.0m_md5_d264d371bd0d0a750b002a673abbb383.tif" "D:\repositories\raster_calculations\align_to_mask_workspace\DIFF_reforest2-ESA_WARPED_average_md5_2f2cf47c24d7180e12527206872d7517.tif" --target_filename "NBSdiffs_nature_access_reforest2.tif"
+
     # python add_sub_missing_as_0.py "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" "D:\repositories\tnc-sci-ncscobenefits\nature_access_lspop2019_afc2_compressed_md5_73d45b.tif" --subtract
     # python add_sub_missing_as_0.py "D:\repositories\tnc-sci-ncscobenefits\upload\nature_access_lspop2019_reforest2_compressed_md5_d31ae6.tif" "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" --subtract
     #python add_sub_missing_as_0.py "D:\repositories\tnc-sci-ncscobenefits\upload\nature_access_avg_lspop2019_reforest2_compressed_md5_5f7de4.tif" "D:\Users\richp\Downloads\nature_access_lspop2019_ESA2020ag_compressed_md5_6496bd.tif" --subtract
@@ -44,7 +54,7 @@ def main():
 
     calculation_list = [
         #{
-        #    'expression': 'raster1*0.1',
+        #    'expression': 'raster1*0.1', #this is right, how to convert spawn data from its weirdo scaling to normal
         #    'symbol_to_path_map': {
         #        'raster1': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\aboveground_biomass_carbon_2010_md5_4be351.tif",
         #    },
@@ -52,7 +62,7 @@ def main():
         #    'target_raster_path': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn.tif",
         #},
         {
-            'expression': 'raster1+raster2',
+            'expression': 'raster1+raster2', # the rest of this is wrong!! do it with add_sub_missing_as_0.py
             'symbol_to_path_map': {
                 'raster1': r"D:\repositories\tnc-sci-ncscobenefits\carbon_data\carbon_v2_baseline_Mg_C_ha_AGB_spawn_compressed_md5_5f64b4.tif",
                 'raster2': r"D:\repositories\tnc-sci-ncscobenefits\carbon_results_v2\NBSdiff_carbon_v2_agroforest_md5_e55019.tif",
