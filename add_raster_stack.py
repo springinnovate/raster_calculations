@@ -31,6 +31,7 @@ def _add_with_0(nodata_list, target_nodata):
             running_valid_mask |= local_valid_mask
         running_sum[~running_valid_mask] = target_nodata
         return running_sum
+    return __add_with_0
 
 
 if __name__ == '__main__':
