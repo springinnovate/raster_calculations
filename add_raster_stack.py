@@ -60,6 +60,3 @@ if __name__ == '__main__':
     geoprocessing.raster_calculator(
         raster_path_band_list, _add_with_0(nodata_list, args.target_nodata),
         args.target_path, gdal.GDT_Float32, args.target_nodata)
-
-    LOGGER.info('removing workspace dir')
-    shutil.rmtree(args.working_dir, ignore_errors=True)
