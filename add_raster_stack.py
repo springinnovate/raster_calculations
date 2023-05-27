@@ -38,7 +38,8 @@ if __name__ == '__main__':
         description='Add all rasters together and allow for nodata holes')
     parser.add_argument(
         'raster_path_pattern', nargs='+', help='list of rasters or patterns')
-    parser.add_argument('--target_nodata', help='set the target nodata')
+    parser.add_argument(
+        '--target_nodata', type=float, help='set the target nodata')
     parser.add_argument(
         '--target_path', help=(
             'Path to target file, if not defined create unique name in '
