@@ -1,3 +1,4 @@
+"""Process the WWF SIPA SDR and SWY scenarios on 7/26/2023 while BCK is out."""
 import sys
 import time
 import os
@@ -119,6 +120,11 @@ def main():
         raster_calculations_core.evaluate_calculation(
             single_expression, TASK_GRAPH, WORKSPACE_DIR)
         files_to_cog_after.append(target_raster_path)
+
+    for file_path in files_to_cog_now:
+        TASK_GRAPH.add_task(
+            func=cog_file, args=(file_path, WORKSPACE_DIR),
+            task_name=f'cog {file_path}')
 
     TASK_GRAPH.join()
 
