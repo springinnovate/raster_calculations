@@ -3,7 +3,6 @@ import os
 import logging
 
 from ecoshard import taskgraph
-from ecoshard import geoprocessing
 from osgeo import gdal
 import raster_calculations_core
 
@@ -30,9 +29,7 @@ def cog_file(file_path, target_dir):
     options = ('COMPRESS=LZW', 'NUM_THREADS=ALL_CPUS', 'BIGTIFF=YES')
     LOGGER.info(f'convert {file_path} to COG {cog_file_path} with {options}')
     cog_raster = cog_driver.CreateCopy(
-        cog_file_path, base_raster, options=options,
-        callback=geoprocessing._make_logger_callback(
-            f"COGing {cog_file_path} %.1f%% complete %s"))
+        cog_file_path, base_raster, options=options)
     del cog_raster
 
 
@@ -63,7 +60,7 @@ def main():
              ]):
         if not os.path.exists(baseline_path) or not os.path.exists(scenario_path):
             raise ValueError(f'missing {baseline_path} or {scenario_path}')
-        continue
+
         files_to_cog_now.append(baseline_path)
         files_to_cog_now.append(scenario_path)
         target_raster_path = os.path.join(
