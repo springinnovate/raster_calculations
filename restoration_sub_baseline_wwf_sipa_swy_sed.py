@@ -1,4 +1,5 @@
 import sys
+import time
 import os
 import logging
 
@@ -20,6 +21,44 @@ WORKSPACE_DIR = f'workspace_{os.path.basename(os.path.splitext(__file__)[0])}'
 os.makedirs(WORKSPACE_DIR, exist_ok=True)
 
 
+def _make_logger_callback(message, timeout=5.0):
+    """Build a timed logger callback that prints ``message`` replaced.
+
+    Args:
+        message (string): a string that expects 2 placement %% variables,
+            first for % complete from ``df_complete``, second from
+            ``p_progress_arg[0]``.
+        timeout (float): number of seconds to wait until print
+
+    Returns:
+        Function with signature:
+            logger_callback(df_complete, psz_message, p_progress_arg)
+
+    """
+    def logger_callback(df_complete, _, p_progress_arg):
+        """Argument names come from the GDAL API for callbacks."""
+        current_time = time.time()
+        if ((current_time - logger_callback.last_time) > timeout or
+                (df_complete == 1.0 and
+                 logger_callback.total_time >= timeout)):
+            # In some multiprocess applications I was encountering a
+            # ``p_progress_arg`` of None. This is unexpected and I suspect
+            # was an issue for some kind of GDAL race condition. So I'm
+            # guarding against it here and reporting an appropriate log
+            # if it occurs.
+            progress_arg = ''
+            if p_progress_arg is not None:
+                progress_arg = p_progress_arg[0]
+
+            LOGGER.info(message, df_complete * 100, progress_arg)
+            logger_callback.last_time = current_time
+            logger_callback.total_time += current_time
+    logger_callback.last_time = time.time()
+    logger_callback.total_time = 0.0
+
+    return logger_callback
+
+
 def cog_file(file_path, target_dir):
     # create copy with COG
     cog_driver = gdal.GetDriverByName('COG')
@@ -29,7 +68,9 @@ def cog_file(file_path, target_dir):
     options = ('COMPRESS=LZW', 'NUM_THREADS=ALL_CPUS', 'BIGTIFF=YES')
     LOGGER.info(f'convert {file_path} to COG {cog_file_path} with {options}')
     cog_raster = cog_driver.CreateCopy(
-        cog_file_path, base_raster, options=options)
+        cog_file_path, base_raster, options=options,
+        callback=_make_logger_callback(
+            f"COGing {cog_file_path} %.1f%% complete %s"))
     del cog_raster
 
 
