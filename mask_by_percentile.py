@@ -75,6 +75,10 @@ def main():
         'percentile_to_path', nargs='+', type=check_percentile, help=(
             "Percentile in the form of 'gte-<number>-target_path' or "
             "'lte-<number>-target_path'"))
+    parser.add_argument(
+        'mask_only', help=(
+            'If passed, only generates 0/1 masks and skips the step of masking '
+            'out the original input raster'))
     args = parser.parse_args()
 
     task_graph = taskgraph.TaskGraph(
@@ -101,6 +105,11 @@ def main():
 
     percentile_value_list = percentile_value_task.get()
     LOGGER.debug(f'this is the percentile list ********** {percentile_value_list} from {percentile_to_path_list}')
+    if args.mask_only:
+        task_graph.join()
+        task_graph.close()
+        return
+
     for percentile_value, (op, _, target_raster_path) in zip(
             percentile_value_list, percentile_to_path_list):
         task_graph.add_task(
