@@ -13,6 +13,8 @@ from osgeo import ogr
 from osgeo import osr
 import numpy
 
+gdal.UseExceptions()
+
 from ecoshard.geoprocessing.geoprocessing_core import DEFAULT_GTIFF_CREATION_TUPLE_OPTIONS
 
 logging.basicConfig(

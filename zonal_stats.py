@@ -1,5 +1,6 @@
 """Command line script wrapping geoprocessing.raster_stats."""
 import argparse
+import collections
 import datetime
 import glob
 import logging
@@ -66,6 +67,27 @@ if __name__ == '__main__':
         time_str = str(datetime.datetime.utcnow()).replace(
             '-', '_').replace(':', '_').replace('.', '_').replace(' ', '_')
         stat_list = ['count', 'max', 'min', 'nodata_count', 'sum']
+        if args.field_name:
+            stat_by_fieldname_dict = collections.defaultdict(dict)
+            for fid, stats in stat_dict.items():
+                field_val = fid_to_field_val[fid]
+                field_stat_dict = stat_by_fieldname_dict[field_val]
+                for stat_id in stat_list:
+                    if stat_id not in field_stat_dict:
+                        field_stat_dict[stat_id] = stats[stat_id]
+                    else:
+                        if stat_id == 'max':
+                            field_stat_dict[stat_id] = max(
+                                field_stat_dict[stat_id],
+                                stats[stat_id])
+                        elif stat_id == 'min':
+                            field_stat_dict[stat_id] = min(
+                                field_stat_dict[stat_id],
+                                stats[stat_id])
+                        else:
+                            field_stat_dict[stat_id] += stats[stat_id]
+                stat_by_fieldname_dict[field_val] = field_stat_dict
+
         table_path = os.path.join(WORKSPACE_DIR, f'{basename}_{time_str}.csv')
         LOGGER.info(f'building table at {table_path}')
         with open(table_path, 'w') as table_file:
@@ -78,11 +100,22 @@ if __name__ == '__main__':
                 table_file.write(f'{fid},')
                 if args.field_name:
                     table_file.write(f'{fid_to_field_val[fid]},')
-                for stat in stat_list:
-                    table_file.write(f'{stats[stat]},')
+                for stat_id in stat_list:
+                    table_file.write(f'{stats[stat_id]},')
                 if stats['count'] > 0:
                     table_file.write(f'{stats["sum"]/stats["count"]}')
                 else:
-                    table_file.write(f'NaN')
+                    table_file.write('NaN')
                 table_file.write('\n')
+            if args.field_name:
+                for field_name, stats in stat_by_fieldname_dict.items():
+                    table_file.write(f'BY FIELD,{field_name},')
+                    for stat_id in stat_list:
+                        table_file.write(f'{stats[stat_id]},')
+                    if stats['count'] > 0:
+                        table_file.write(f'{stats["sum"]/stats["count"]}')
+                    else:
+                        table_file.write('NaN')
+                    table_file.write('\n')
+
         LOGGER.info(f'all done, table at {table_path}')
