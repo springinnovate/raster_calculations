@@ -78,13 +78,19 @@ if __name__ == '__main__':
                         field_stat_dict[stat_id] = stats[stat_id]
                     else:
                         if stat_id == 'max':
-                            field_stat_dict[stat_id] = max(
-                                field_stat_dict[stat_id],
-                                stats[stat_id])
+                            if 'max' not in field_stat_dict:
+                                field_stat_dict['max'] = stats[stat_id]
+                            else:
+                                field_stat_dict[stat_id] = max(
+                                    field_stat_dict[stat_id],
+                                    stats[stat_id])
                         elif stat_id == 'min':
-                            field_stat_dict[stat_id] = min(
-                                field_stat_dict[stat_id],
-                                stats[stat_id])
+                            if 'min' not in field_stat_dict:
+                                field_stat_dict['min'] = stats[stat_id]
+                            else:
+                                field_stat_dict[stat_id] = min(
+                                    field_stat_dict[stat_id],
+                                    stats[stat_id])
                         else:
                             field_stat_dict[stat_id] += stats[stat_id]
                 stat_by_fieldname_dict[field_val] = field_stat_dict
