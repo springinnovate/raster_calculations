@@ -48,6 +48,7 @@ if __name__ == '__main__':
     working_dir = os.path.join(WORKSPACE_DIR, 'zonal_stats')
     os.makedirs(working_dir, exist_ok=True)
     for raster_path in glob.glob(args.raster_pattern):
+        LOGGER.info(f'processing {raster_path}')
         basename = os.path.basename(os.path.splitext(raster_path)[0])
         stat_dict = geoprocessing.zonal_statistics(
             (raster_path, 1), args.vector_path,
@@ -89,7 +90,7 @@ if __name__ == '__main__':
                 stat_by_fieldname_dict[field_val] = field_stat_dict
 
         table_path = os.path.join(WORKSPACE_DIR, f'{basename}_{time_str}.csv')
-        LOGGER.info(f'building table at {table_path}')
+        LOGGER.info(f'*********** building table at {table_path}')
         with open(table_path, 'w') as table_file:
             table_file.write(f'{raster_path}\n{args.vector_path}\n')
             table_file.write('fid,')

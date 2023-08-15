@@ -76,7 +76,7 @@ def main():
             "Percentile in the form of 'gte-<number>-target_path' or "
             "'lte-<number>-target_path'"))
     parser.add_argument(
-        'mask_only', help=(
+        '--mask_only', action='store_true', help=(
             'If passed, only generates 0/1 masks and skips the step of masking '
             'out the original input raster'))
     args = parser.parse_args()
