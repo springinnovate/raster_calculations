@@ -78,6 +78,8 @@ if __name__ == '__main__':
                         field_stat_dict[stat_id] = stats[stat_id]
                     else:
                         if stat_id == 'max':
+                            if stats['max'] is None:
+                                continue
                             if 'max' not in field_stat_dict:
                                 field_stat_dict['max'] = stats[stat_id]
                             else:
@@ -85,6 +87,8 @@ if __name__ == '__main__':
                                     field_stat_dict[stat_id],
                                     stats[stat_id])
                         elif stat_id == 'min':
+                            if stats['min'] is None:
+                                continue
                             if 'min' not in field_stat_dict:
                                 field_stat_dict['min'] = stats[stat_id]
                             else:
