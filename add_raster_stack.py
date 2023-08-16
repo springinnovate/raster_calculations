@@ -1,4 +1,5 @@
 """Calculate (Raster A - Raster B) but treat nodata as 0'."""
+import os
 import argparse
 import logging
 import glob
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--target_nodata', type=float, help='set the target nodata')
     parser.add_argument(
-        '--target_path', help=(
+        '--target_path', required=True, help=(
             'Path to target file, if not defined create unique name in '
             'current directory.'))
     args = parser.parse_args()
@@ -56,7 +57,6 @@ if __name__ == '__main__':
         geoprocessing.get_raster_info(path[0])['nodata'][0]
         for path in raster_path_band_list]
 
-    LOGGER.info('doing addition')
     geoprocessing.raster_calculator(
         raster_path_band_list, _add_with_0(nodata_list, args.target_nodata),
         args.target_path, gdal.GDT_Float32, args.target_nodata)
