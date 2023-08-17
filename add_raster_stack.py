@@ -28,9 +28,11 @@ def _add_with_0(nodata_list, target_nodata):
                 local_valid_mask = ~numpy.isclose(local_array, local_nodata)
             else:
                 local_valid_mask = numpy.ones(local_array.shape, dtype=bool)
+            local_valid_mask &= ~numpy.isnan(local_array)
             running_sum[local_valid_mask] += local_array[local_valid_mask]
             running_valid_mask |= local_valid_mask
-        running_sum[~running_valid_mask] = target_nodata
+        if target_nodata is not None:
+            running_sum[~running_valid_mask] = target_nodata
         return running_sum
     return __add_with_0
 
