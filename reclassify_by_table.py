@@ -105,4 +105,5 @@ if __name__ == '__main__':
         geoprocessing.reclassify_raster(
             (args.raster_path, 1), value_map, target_raster_path,
             raster_target_type, raster_info['nodata'][0])
-        LOGGER.info('all done!')
+        LOGGER.info(
+            f'reclassified {column_name_type_pair} to {target_raster_path}')
