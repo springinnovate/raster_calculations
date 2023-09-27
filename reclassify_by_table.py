@@ -56,7 +56,8 @@ if __name__ == '__main__':
 
     os.makedirs(args.output_dir, exist_ok=True)
     task_graph = taskgraph.TaskGraph(
-        args.output_dir, min(os.cpu_count(), len(args.target_value_fields)))
+        args.output_dir, min(os.cpu_count(), len(args.target_value_fields)),
+        10.0)
 
     target_raster_path_list = []
     for column_name_type_pair in args.target_value_fields:
