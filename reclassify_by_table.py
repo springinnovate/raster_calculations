@@ -41,6 +41,8 @@ if __name__ == '__main__':
             f'`reclassify_table_path` and `output_type` is either '
             f'`{INT_TYPE}` or `{FLOAT_TYPE}` representing the target output '
             'type.'))
+    parser.add_argument(
+        '--output_dir', default='.', help='optional path to output directory')
 
     args = parser.parse_args()
 
@@ -50,6 +52,8 @@ if __name__ == '__main__':
             f'expected a field called `{args.base_field}` in '
             f'{args.reclassify_table_path} but only found these columns: '
             f'{table.columns}')
+
+    os.makedirs(args.output_dir, exist_ok=True)
 
     for column_name_type_pair in args.target_value_fields:
         try:
@@ -96,10 +100,12 @@ if __name__ == '__main__':
                 table[args.base_field], table[column_name])}
         LOGGER.info(f'reclassification map: {value_map}')
 
-        target_raster_path = f'''reclassified_{
-            _base_filename(args.raster_path)}_{
-            _base_filename(args.reclassify_table_path)}_{
-            column_name}.tif'''
+        target_raster_path = os.path.join(
+            args.output_dir,
+            f'''reclassified_{
+                _base_filename(args.raster_path)}_{
+                _base_filename(args.reclassify_table_path)}_{
+                column_name}.tif''')
         LOGGER.info(f'reclassifying to: {target_raster_path}')
         raster_info = geoprocessing.get_raster_info(args.raster_path)
         geoprocessing.reclassify_raster(

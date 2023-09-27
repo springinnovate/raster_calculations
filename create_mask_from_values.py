@@ -21,9 +21,9 @@ def mask_by_values_op(value_list, nodata, target_nodata, invert):
     def _mask_by_values_op(array):
         result = numpy.isin(array, value_list).astype(numpy.byte)
         if invert:
-            result = ~result
+            result = ~result+2  # this is a byte not a boolean
         if nodata is not None:
-            result[value_list == nodata] = target_nodata
+            result[array == nodata] = target_nodata
         return result
     return _mask_by_values_op
 
@@ -52,8 +52,6 @@ if __name__ == '__main__':
     raster_info = geoprocessing.get_raster_info(args.base_raster_path)
     nodata = raster_info['nodata'][0]
     target_nodata = 2
-    # count valid pixels
-    print(args.base_raster_path)
     geoprocessing.raster_calculator(
         [(args.base_raster_path, 1)],
         mask_by_values_op(args.value_list, nodata, target_nodata, args.invert),
