@@ -4,6 +4,7 @@ import logging
 import os
 
 from ecoshard import geoprocessing
+from ecoshard import taskgraph
 from osgeo import gdal
 import pandas
 
@@ -54,7 +55,10 @@ if __name__ == '__main__':
             f'{table.columns}')
 
     os.makedirs(args.output_dir, exist_ok=True)
+    task_graph = taskgraph.TaskGraph(
+        args.output_dir, min(os.cpu_count(), len(args.target_value_fields)))
 
+    target_raster_path_list = []
     for column_name_type_pair in args.target_value_fields:
         try:
             column_name, target_type = column_name_type_pair.split(',')
@@ -66,8 +70,8 @@ if __name__ == '__main__':
         if column_name not in table:
             raise ValueError(
                 f'field `{column_name}` is not a column in '
-                f'`{args.reclassify_table_path}`, these are the columns present '
-                f'{table.columns}')
+                f'`{args.reclassify_table_path}`, these are the columns '
+                f'present {table.columns}')
 
         if target_type not in [FLOAT_TYPE, INT_TYPE]:
             raise ValueError(
@@ -108,8 +112,15 @@ if __name__ == '__main__':
                 column_name}.tif''')
         LOGGER.info(f'reclassifying to: {target_raster_path}')
         raster_info = geoprocessing.get_raster_info(args.raster_path)
-        geoprocessing.reclassify_raster(
-            (args.raster_path, 1), value_map, target_raster_path,
-            raster_target_type, raster_info['nodata'][0])
-        LOGGER.info(
-            f'reclassified {column_name_type_pair} to {target_raster_path}')
+        task_graph.add_task(
+            func=geoprocessing.reclassify_raster,
+            args=(
+                (args.raster_path, 1), value_map, target_raster_path,
+                raster_target_type, raster_info['nodata'][0]),
+            target_path_list=[target_raster_path],
+            task_name=f'reclassify {column_name}')
+        target_raster_path_list.append(target_raster_path)
+    task_graph.join()
+    task_graph.close()
+    LOGGER.info(
+        'outputs in:\n' + '\n'.join(target_raster_path_list))
