@@ -351,6 +351,8 @@ def main():
             target_path_list=[target_raster_path],
             dependent_task_list=dependent_task_list,
             task_name=f'calcualte {target_raster_path}')
+        if target_raster_path in task_set:
+            raise ValueError(f'calculating a result that we alreayd calculated {target_raster_path}')
         task_set[target_raster_path] = op_task
         if 'service' in target_raster_path:
             service_set.append((target_raster_path, op_task))
