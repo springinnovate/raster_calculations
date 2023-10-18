@@ -344,7 +344,7 @@ def main():
         dependent_task_list = []
         for p in [raster_a_path, raster_b_path]:
             if p in task_set:
-                dependent_task_list += task_set[p]
+                dependent_task_list.append(task_set[p])
         op_task = task_graph.add_task(
             func=do_op,
             args=(op_str, raster_a_path, raster_b_path, target_raster_path),
