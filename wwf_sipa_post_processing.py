@@ -100,6 +100,7 @@ def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_n
 
 def main():
     RESULTS_DIR = 'D:\\repositories\\wwf-sipa\\final_results'
+    os.makedirs(RESULTS_DIR, exist_ok=True)
 
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf.tif")
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF_SSP245 = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf_ssp245.tif")
