@@ -262,7 +262,7 @@ def main():
 
     for raster_a_in, raster_b_in, target_raster in SUBTRACT_RASTER_SET+MULTIPLY_RASTER_SET:
         for p in [raster_a_in, raster_b_in]:
-            if not os.path.exists(p):
+            if not os.path.exists(p) and RESULTS_DIR not in p:
                 print(f'input path does not exist: {p}')
 
 
