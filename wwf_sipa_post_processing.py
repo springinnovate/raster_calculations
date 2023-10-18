@@ -37,7 +37,8 @@ def make_top_nth_percentile_masks(
     base_info = geoprocessing.get_raster_info(base_raster_path)
     base_nodata = base_info['nodata'][0]
 
-    for percentile_value, top_nth_percentile_val in zip(percentile_values, ordered_top_percentile_list):
+    target_raster_path_result_list = []
+    for percentile_value, top_nth_percentile in zip(percentile_values, ordered_top_percentile_list):
         def mask_nth_percentile_op(base_array):
             result = numpy.zeros(base_array.shape)
             valid_mask = (base_array != base_nodata) & numpy.isfinite(base_array)
@@ -45,14 +46,16 @@ def make_top_nth_percentile_masks(
             result[valid_mask] = 1
             return result
 
-        target_raster_path = target_raster_path_pattern.format(percentile=percentile)
+        target_raster_path = target_raster_path_pattern.format(percentile=top_nth_percentile)
+        target_raster_path_result_list.append(target_raster_path)
         pre_cog_target_raster_path = os.path.join(working_dir, os.path.basename(target_raster_path))
         geoprocessing.single_thread_raster_calculator(
             [(base_raster_path, 1)], mask_nth_percentile_op,
-            precog_target_raster_path, gdal.GDT_Byte, None)
+            pre_cog_target_raster_path, gdal.GDT_Byte, None)
         subprocess.check_call(
             f'gdal_translate {pre_cog_target_raster_path} {target_raster_path} -of COG -co BIGTIFF=YES')
     shutil.rmtree(working_dir)
+    return target_raster_path_result_list
 
 
 def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_nodata=None, target_datatype=None):
@@ -106,6 +109,20 @@ def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_n
 def main():
     RESULTS_DIR = 'D:\\repositories\\wwf-sipa\\final_results'
     os.makedirs(RESULTS_DIR, exist_ok=True)
+
+    # diff x benes x services (4) x scenarios (2) x climage (2)
+    service_set = {
+        'flood_mitigation',
+        'recharge',
+        'sediment',
+    }
+    scenario_set = {
+        'restoration', 'conservation_inf',
+    }
+    climate_set = {
+        'ssp245',
+        '', # current climate, ESA?
+    }
 
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf.tif")
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF_SSP245 = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf_ssp245.tif")
@@ -169,7 +186,6 @@ def main():
     ROAD_SERVICE_SEDIMENT_IDN_RESTORATION = os.path.join(RESULTS_DIR, "service_road_sediment_IDN_restoration.tif")
     ROAD_SERVICE_SEDIMENT_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_road_sediment_PH_conservation_inf.tif")
     ROAD_SERVICE_SEDIMENT_PH_RESTORATION = os.path.join(RESULTS_DIR, "service_road_sediment_PH_restoration.tif")
-
 
     # service first then beneficiary after
 
@@ -397,20 +413,36 @@ def main():
         if 'service' in target_raster_path:
             service_set.append((target_raster_path, op_task))
 
+    # ASK BCK: gte-75 gte-90 means top 25 top 10 so only 25 or 10% are selected
+    # :::: call python mask_by_percentile.py D:\repositories\wwf-sipa\final_results\service_*.tif gte-75-percentile_[file_name]_gte75.tif gte-90-percentile_[file_name]_gte90.tif
+    percentile_task_list = []
+    for service_path, service_task in service_set:
+        percentile_task = task_graph.add_task(
+            func=make_top_nth_percentile_masks,
+            args=(
+                service_path,
+                [25, 10],
+                os.path.join(RESULTS_DIR, 'top_{percentile}th_percentile_{base_path}')),
+            dependent_task_list=[service_task],
+            store_result=True,
+            task_name=f'percentile for {service_path}')
+        percentile_task_list.append((service_path, percentile_task))
     task_graph.join()
     task_graph.close()
     LOGGER.info(f'all done! results in {RESULTS_DIR}')
+    for service_path, percentile_task in percentile_task_list:
+        LOGGER.info(f'percentile for {service_path} is {percentile_task.get()}')
+    # :::: then add_sub_missing_as_zero for all the percentile_masks for each scenario so we can see the pixels that are in the top 25 or top 10
+        #percent for all services vs. multiple services vs. just for one
+    # :::: repeat the last three steps above for climate scenarios *ssp245 and see what the % overlap is (how much does the portfolio change
+        # under future climate?)
+    # :::: then cog and put everything on viewer (all the diff_ rasters and service_ rasters and the individual percentile masks and the
+        # composite/added up percentile mask)
 
-    # ASK BCK: gte-75 gte-90 means top 25 top 10 so only 25 or 10% are selected
-    # :::: call python mask_by_percentile.py D:\repositories\wwf-sipa\final_results\service_*.tif gte-75-percentile_[file_name]_gte75.tif gte-90-percentile_[file_name]_gte90.tif
-    # for service_path in service_set:
-    #     make_top_nth_percentile_masks(
-    #         service_path,
-    #         [25, 10],
-    #         os.path.join(RESULTS_DIR, 'top_{percentile}th_percentile_{base_path}'))
-    # :::: then add_sub_missing_as_zero for all the percentile_masks for each scenario so we can see the pixels that are in the top 25 or top 10 percent for all services vs. multiple services vs. just for one
-    # :::: repeat the last three steps above for climate scenarios *ssp245 and see what the % overlap is (how much does the portfolio change under future climate?)
-    # :::: then cog and put everything on viewer (all the diff_ rasters and service_ rasters and the individual percentile masks and the composite/added up percentile mask)
+    # (the MULT rasters, these are the diff [service] rasters scaled by beneficiaries) diff x benes x services (4) x scenarios (2) x climage (2)
+    # we then take percentile maps top 25% 10% of these
+    # then we need to reduce -- what is the overlap of services of the top 25%/10? how does it reduce to ADM units?
+        # reduce those ADMs to be total amount and proportional by area amount for "where DO I do seomthing or where DON'T I do something?"
 
 
 if __name__ == '__main__':
