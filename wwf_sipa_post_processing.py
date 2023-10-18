@@ -336,6 +336,7 @@ def main():
     task_graph = taskgraph.TaskGraph(RESULTS_DIR, os.cpu_count(), 15.0)
 
     service_set = []
+    task_set = {}
     for raster_a_path, raster_b_path, target_raster_path, op_str in \
             [t+('-',) for t in SUBTRACT_RASTER_SET]+\
             [t+('*',) for t in MULTIPLY_RASTER_SET]:
@@ -347,13 +348,15 @@ def main():
 
         dependent_task_list = []
         for p in [raster_a_path, raster_b_path]:
-            dependent_task_list += p
+            if p in task_set:
+                dependent_task_list += task_set[p]
         op_task = task_graph.add_task(
             func=do_op,
             args=(op_str, raster_a_path, raster_b_path, target_raster_path),
             target_path_list=[target_raster_path],
             dependent_task_list=dependent_task_list,
             task_name=f'calcualte {target_raster_path}')
+        task_set[target_raster_path] = op_task
         if 'service' in target_raster_path:
             service_set.append((target_raster_path, op_task))
 
