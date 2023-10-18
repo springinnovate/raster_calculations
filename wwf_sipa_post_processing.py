@@ -2,8 +2,9 @@ import collections
 import os
 import logging
 import sys
-import tempfile
+import subprocess
 import shutil
+import tempfile
 
 from ecoshard import taskgraph
 from ecoshard import geoprocessing
@@ -84,13 +85,14 @@ def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_n
     if target_datatype is None:
         target_datatype = raster_info['datatype']
 
+    pre_cog_target_raster_path = os.path.join(
+        working_dir, os.path.basename(target_raster_path))
     geoprocessing.single_thread_raster_calculator(
         [(path, 1) for path in aligned_target_raster_path_list],
-        _op, target_raster_path, target_datatype, target_nodata,
-        raster_driver_creation_tuple=('COG', (
-            ('COMPRESS=LZW', 'NUM_THREADS=ALL_CPUS', 'BIGTIFF=YES'))))
+        _op, pre_cog_target_raster_path, target_datatype, target_nodata)
+    subprocess.Popen(
+        f'gdal_translate {pre_cog_target_raster_path} {target_raster_path} -of COG -co BIGTIFF=YES')
     shutil.rmtree(working_dir)
-
 
 def main():
     RESULTS_DIR = 'D:\\repositories\\wwf-sipa\\final_results'
