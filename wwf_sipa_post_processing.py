@@ -54,7 +54,7 @@ def do_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_nodat
     if target_datatype is None:
         target_datatype = raster_info['datatype']
 
-    geoprocessing.raster_calculator(
+    geoprocessing.single_threaded_raster_calculator(
         [(path, 1) for path in aligned_target_raster_path_list],
         _op(a_nodata, b_nodata, target_nodata),
         target_raster_path, target_datatype, target_nodata,
