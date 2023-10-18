@@ -1,7 +1,10 @@
 """See python [scriptname] --help"""
+import os
+import shutil
 import argparse
 import logging
 import sys
+import tempfile
 
 from ecoshard import geoprocessing
 import numpy
@@ -42,19 +45,33 @@ def main():
         'raster A'))
     args = parser.parse_args()
 
+    base_raster_list = [
+        args.raster_A_path,
+        args.raster_B_path]
+    working_dir = tempfile.mkdtemp(
+        dir=os.path.dirname(args.target_raster_path))
+    target_raster_path_list = [
+        os.path.join(working_dir, os.path.basename(path))
+        for path in base_raster_list]
+    pixel_size = geoprocessing.get_raster_info(
+        args.raster_A_path)['pixel_size']
+    geoprocessing.align_and_resize_raster_stack(
+        base_raster_list, target_raster_path_list, ['near']*2,
+        pixel_size, 'intersection')
+
     raster_info = geoprocessing.get_raster_info(args.raster_A_path)
 
-    a_nodata = geoprocessing.get_raster_info(args.raster_A_path)['nodata'][0]
-    b_nodata = geoprocessing.get_raster_info(args.raster_B_path)['nodata'][0]
+    a_nodata = geoprocessing.get_raster_info(target_raster_path_list[0])['nodata'][0]
+    b_nodata = geoprocessing.get_raster_info(target_raster_path_list[1])['nodata'][0]
     target_nodata = args.target_nodata
     if target_nodata is None:
         target_nodata = a_nodata
 
     geoprocessing.raster_calculator(
-        [(args.raster_A_path, 1), (args.raster_B_path, 1)],
+        [(path, 1) for path in target_raster_path_list],
         mult_op(a_nodata, b_nodata, target_nodata),
         args.target_raster_path, raster_info['datatype'], target_nodata)
-
+    shutil.rmtree(working_dir)
 
 if __name__ == '__main__':
     main()
