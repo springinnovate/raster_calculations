@@ -36,7 +36,7 @@ def make_top_nth_percentile_masks(
     base_nodata = base_info['nodata'][0]
 
     for percentile_value, top_nth_percentile_val in zip(percentile_values, ordered_top_percentile_list):
-        def mask_op(base_array):
+        def mask_nth_percentile_op(base_array):
             result = numpy.zeros(base_array.shape)
             valid_mask = (base_array != base_nodata) & numpy.isfinite(base_array)
             valid_mask &= (base_array >= percentile_value)
@@ -44,7 +44,7 @@ def make_top_nth_percentile_masks(
             return result
 
         geoprocessing.single_thread_raster_calculator(
-            [(base_raster_path, 1)], mask_op,
+            [(base_raster_path, 1)], mask_nth_percentile_op,
             target_raster_path, gdal.GDT_Byte, None)
 
 
@@ -88,8 +88,7 @@ def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_n
         [(path, 1) for path in aligned_target_raster_path_list],
         _op, target_raster_path, target_datatype, target_nodata,
         raster_driver_creation_tuple=('COG', (
-            'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=LZW',
-            'BLOCKXSIZE=256', 'BLOCKYSIZE=256')))
+            ('COMPRESS=LZW', 'NUM_THREADS=ALL_CPUS', 'BIGTIFF=YES'))))
     shutil.rmtree(working_dir)
 
 
@@ -393,6 +392,8 @@ def main():
 
     # ASK BCK: gte-75 gte-90 means top 25 top 10 so only 25 or 10% are selected
     # :::: call python mask_by_percentile.py D:\repositories\wwf-sipa\final_results\service_*.tif gte-75-percentile_[file_name]_gte75.tif gte-90-percentile_[file_name]_gte90.tif
+    for service_path in service_set:
+        make_top_nth_percentile_masks
     # :::: then add_sub_missing_as_zero for all the percentile_masks for each scenario so we can see the pixels that are in the top 25 or top 10 percent for all services vs. multiple services vs. just for one
     # :::: repeat the last three steps above for climate scenarios *ssp245 and see what the % overlap is (how much does the portfolio change under future climate?)
     # :::: then cog and put everything on viewer (all the diff_ rasters and service_ rasters and the individual percentile masks and the composite/added up percentile mask)
