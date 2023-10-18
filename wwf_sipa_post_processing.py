@@ -403,11 +403,11 @@ def main():
 
     # ASK BCK: gte-75 gte-90 means top 25 top 10 so only 25 or 10% are selected
     # :::: call python mask_by_percentile.py D:\repositories\wwf-sipa\final_results\service_*.tif gte-75-percentile_[file_name]_gte75.tif gte-90-percentile_[file_name]_gte90.tif
-    for service_path in service_set:
-        make_top_nth_percentile_masks(
-            service_path,
-            [25, 10],
-            os.path.join(RESULTS_DIR, 'top_{percentile}th_percentile_{base_path}')
+    # for service_path in service_set:
+    #     make_top_nth_percentile_masks(
+    #         service_path,
+    #         [25, 10],
+    #         os.path.join(RESULTS_DIR, 'top_{percentile}th_percentile_{base_path}'))
     # :::: then add_sub_missing_as_zero for all the percentile_masks for each scenario so we can see the pixels that are in the top 25 or top 10 percent for all services vs. multiple services vs. just for one
     # :::: repeat the last three steps above for climate scenarios *ssp245 and see what the % overlap is (how much does the portfolio change under future climate?)
     # :::: then cog and put everything on viewer (all the diff_ rasters and service_ rasters and the individual percentile masks and the composite/added up percentile mask)
