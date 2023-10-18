@@ -351,6 +351,10 @@ def main():
         if 'service' in target_raster_path:
             service_set.append((target_raster_path, op_task))
 
+    task_graph.join()
+    task_graph.close()
+    LOGGER.info(f'all done! results in {RESULTS_DIR}')
+
     # ASK BCK: gte-75 gte-90 means top 25 top 10 so only 25 or 10% are selected
     # :::: call python mask_by_percentile.py D:\repositories\wwf-sipa\final_results\service_*.tif gte-75-percentile_[file_name]_gte75.tif gte-90-percentile_[file_name]_gte90.tif
     # :::: then add_sub_missing_as_zero for all the percentile_masks for each scenario so we can see the pixels that are in the top 25 or top 10 percent for all services vs. multiple services vs. just for one
