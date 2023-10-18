@@ -48,7 +48,8 @@ def main():
     base_raster_list = [
         args.raster_A_path,
         args.raster_B_path]
-    working_dir = tempfile.mkdtmp(dir=os.path.dirname(args.target_raster_path))
+    working_dir = tempfile.mkdtemp(
+        dir=os.path.dirname(args.target_raster_path))
     target_raster_path_list = [
         os.path.join(working_dir, os.path.basename(path))
         for path in base_raster_list]
