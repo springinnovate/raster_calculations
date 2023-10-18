@@ -21,36 +21,31 @@ LOGGER = logging.getLogger(__name__)
 
 
 def make_top_nth_percentile_masks(
-        base_raster_path, top_percentile_list, gte_or_lte, target_raster_path):
+        base_raster_path, top_percentile_list, gte_or_lte, target_raster_path_pattern):
     """Mask base by mask such that any nodata in mask is set to nodata in base."""
     ordered_top_percentile_list = list(sorted(top_percentile_list, reverse=True))
     # need to convert this to "gte" format so if top 10th percent, we get 90th percentile
     raw_percentile_list = [100-float(x) for x in ordered_top_percentile_list]
-    working_dir = os.path.dirname(target_raster_path)
+    working_dir = os.path.dirname(target_raster_path_pattern)
     percentile_values = geoprocessing.raster_band_percentile(
         (base_raster_path, 1), working_dir,
         raw_percentile_list,
         heap_buffer_size=2**28,
         ffi_buffer_size=2**10)
-    for percentile_value, top_nth_percentile_val in zip(percentile_values, ordered_top_percentile_list):
-        pass
-
     base_info = geoprocessing.get_raster_info(base_raster_path)
     base_nodata = base_info['nodata'][0]
 
-    def mask_op(base_array):
-        result = numpy.zeros(base_array.shape)
-        valid_mask = base_array != base_nodata
-        if gte_or_lte == 'gte':
-            valid_mask &= (base_array >= value)
-        else:
-            valid_mask &= (base_array <= value)
-        result[valid_mask] = 1
-        return result
+    for percentile_value, top_nth_percentile_val in zip(percentile_values, ordered_top_percentile_list):
+        def mask_op(base_array):
+            result = numpy.zeros(base_array.shape)
+            valid_mask = (base_array != base_nodata) & numpy.isfinite(base_array)
+            valid_mask &= (base_array >= percentile_value)
+            result[valid_mask] = 1
+            return result
 
-    geoprocessing.single_thread_raster_calculator(
-        [(base_raster_path, 1)], mask_op,
-        target_raster_path, gdal.GDT_Byte, None)
+        geoprocessing.single_thread_raster_calculator(
+            [(base_raster_path, 1)], mask_op,
+            target_raster_path, gdal.GDT_Byte, None)
 
 
 def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_nodata=None, target_datatype=None):
@@ -137,33 +132,33 @@ def main():
     FLOOD_MITIGATION_IDN_BASELINE_HISTORICAL_CLIMATE = os.path.join(RESULTS_DIR, "flood_mitigation_IDN_baseline_historical_climate.tif")
     FLOOD_MITIGATION_PH_BASELINE_HISTORICAL_CLIMATE = os.path.join(RESULTS_DIR, "flood_mitigation_PH_baseline_historical_climate.tif")
 
-    DSPOP_SERVICE_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "dspop_service_flood_mitigation_IDN_conservation_inf.tif")
-    DSPOP_SERVICE_FLOOD_MITIGATION_IDN_RESTORATION = os.path.join(RESULTS_DIR, "dspop_service_flood_mitigation_IDN_restoration.tif")
-    DSPOP_SERVICE_FLOOD_MITIGATION_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "dspop_service_flood_mitigation_PH_conservation_inf.tif")
-    DSPOP_SERVICE_FLOOD_MITIGATION_PH_RESTORATION = os.path.join(RESULTS_DIR, "dspop_service_flood_mitigation_PH_restoration.tif")
-    DSPOP_SERVICE_RECHARGE_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "dspop_service_recharge_IDN_conservation_inf.tif")
+    DSPOP_SERVICE_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_dspop_flood_mitigation_IDN_conservation_inf.tif")
+    DSPOP_SERVICE_FLOOD_MITIGATION_IDN_RESTORATION = os.path.join(RESULTS_DIR, "service_dspop_flood_mitigation_IDN_restoration.tif")
+    DSPOP_SERVICE_FLOOD_MITIGATION_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_dspop_flood_mitigation_PH_conservation_inf.tif")
+    DSPOP_SERVICE_FLOOD_MITIGATION_PH_RESTORATION = os.path.join(RESULTS_DIR, "service_dspop_flood_mitigation_PH_restoration.tif")
+    DSPOP_SERVICE_RECHARGE_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_dspop_recharge_IDN_conservation_inf.tif")
 
-    ROAD_SERVICE_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "road_service_flood_mitigation_IDN_conservation_inf.tif")
-    ROAD_SERVICE_FLOOD_MITIGATION_IDN_RESTORATION = os.path.join(RESULTS_DIR, "road_service_flood_mitigation_IDN_restoration.tif")
-    ROAD_SERVICE_FLOOD_MITIGATION_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "road_service_flood_mitigation_PH_conservation_inf.tif")
-    ROAD_SERVICE_FLOOD_MITIGATION_PH_RESTORATION = os.path.join(RESULTS_DIR, "road_service_flood_mitigation_PH_restoration.tif")
-    ROAD_SERVICE_RECHARGE_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "road_service_recharge_IDN_conservation_inf.tif")
+    ROAD_SERVICE_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_road_flood_mitigation_IDN_conservation_inf.tif")
+    ROAD_SERVICE_FLOOD_MITIGATION_IDN_RESTORATION = os.path.join(RESULTS_DIR, "service_road_flood_mitigation_IDN_restoration.tif")
+    ROAD_SERVICE_FLOOD_MITIGATION_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_road_flood_mitigation_PH_conservation_inf.tif")
+    ROAD_SERVICE_FLOOD_MITIGATION_PH_RESTORATION = os.path.join(RESULTS_DIR, "service_road_flood_mitigation_PH_restoration.tif")
+    ROAD_SERVICE_RECHARGE_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_road_recharge_IDN_conservation_inf.tif")
 
-    DSPOP_SERVICE_RECHARGE_IDN_RESTORATION = os.path.join(RESULTS_DIR, "dspop_service_recharge_IDN_restoration.tif")
-    DSPOP_SERVICE_RECHARGE_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "dspop_service_recharge_PH_conservation_inf.tif")
-    DSPOP_SERVICE_RECHARGE_PH_RESTORATION = os.path.join(RESULTS_DIR, "dspop_service_recharge_PH_restoration.tif")
-    DSPOP_SERVICE_SEDIMENT_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "dspop_service_sediment_IDN_conservation_inf.tif")
-    DSPOP_SERVICE_SEDIMENT_IDN_RESTORATION = os.path.join(RESULTS_DIR, "dspop_service_sediment_IDN_restoration.tif")
-    DSPOP_SERVICE_SEDIMENT_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "dspop_service_sediment_PH_conservation_inf.tif")
-    DSPOP_SERVICE_SEDIMENT_PH_RESTORATION = os.path.join(RESULTS_DIR, "dspop_service_sediment_PH_restoration.tif")
+    DSPOP_SERVICE_RECHARGE_IDN_RESTORATION = os.path.join(RESULTS_DIR, "service_dspop_recharge_IDN_restoration.tif")
+    DSPOP_SERVICE_RECHARGE_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_dspop_recharge_PH_conservation_inf.tif")
+    DSPOP_SERVICE_RECHARGE_PH_RESTORATION = os.path.join(RESULTS_DIR, "service_dspop_recharge_PH_restoration.tif")
+    DSPOP_SERVICE_SEDIMENT_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_dspop_sediment_IDN_conservation_inf.tif")
+    DSPOP_SERVICE_SEDIMENT_IDN_RESTORATION = os.path.join(RESULTS_DIR, "service_dspop_sediment_IDN_restoration.tif")
+    DSPOP_SERVICE_SEDIMENT_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_dspop_sediment_PH_conservation_inf.tif")
+    DSPOP_SERVICE_SEDIMENT_PH_RESTORATION = os.path.join(RESULTS_DIR, "service_dspop_sediment_PH_restoration.tif")
 
-    ROAD_SERVICE_RECHARGE_IDN_RESTORATION = os.path.join(RESULTS_DIR, "road_service_recharge_IDN_restoration.tif")
-    ROAD_SERVICE_RECHARGE_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "road_service_recharge_PH_conservation_inf.tif")
-    ROAD_SERVICE_RECHARGE_PH_RESTORATION = os.path.join(RESULTS_DIR, "road_service_recharge_PH_restoration.tif")
-    ROAD_SERVICE_SEDIMENT_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "road_service_sediment_IDN_conservation_inf.tif")
-    ROAD_SERVICE_SEDIMENT_IDN_RESTORATION = os.path.join(RESULTS_DIR, "road_service_sediment_IDN_restoration.tif")
-    ROAD_SERVICE_SEDIMENT_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "road_service_sediment_PH_conservation_inf.tif")
-    ROAD_SERVICE_SEDIMENT_PH_RESTORATION = os.path.join(RESULTS_DIR, "road_service_sediment_PH_restoration.tif")
+    ROAD_SERVICE_RECHARGE_IDN_RESTORATION = os.path.join(RESULTS_DIR, "service_road_recharge_IDN_restoration.tif")
+    ROAD_SERVICE_RECHARGE_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_road_recharge_PH_conservation_inf.tif")
+    ROAD_SERVICE_RECHARGE_PH_RESTORATION = os.path.join(RESULTS_DIR, "service_road_recharge_PH_restoration.tif")
+    ROAD_SERVICE_SEDIMENT_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_road_sediment_IDN_conservation_inf.tif")
+    ROAD_SERVICE_SEDIMENT_IDN_RESTORATION = os.path.join(RESULTS_DIR, "service_road_sediment_IDN_restoration.tif")
+    ROAD_SERVICE_SEDIMENT_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "service_road_sediment_PH_conservation_inf.tif")
+    ROAD_SERVICE_SEDIMENT_PH_RESTORATION = os.path.join(RESULTS_DIR, "service_road_sediment_PH_restoration.tif")
 
 
     # service first then beneficiary after
