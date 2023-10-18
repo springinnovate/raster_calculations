@@ -1,5 +1,67 @@
 import collections
 import os
+import logging
+import sys
+import tempfile
+import shutil
+
+from ecoshard import taskgraph
+from ecoshard import geoprocessing
+import numpy
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
+        ' [%(pathname)s.%(funcName)s:%(lineno)d] %(message)s'),
+    stream=sys.stdout)
+LOGGER = logging.getLogger(__name__)
+
+
+def do_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_nodata=None, target_datatype=None):
+    base_raster_list = [
+        raster_path_a,
+        raster_path_b]
+    working_dir = tempfile.mkdtemp(
+        dir=os.path.dirname(target_raster_path))
+    target_basename = os.path.splitext(os.path.basename(target_raster_path))[0]
+    aligned_target_raster_path_list = [
+        os.path.join(working_dir, f'align_{target_basename}_{os.path.basename(path)}')
+        for path in base_raster_list]
+    pixel_size = geoprocessing.get_raster_info(
+        raster_path_a)['pixel_size']
+    geoprocessing.align_and_resize_raster_stack(
+        base_raster_list, aligned_target_raster_path_list, ['near']*2,
+        pixel_size, 'intersection')
+
+    raster_info = geoprocessing.get_raster_info(raster_path_a)
+
+    a_nodata = geoprocessing.get_raster_info(aligned_target_raster_path_list[0])['nodata'][0]
+    b_nodata = geoprocessing.get_raster_info(aligned_target_raster_path_list[1])['nodata'][0]
+    if target_nodata is None:
+        target_nodata = a_nodata
+
+    def _op(array_a, array_b):
+        result = numpy.full(array_a.shape, target_nodata)
+        valid_mask = numpy.ones(array_a.shape, dtype=bool)
+        for array, nodata in [(array_a, a_nodata), (array_b, b_nodata)]:
+            if nodata is not None:
+                valid_mask &= array != nodata
+            valid_mask &= numpy.isfinite(array)
+        result[valid_mask] = eval(f'array_a[valid_mask]{op_str}array_b[valid_mask]')
+        return result
+
+    if target_datatype is None:
+        target_datatype = raster_info['datatype']
+
+    geoprocessing.raster_calculator(
+        [(path, 1) for path in aligned_target_raster_path_list],
+        _op(a_nodata, b_nodata, target_nodata),
+        target_raster_path, target_datatype, target_nodata,
+        raster_driver_creation_tuple=('COG', (
+            'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=LZW',
+            'BLOCKXSIZE=256', 'BLOCKYSIZE=256')))
+    shutil.rmtree(working_dir)
 
 
 def main():
@@ -68,6 +130,12 @@ def main():
     ROAD_SERVICE_SEDIMENT_PH_CONSERVATION_INF = os.path.join(RESULTS_DIR, "road_service_sediment_PH_conservation_inf.tif")
     ROAD_SERVICE_SEDIMENT_PH_RESTORATION = os.path.join(RESULTS_DIR, "road_service_sediment_PH_restoration.tif")
 
+
+    # service first then beneficiary after
+
+    # CHECK W BCK:
+    # x diff between DSPOP and ROAD 'service_...' output files
+    # x check that "diff" is an output to a multiply and that the filename makes sense
 
     SUBTRACT_RASTER_SET = [
         (r"D:\repositories\ndr_sdr_global\wwf_IDN_baseline_historical_climate\stitched_sed_export_wwf_IDN_baseline_historical_climate.tif",
@@ -264,6 +332,31 @@ def main():
         for p in [raster_a_in, raster_b_in]:
             if not os.path.exists(p) and RESULTS_DIR not in p:
                 print(f'input path does not exist: {p}')
+
+    task_graph = taskgraph.TaskGraph(RESULTS_DIR, os.cpu_count(), 15.0)
+
+    service_set = []
+    for raster_a_path, raster_b_path, target_raster_path, op_str in \
+            [t+('-',) for t in SUBTRACT_RASTER_SET]+\
+            [t+('*',) for t in MULTIPLY_RASTER_SET]:
+        dependent_task_list = []
+        for p in [raster_a_path, raster_b_path]:
+            dependent_task_list += p
+        op_task = task_graph.add_task(
+            func=do_op,
+            args=(op_str, raster_a_path, raster_b_path, target_raster_path),
+            target_path_list=[target_raster_path],
+            dependent_task_list=dependent_task_list,
+            task_name=f'calcualte {target_raster_path}')
+        if 'service' in target_raster_path:
+            service_set.append((target_raster_path, op_task))
+
+    # ASK BCK: gte-75 gte-90 means top 25 top 10 so only 25 or 10% are selected
+    # :::: call python mask_by_percentile.py D:\repositories\wwf-sipa\final_results\service_*.tif gte-75-percentile_[file_name]_gte75.tif gte-90-percentile_[file_name]_gte90.tif
+    # :::: then add_sub_missing_as_zero for all the percentile_masks for each scenario so we can see the pixels that are in the top 25 or top 10 percent for all services vs. multiple services vs. just for one
+    # :::: repeat the last three steps above for climate scenarios *ssp245 and see what the % overlap is (how much does the portfolio change under future climate?)
+    # :::: then cog and put everything on viewer (all the diff_ rasters and service_ rasters and the individual percentile masks and the composite/added up percentile mask)
+
 
 
 if __name__ == '__main__':
