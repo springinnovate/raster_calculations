@@ -112,18 +112,10 @@ def main():
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
     # diff x benes x services (4) x scenarios (2) x climage (2)
-    service_set = {
-        'flood_mitigation',
-        'recharge',
-        'sediment',
-    }
-    scenario_set = {
-        'restoration', 'conservation_inf',
-    }
-    climate_set = {
-        'ssp245',
-        '', # current climate, ESA?
-    }
+    service_list = ['flood_mitigation', 'recharge', 'sediment']
+    scenario_list = ['restoration', 'conservation_inf']
+    climate_list = ['ssp245', '']
+    top_percentile_list = [25, 10]
 
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf.tif")
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF_SSP245 = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf_ssp245.tif")
@@ -392,7 +384,7 @@ def main():
 
     task_graph = taskgraph.TaskGraph(RESULTS_DIR, os.cpu_count(), 15.0)
 
-    service_set = []
+    service_raster_path_list = []
     task_set = {}
     for raster_a_path, raster_b_path, target_raster_path, op_str in \
             [t+('-',) for t in SUBTRACT_RASTER_SET]+\
@@ -412,17 +404,17 @@ def main():
             raise ValueError(f'calculating a result that we alreayd calculated {target_raster_path}')
         task_set[target_raster_path] = op_task
         if 'service' in target_raster_path:
-            service_set.append((target_raster_path, op_task))
+            service_raster_path_list.append((target_raster_path, op_task))
 
     # ASK BCK: gte-75 gte-90 means top 25 top 10 so only 25 or 10% are selected
     # :::: call python mask_by_percentile.py D:\repositories\wwf-sipa\final_results\service_*.tif gte-75-percentile_[file_name]_gte75.tif gte-90-percentile_[file_name]_gte90.tif
     percentile_task_list = []
-    for service_path, service_task in service_set:
+    for service_path, service_task in service_raster_path_list:
         percentile_task = task_graph.add_task(
             func=make_top_nth_percentile_masks,
             args=(
                 service_path,
-                [25, 10],
+                top_percentile_list,
                 os.path.join(RESULTS_DIR, 'top_{percentile}th_percentile_' + os.path.basename(service_path))),
             dependent_task_list=[service_task],
             store_result=True,
@@ -431,16 +423,52 @@ def main():
     task_graph.join()
     task_graph.close()
     LOGGER.info(f'all done! results in {RESULTS_DIR}')
+    percentile_raster_list = []
     for service_path, percentile_task in percentile_task_list:
+        local_percentile_rasters = percentile_task.get()
         LOGGER.info(f'percentile for {service_path} is {percentile_task.get()}')
+        percentile_raster_list.extend(local_percentile_rasters)
+
     # :::: then add_sub_missing_as_zero for all the percentile_masks for each scenario so we can see the pixels that are in the top 25 or top 10
         #percent for all services vs. multiple services vs. just for one
+    # we'll need to:
+    #   1) segment out what percentile it is
+    #   2) segment out which scenario it is
+    #   3) segiment out which service it is
+    #   4) segment out which climate it is
+    percentile_groups = collections.defaultdict(list)
+    for percentile_raster_path in local_percentile_rasters:
+        for percentile in top_percentile_list:
+            if not str(percentile)+'th' in percentile_raster_path:
+                continue
+            for scenario in scenario_list:
+                if scenario not in percentile_raster_path:
+                    continue
+                for service in service_list:
+                    if service not in percentile_raster_path:
+                        continue
+                    for climate in climate_list:
+                        if climate not in percentile_raster_path:
+                            continue
+                        percentile_groups[f'{percentile}th_{scenario}_{service}_{climate}'].append(percentile_raster_path)
+
+    LOGGER.debug(f'these are the percentile groups: {percentile_groups}')
+    return
+    # for percentile_raster_group_list, subgroup_id in percentile_groups.items():
+    #     overlap_raster_path = os.path.join(RESULTS_DIR, f'overlap_{subgroup_id}.tif')
+    #     task_graph.add_task(
+    #         func=sum_masks,
+    #         args=(percentile_raster_group_list, overlap_raster_path),
+    #         target_path_list=[overlap_raster_path],
+    #         task_name=f'overlap for {overlap_raster_path}')
+    #     pass
+
     # :::: repeat the last three steps above for climate scenarios *ssp245 and see what the % overlap is (how much does the portfolio change
         # under future climate?)
     # :::: then cog and put everything on viewer (all the diff_ rasters and service_ rasters and the individual percentile masks and the
         # composite/added up percentile mask)
 
-    # (the MULT rasters, these are the diff [service] rasters scaled by beneficiaries) diff x benes x services (4) x scenarios (2) x climage (2)
+    # (the MULT rasters, these are the diff [service] rasters scaled by beneficiaries) diff x benes x services (4) x scenarios (2) x climate (2)
     # we then take percentile maps top 25% 10% of these
     # then we need to reduce -- what is the overlap of services of the top 25%/10? how does it reduce to ADM units?
         # reduce those ADMs to be total amount and proportional by area amount for "where DO I do seomthing or where DON'T I do something?"
