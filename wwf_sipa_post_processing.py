@@ -23,33 +23,34 @@ LOGGER = logging.getLogger(__name__)
 def make_top_nth_percentile_masks(
         base_raster_path, top_percentile_list, gte_or_lte, target_raster_path):
     """Mask base by mask such that any nodata in mask is set to nodata in base."""
-    raw_percentile_list = [
-        100-float(x) for x in sorted(top_percentile_list, reverse=True)]
+    ordered_top_percentile_list = list(sorted(top_percentile_list, reverse=True))
+    # need to convert this to "gte" format so if top 10th percent, we get 90th percentile
+    raw_percentile_list = [100-float(x) for x in ordered_top_percentile_list]
     working_dir = os.path.dirname(target_raster_path)
     percentile_values = geoprocessing.raster_band_percentile(
         (base_raster_path, 1), working_dir,
         raw_percentile_list,
         heap_buffer_size=2**28,
         ffi_buffer_size=2**10)
+    for percentile_value, top_nth_percentile_val in zip(percentile_values, ordered_top_percentile_list):
+        pass
 
-    # for
+    base_info = geoprocessing.get_raster_info(base_raster_path)
+    base_nodata = base_info['nodata'][0]
 
-    # base_info = geoprocessing.get_raster_info(base_raster_path)
-    # base_nodata = base_info['nodata'][0]
+    def mask_op(base_array):
+        result = numpy.zeros(base_array.shape)
+        valid_mask = base_array != base_nodata
+        if gte_or_lte == 'gte':
+            valid_mask &= (base_array >= value)
+        else:
+            valid_mask &= (base_array <= value)
+        result[valid_mask] = 1
+        return result
 
-    # def mask_op(base_array):
-    #     result = numpy.zeros(base_array.shape)
-    #     valid_mask = base_array != base_nodata
-    #     if gte_or_lte == 'gte':
-    #         valid_mask &= (base_array >= value)
-    #     else:
-    #         valid_mask &= (base_array <= value)
-    #     result[valid_mask] = 1
-    #     return result
-
-    # geoprocessing.single_thread_raster_calculator(
-    #     [(base_raster_path, 1)], mask_op,
-    #     target_raster_path, gdal.GDT_Byte, None)
+    geoprocessing.single_thread_raster_calculator(
+        [(base_raster_path, 1)], mask_op,
+        target_raster_path, gdal.GDT_Byte, None)
 
 
 def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_nodata=None, target_datatype=None):
@@ -90,8 +91,7 @@ def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_n
 
     geoprocessing.single_thread_raster_calculator(
         [(path, 1) for path in aligned_target_raster_path_list],
-        _op(a_nodata, b_nodata, target_nodata),
-        target_raster_path, target_datatype, target_nodata,
+        _op, target_raster_path, target_datatype, target_nodata,
         raster_driver_creation_tuple=('COG', (
             'TILED=YES', 'BIGTIFF=YES', 'COMPRESS=LZW',
             'BLOCKXSIZE=256', 'BLOCKYSIZE=256')))
