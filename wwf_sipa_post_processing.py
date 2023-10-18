@@ -422,7 +422,7 @@ def main():
             args=(
                 service_path,
                 [25, 10],
-                os.path.join(RESULTS_DIR, 'top_{percentile}th_percentile_{base_path}')),
+                os.path.join(RESULTS_DIR, 'top_{percentile}th_percentile_' + os.path.basename(service_path))),
             dependent_task_list=[service_task],
             store_result=True,
             task_name=f'percentile for {service_path}')
