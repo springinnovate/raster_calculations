@@ -567,6 +567,7 @@ def main():
     #       * along these lines now all the climate services and percentiles are running too
     #   * after I figure the above out i should be able to add the masks for the 10th/25th percentiles to get service coverage rasters
     #   * after that I wawnt to aggregate those service coverage rasters to the ADM3 and 4 polygons
+    #   * after that load ALL the rasters and the polygons onto a viewer THEN DONE!
 
 
     # for percentile_raster_group_list, subgroup_id in percentile_groups.items():
