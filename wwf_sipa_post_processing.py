@@ -27,7 +27,8 @@ def make_top_nth_percentile_masks(
     ordered_top_percentile_list = list(sorted(top_percentile_list, reverse=True))
     # need to convert this to "gte" format so if top 10th percent, we get 90th percentile
     raw_percentile_list = [100-float(x) for x in ordered_top_percentile_list]
-    working_dir = os.path.dirname(target_raster_path_pattern)
+    working_dir = tempfile.mkdtemp(
+        pre='percentile_sort_', dir=os.path.dirname(target_raster_path_pattern))
     os.makedirs(working_dir, exist_ok=True)
     percentile_values = geoprocessing.raster_band_percentile(
         (base_raster_path, 1), working_dir,
