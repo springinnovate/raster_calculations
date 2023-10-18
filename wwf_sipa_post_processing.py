@@ -22,12 +22,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 def make_top_nth_percentile_masks(
-        base_raster_path, top_percentile_list, gte_or_lte, target_raster_path_pattern):
+        base_raster_path, top_percentile_list, target_raster_path_pattern):
     """Mask base by mask such that any nodata in mask is set to nodata in base."""
     ordered_top_percentile_list = list(sorted(top_percentile_list, reverse=True))
     # need to convert this to "gte" format so if top 10th percent, we get 90th percentile
     raw_percentile_list = [100-float(x) for x in ordered_top_percentile_list]
     working_dir = os.path.dirname(target_raster_path_pattern)
+    os.makedirs(working_dir, exist_ok=True)
     percentile_values = geoprocessing.raster_band_percentile(
         (base_raster_path, 1), working_dir,
         raw_percentile_list,
@@ -44,9 +45,14 @@ def make_top_nth_percentile_masks(
             result[valid_mask] = 1
             return result
 
+        target_raster_path = target_raster_path_pattern.format(percentile=percentile)
+        pre_cog_target_raster_path = os.path.join(working_dir, os.path.basename(target_raster_path))
         geoprocessing.single_thread_raster_calculator(
             [(base_raster_path, 1)], mask_nth_percentile_op,
-            target_raster_path, gdal.GDT_Byte, None)
+            precog_target_raster_path, gdal.GDT_Byte, None)
+        subprocess.check_call(
+            f'gdal_translate {pre_cog_target_raster_path} {target_raster_path} -of COG -co BIGTIFF=YES')
+    shutil.rmtree(working_dir)
 
 
 def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_nodata=None, target_datatype=None):
@@ -54,7 +60,7 @@ def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_n
         raster_path_a,
         raster_path_b]
     working_dir = tempfile.mkdtemp(
-        dir=os.path.dirname(target_raster_path))
+        prefix='ok_to_delete_', dir=os.path.dirname(target_raster_path))
     target_basename = os.path.splitext(os.path.basename(target_raster_path))[0]
     aligned_target_raster_path_list = [
         os.path.join(working_dir, f'align_{target_basename}_{os.path.basename(path)}')
@@ -90,9 +96,12 @@ def raster_op(op_str, raster_path_a, raster_path_b, target_raster_path, target_n
     geoprocessing.single_thread_raster_calculator(
         [(path, 1) for path in aligned_target_raster_path_list],
         _op, pre_cog_target_raster_path, target_datatype, target_nodata)
-    subprocess.Popen(
+    subprocess.check_call(
         f'gdal_translate {pre_cog_target_raster_path} {target_raster_path} -of COG -co BIGTIFF=YES')
-    shutil.rmtree(working_dir)
+    try:
+        shutil.rmtree(working_dir)
+    except PermissionError:
+        LOGGER.exception(f'could not delete {working_dir}, but leaving it there to keep going')
 
 def main():
     RESULTS_DIR = 'D:\\repositories\\wwf-sipa\\final_results'
@@ -395,11 +404,13 @@ def main():
     # ASK BCK: gte-75 gte-90 means top 25 top 10 so only 25 or 10% are selected
     # :::: call python mask_by_percentile.py D:\repositories\wwf-sipa\final_results\service_*.tif gte-75-percentile_[file_name]_gte75.tif gte-90-percentile_[file_name]_gte90.tif
     for service_path in service_set:
-        make_top_nth_percentile_masks
+        make_top_nth_percentile_masks(
+            service_path,
+            [25, 10],
+            os.path.join(RESULTS_DIR, 'top_{percentile}th_percentile_{base_path}')
     # :::: then add_sub_missing_as_zero for all the percentile_masks for each scenario so we can see the pixels that are in the top 25 or top 10 percent for all services vs. multiple services vs. just for one
     # :::: repeat the last three steps above for climate scenarios *ssp245 and see what the % overlap is (how much does the portfolio change under future climate?)
     # :::: then cog and put everything on viewer (all the diff_ rasters and service_ rasters and the individual percentile masks and the composite/added up percentile mask)
-
 
 
 if __name__ == '__main__':
