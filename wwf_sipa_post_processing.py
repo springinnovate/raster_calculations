@@ -340,11 +340,6 @@ def main():
     for raster_a_path, raster_b_path, target_raster_path, op_str in \
             [t+('-',) for t in SUBTRACT_RASTER_SET]+\
             [t+('*',) for t in MULTIPLY_RASTER_SET]:
-        print(raster_a_path)
-        print(raster_b_path)
-        print(target_raster_path)
-        print(op_str)
-        sys.exit()
 
         dependent_task_list = []
         for p in [raster_a_path, raster_b_path]:
