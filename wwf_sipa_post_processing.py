@@ -113,8 +113,10 @@ def main():
 
     # diff x benes x services (4) x scenarios (2) x climage (2)
     service_list = ['flood_mitigation', 'recharge', 'sediment']
+    country_list = ['PH', 'IDN']
     scenario_list = ['restoration', 'conservation_inf']
     climate_list = ['ssp245', '']
+    beneficiary_list = ['dspop', 'road']
     top_percentile_list = [25, 10]
 
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf.tif")
@@ -540,21 +542,33 @@ def main():
     percentile_groups = collections.defaultdict(list)
     for percentile_raster_path in local_percentile_rasters:
         for percentile in top_percentile_list:
-            if not str(percentile)+'th' in percentile_raster_path:
-                continue
-            for scenario in scenario_list:
-                if scenario not in percentile_raster_path:
-                    continue
-                for service in service_list:
-                    if service not in percentile_raster_path:
-                        continue
-                    for climate in climate_list:
-                        if climate not in percentile_raster_path:
-                            continue
-                        percentile_groups[f'{percentile}th_{scenario}_{service}_{climate}'].append(percentile_raster_path)
+            if str(percentile)+'th' in percentile_raster_path:
+                break
+        for country in country_list:
+            if country not in percentile_raster_path:
+                break
+        for scenario in scenario_list:
+            if scenario not in percentile_raster_path:
+                break
+        for beneficiary in beneficiary_list:
+            if beneficiary not in percentile_raster_path:
+                break
+        for climate in climate_list:
+            if climate not in percentile_raster_path:
+                break
+        percentile_groups[f'{percentile}th_{country}_{scenario}_{beneficiary}_{climate}'].append(percentile_raster_path)
 
     LOGGER.debug(f'these are the percentile groups: {percentile_groups}')
     return
+
+    # TODO: okay, here's where I left off:
+    #   * i'm debugging why my percentile groups don't have groups of 3 services in therm, in the process of that I identified that
+    #       we hadn't broken it down by climate for services
+    #       * along these lines now all the climate services and percentiles are running too
+    #   * after I figure the above out i should be able to add the masks for the 10th/25th percentiles to get service coverage rasters
+    #   * after that I wawnt to aggregate those service coverage rasters to the ADM3 and 4 polygons
+
+
     # for percentile_raster_group_list, subgroup_id in percentile_groups.items():
     #     overlap_raster_path = os.path.join(RESULTS_DIR, f'overlap_{subgroup_id}.tif')
     #     task_graph.add_task(
