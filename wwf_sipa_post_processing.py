@@ -115,7 +115,7 @@ def main():
     service_list = ['flood_mitigation', 'recharge', 'sediment']
     country_list = ['PH', 'IDN']
     scenario_list = ['restoration', 'conservation_inf']
-    climate_list = ['ssp245', '']
+    climate_list = ['ssp245']
     beneficiary_list = ['dspop', 'road']
     top_percentile_list = [25, 10]
 
@@ -541,22 +541,13 @@ def main():
     #   4) segment out which climate it is
     percentile_groups = collections.defaultdict(list)
     for percentile_raster_path in local_percentile_rasters:
-        for percentile in top_percentile_list:
-            if str(percentile)+'th' in percentile_raster_path:
-                break
-        for country in country_list:
-            if country not in percentile_raster_path:
-                break
-        for scenario in scenario_list:
-            if scenario not in percentile_raster_path:
-                break
-        for beneficiary in beneficiary_list:
-            if beneficiary not in percentile_raster_path:
-                break
-        for climate in climate_list:
-            if climate not in percentile_raster_path:
-                break
-        percentile_groups[f'{percentile}th_{country}_{scenario}_{beneficiary}_{climate}'].append(percentile_raster_path)
+        index_substring = ''
+        for substring_list in [top_percentile_list, country_list, scenario_list, beneficiary_list, climate_list]:
+            for substring in substring_list:
+                if substring in percentile_raster_path:
+                    index_substring += f'{substring}_'
+                    break
+        percentile_groups[index_substring].append(percentile_raster_path)
 
     LOGGER.debug(f'these are the percentile groups: {percentile_groups}')
     return
