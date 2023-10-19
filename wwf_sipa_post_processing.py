@@ -553,14 +553,13 @@ def main():
         if len(percentile_raster_group) != len(service_list):
             LOGGER.error(f'too many or too few: {key}: {percentile_raster_group}')
 
-    LOGGER.debug(f'these are the percentile rasters: {percentile_raster_list}')
-    LOGGER.debug(f'these are the percentile groups: {percentile_groups}')
+    LOGGER.debug(f'these are the percentile groups: {list(percentile_groups.keys())}')
     return
 
     # TODO: okay, here's where I left off:
-    #   * i'm debugging why my percentile groups don't have groups of 3 services in therm, in the process of that I identified that
+    #   x i'm debugging why my percentile groups don't have groups of 3 services in therm, in the process of that I identified that
     #       we hadn't broken it down by climate for services
-    #       * along these lines now all the climate services and percentiles are running too
+    #       x along these lines now all the climate services and percentiles are running too
     #   * after I figure the above out i should be able to add the masks for the 10th/25th percentiles to get service coverage rasters
     #   * after that I wawnt to aggregate those service coverage rasters to the ADM3 and 4 polygons
     #   * after that load ALL the rasters and the polygons onto a viewer THEN DONE!
