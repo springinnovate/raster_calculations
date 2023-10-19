@@ -549,6 +549,7 @@ def main():
                     break
         percentile_groups[index_substring].append(percentile_raster_path)
 
+    LOGGER.debug(f'these are the percentile rasters: {percentile_raster_list}')
     LOGGER.debug(f'these are the percentile groups: {percentile_groups}')
     return
 
