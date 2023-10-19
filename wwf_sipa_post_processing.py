@@ -23,15 +23,27 @@ LOGGER = logging.getLogger(__name__)
 
 def add_rasters(raster_path_list, target_raster_path, target_datatype):
     """Add all rasters together, do not consider nodata issues."""
+    working_dir = tempfile.mkdtemp(
+        prefix='_ok_to_delete_add_rasters_', dir=os.path.dirname(target_raster_path))
+    aligned_target_raster_path_list = [
+        os.path.join(working_dir, f'align_{os.path.basename(path)}')
+        for path in raster_path_list]
+    pixel_size = geoprocessing.get_raster_info(
+        raster_path_list[0])['pixel_size']
+    geoprocessing.align_and_resize_raster_stack(
+        raster_path_list, aligned_target_raster_path_list, ['near']*len(raster_path_list),
+        pixel_size, 'intersection')
+
     def _sum_op(*array_list):
         return numpy.sum(array_list, axis=0)
-    working_dir = tempfile.mkdtemp(
-        prefix='add_rasters_', dir=os.path.dirname(target_raster_path))
+
     pre_cog_target = os.path.join(working_dir, os.path.basename(target_raster_path))
     geoprocessing.raster_calculator(
-        [(path, 1) for path in raster_path_list], _sum_op, pre_cog_target, target_datatype, None)
+        [(path, 1) for path in aligned_target_raster_path_list], _sum_op, pre_cog_target,
+        target_datatype, None)
     subprocess.check_call(
         f'gdal_translate {pre_cog_target} {target_raster_path} -of COG -co BIGTIFF=YES')
+    shutil.rmtree(working_dir)
 
 
 def make_top_nth_percentile_masks(
