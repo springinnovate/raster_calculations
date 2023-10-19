@@ -570,6 +570,19 @@ def main():
     #   * after that load ALL the rasters and the polygons onto a viewer THEN DONE!
 
 
+    # G __main__ [D:\repositories\spring\raster_calculations\wwf_sipa_post_processing.py.main:556] these are the percentile groups:
+    # defaultdict(<class 'list'>, {
+    #     '25th_conservation_inf_sediment_ssp245': [
+    #         'D:\\repositories\\wwf-sipa\\final_results\\top_25th_percentile_service_road_sediment_PH_conservation_inf_ssp245.tif'],
+    #     '25th_conservation_inf_sediment_': [
+    #         'D:\\repositories\\wwf-sipa\\final_results\\top_25th_percentile_service_road_sediment_PH_conservation_inf_ssp245.tif'],
+    #     '10th_conservation_inf_sediment_ssp245': [
+    #         'D:\\repositories\\wwf-sipa\\final_results\\top_10th_percentile_service_road_sediment_PH_conservation_inf_ssp245.tif'],
+    #     '10th_conservation_inf_sediment_': [
+    #         'D:\\repositories\\wwf-sipa\\final_results\\top_10th_percentile_service_road_sediment_PH_conservation_inf_ssp245.tif']
+    #         })
+
+
     # for percentile_raster_group_list, subgroup_id in percentile_groups.items():
     #     overlap_raster_path = os.path.join(RESULTS_DIR, f'overlap_{subgroup_id}.tif')
     #     task_graph.add_task(
