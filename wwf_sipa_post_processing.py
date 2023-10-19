@@ -21,6 +21,19 @@ logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 
+def add_rasters(raster_path_list, target_raster_path, target_datatype):
+    """Add all rasters together, do not consider nodata issues."""
+    def _sum_op(*array_list):
+        return numpy.sum(array_list, axis=0)
+    working_dir = tempfile.mkdtemp(
+        prefix='add_rasters_', dir=os.path.dirname(target_raster_path))
+    pre_cog_target = os.path.join(working_dir, os.path.basename(target_raster_path))
+    geoprocessing.raster_calculator(
+        [(path, 1) for path in raster_path_list], _sum_op, pre_cog_target, target_datatype, None)
+    subprocess.check_call(
+        f'gdal_translate {pre_cog_target} {target_raster_path} -of COG -co BIGTIFF=YES')
+
+
 def make_top_nth_percentile_masks(
         base_raster_path, top_percentile_list, target_raster_path_pattern):
     """Mask base by mask such that any nodata in mask is set to nodata in base."""
@@ -524,8 +537,7 @@ def main():
             task_name=f'percentile for {service_path}')
         percentile_task_list.append((service_path, percentile_task))
     task_graph.join()
-    task_graph.close()
-    LOGGER.info(f'all done! results in {RESULTS_DIR}')
+
     percentile_raster_list = []
     for service_path, percentile_task in percentile_task_list:
         local_percentile_rasters = percentile_task.get()
@@ -551,9 +563,21 @@ def main():
 
     for key, percentile_raster_group in percentile_groups.items():
         if len(percentile_raster_group) != len(service_list):
-            LOGGER.error(f'too many or too few: {key}: {percentile_raster_group}')
+            raise ValueError(f'expecting {len(service_list)} rasters but only got this: {key}: {percentile_raster_group}')
 
     LOGGER.debug(f'these are the percentile groups: {list(percentile_groups.keys())}')
+    for key, percentile_raster_group in percentile_groups.items():
+        service_overlap_raster_path = os.path.join(RESULTS_DIR, f'{key}_service_overlap_count.tif')
+        task_graph.add_task(
+            func=add_rasters,
+            args=(percentile_raster_group, service_overlap_raster_path, gdal.GDT_Int),
+            target_raster_path_list=[service_overlap_raster_path],
+            task_name=f'collect service count for {key}')
+        if len(percentile_raster_group) != len(service_list):
+            raise ValueError(f'expecting {len(service_list)} rasters but only got this: {key}: {percentile_raster_group}')
+    task_graph.join()
+    task_graph.close()
+    LOGGER.info(f'all done! results in {RESULTS_DIR}')
     return
 
     # TODO: okay, here's where I left off:
