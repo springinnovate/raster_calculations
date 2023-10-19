@@ -544,9 +544,13 @@ def main():
         index_substring = ''
         for substring_list in [top_percentile_list, country_list, scenario_list, beneficiary_list, climate_list]:
             for substring in substring_list:
+                LOGGER.debug(f'testing if {substring} in {percentile_raster_path}')
                 if str(substring) in percentile_raster_path:
                     index_substring += f'{substring}_'
+                    LOGGER.debug('TRUE')
                     break
+                else:
+                    LOGGER.debug("NO")
         percentile_groups[index_substring].append(percentile_raster_path)
 
     LOGGER.debug(f'these are the percentile rasters: {percentile_raster_list}')
