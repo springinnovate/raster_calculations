@@ -571,7 +571,7 @@ def main():
         task_graph.add_task(
             func=add_rasters,
             args=(percentile_raster_group, service_overlap_raster_path, gdal.GDT_Byte),
-            target_raster_path_list=[service_overlap_raster_path],
+            target_path_list=[service_overlap_raster_path],
             task_name=f'collect service count for {key}')
         if len(percentile_raster_group) != len(service_list):
             raise ValueError(f'expecting {len(service_list)} rasters but only got this: {key}: {percentile_raster_group}')
