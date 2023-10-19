@@ -570,7 +570,7 @@ def main():
         service_overlap_raster_path = os.path.join(RESULTS_DIR, f'{key}_service_overlap_count.tif')
         task_graph.add_task(
             func=add_rasters,
-            args=(percentile_raster_group, service_overlap_raster_path, gdal.GDT_Int),
+            args=(percentile_raster_group, service_overlap_raster_path, gdal.GDT_Byte),
             target_raster_path_list=[service_overlap_raster_path],
             task_name=f'collect service count for {key}')
         if len(percentile_raster_group) != len(service_list):
