@@ -541,6 +541,7 @@ def main():
     #   4) segment out which climate it is
     percentile_groups = collections.defaultdict(list)
     for percentile_raster_path in local_percentile_rasters:
+        LOGGER.debug(f'***********TEST {percentile_raster_path}')
         index_substring = ''
         for substring_list in [top_percentile_list, country_list, scenario_list, beneficiary_list, climate_list]:
             for substring in substring_list:
