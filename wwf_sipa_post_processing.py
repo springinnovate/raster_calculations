@@ -549,6 +549,10 @@ def main():
                     break
         percentile_groups[index_substring].append(percentile_raster_path)
 
+    for key, percentile_raster_group in percentile_groups.items():
+        if len(percentile_raster_group) != len(service_list):
+            LOGGER.error(f'too many or too few: {key}: {percentile_raster_group}')
+
     LOGGER.debug(f'these are the percentile rasters: {percentile_raster_list}')
     LOGGER.debug(f'these are the percentile groups: {percentile_groups}')
     return
