@@ -46,6 +46,7 @@ def zonal_stats(raster_path, vector_path, table_path):
             else:
                 table_file.write('NaN')
             table_file.write('\n')
+    shutil.rmtree(working_dir)
     LOGGER.info(f'all done, table at {table_path}')
 
 
