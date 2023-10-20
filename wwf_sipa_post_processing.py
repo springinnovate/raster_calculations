@@ -627,8 +627,8 @@ def main():
             if country in service_overlap_raster_path:
                 admin_poly = ADMIN_POLYGONS[country]
                 break
-        admin_base = os.path.basename(os.path.splitext(admin_poly))
-        table_path = os.path.splitext(service_overlap_raster_path) + f'_{admin_base}.csv'
+        admin_base = os.path.basename(os.path.splitext(admin_poly)[0])
+        table_path = os.path.splitext(service_overlap_raster_path)[0] + f'_{admin_base}.csv'
         task_graph.add_task(
             func=zonal_stats,
             args=(service_overlap_raster_path, admin_poly, table_path),
