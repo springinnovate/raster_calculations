@@ -21,6 +21,36 @@ logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 
+def zonal_stats(raster_path, vector_path, table_path):
+    """Do zonal stats over base raster in each polygon of the vector."""
+    working_dir = tempfile.mkdtemp(
+        prefix='zonal_stats_', dir=os.path.dirname(table_path))
+    LOGGER.info(f'processing {raster_path}')
+    basename = os.path.basename(os.path.splitext(raster_path)[0])
+    stat_dict = geoprocessing.zonal_statistics(
+        (raster_path, 1), vector_path,
+        working_dir=working_dir,
+        clean_working_dir=True,
+        polygons_might_overlap=False)
+    basename = os.path.splitext(os.path.basename(raster_path))[0] + '_'
+    stat_list = basename.join(['count', 'max', 'min', 'nodata_count', 'sum'])
+    LOGGER.info(f'*********** building table at {table_path}')
+    with open(table_path, 'w') as table_file:
+        table_file.write(f'{raster_path}\n{vector_path}\n')
+        table_file.write('fid,')
+        table_file.write(f'{",".join(stat_list)},mean\n')
+        for fid, stats in stat_dict.items():
+            table_file.write(f'{fid},')
+            for stat_id in stat_list:
+                table_file.write(f'{stats[stat_id]},')
+            if stats['count'] > 0:
+                table_file.write(f'{stats["sum"]/stats["count"]}')
+            else:
+                table_file.write('NaN')
+            table_file.write('\n')
+    LOGGER.info(f'all done, table at {table_path}')
+
+
 def add_rasters(raster_path_list, target_raster_path, target_datatype):
     """Add all rasters together, do not consider nodata issues."""
     working_dir = tempfile.mkdtemp(
@@ -143,6 +173,11 @@ def main():
     climate_list = ['ssp245']
     beneficiary_list = ['dspop', 'road']
     top_percentile_list = [25, 10]
+
+    ADMIN_POLYGONS = {
+        'PH': r"D:\repositories\wwf-sipa\data\admin_boundaries\PH_gdam2.gpkg",
+        'IDN': r"D:\repositories\wwf-sipa\data\admin_boundaries\IDN_gdam3.gpkg"
+        }
 
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf.tif")
     DIFF_FLOOD_MITIGATION_IDN_CONSERVATION_INF_SSP245 = os.path.join(RESULTS_DIR, "diff_flood_mitigation_IDN_conservation_inf_ssp245.tif")
@@ -580,13 +615,27 @@ def main():
     LOGGER.debug(f'these are the percentile groups: {list(percentile_groups.keys())}')
     for key, percentile_raster_group in percentile_groups.items():
         service_overlap_raster_path = os.path.join(RESULTS_DIR, f'{key}_service_overlap_count.tif')
-        task_graph.add_task(
+        service_count_task = task_graph.add_task(
             func=add_rasters,
             args=(percentile_raster_group, service_overlap_raster_path, gdal.GDT_Byte),
             target_path_list=[service_overlap_raster_path],
             task_name=f'collect service count for {key}')
         if len(percentile_raster_group) != len(service_list):
             raise ValueError(f'expecting {len(service_list)} rasters but only got this: {key}: {percentile_raster_group}')
+
+        for country in country_list:
+            if country in service_overlap_raster_path:
+                admin_poly = ADMIN_POLYGONS[country]
+                break
+        admin_base = os.path.basename(os.path.splitext(admin_poly))
+        table_path = os.path.splitext(service_overlap_raster_path) + f'_{admin_base}.csv'
+        task_graph.add_task(
+            func=zonal_stats,
+            args=(service_overlap_raster_path, admin_poly, table_path),
+            target_path_list=[table_path],
+            dependent_task_list=[service_count_task],
+            task_name=f'zonal stats for {service_overlap_raster_path}/{admin_poly}')
+        # aggregate over the available polygons
     task_graph.join()
     task_graph.close()
     LOGGER.info(f'all done! results in {RESULTS_DIR}')
@@ -596,7 +645,8 @@ def main():
     #   x i'm debugging why my percentile groups don't have groups of 3 services in therm, in the process of that I identified that
     #       we hadn't broken it down by climate for services
     #       x along these lines now all the climate services and percentiles are running too
-    #   * after I figure the above out i should be able to add the masks for the 10th/25th percentiles to get service coverage rasters
+    #   x after I figure the above out i should be able to add the masks for the 10th/25th percentiles to get service coverage rasters
+    #   x then i want to get coverage of all the services to make an overall "this is the coverage of top 10%
     #   * after that I wawnt to aggregate those service coverage rasters to the ADM3 and 4 polygons
     #   * after that load ALL the rasters and the polygons onto a viewer THEN DONE!
 
