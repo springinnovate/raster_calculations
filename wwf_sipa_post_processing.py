@@ -26,14 +26,12 @@ def zonal_stats(raster_path, vector_path, table_path):
     working_dir = tempfile.mkdtemp(
         prefix='zonal_stats_', dir=os.path.dirname(table_path))
     LOGGER.info(f'processing {raster_path}')
-    basename = os.path.basename(os.path.splitext(raster_path)[0])
     stat_dict = geoprocessing.zonal_statistics(
         (raster_path, 1), vector_path,
         working_dir=working_dir,
         clean_working_dir=True,
         polygons_might_overlap=False)
-    basename = os.path.splitext(os.path.basename(raster_path))[0] + '_'
-    stat_list = basename.join(['count', 'max', 'min', 'nodata_count', 'sum'])
+    stat_list = ['count', 'max', 'min', 'nodata_count', 'sum']
     LOGGER.info(f'*********** building table at {table_path}')
     with open(table_path, 'w') as table_file:
         table_file.write(f'{raster_path}\n{vector_path}\n')
