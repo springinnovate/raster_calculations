@@ -48,6 +48,10 @@ if __name__ == '__main__':
         '--target_path', required=True, help=(
             'Path to target file, if not defined create unique name in '
             'current directory.'))
+    parser.add_argument(
+        '--allow_different_blocksize', on_action='store_true',
+        help='Set to allow different block size adds')
+
     args = parser.parse_args()
 
     raster_path_band_list = [
@@ -61,4 +65,5 @@ if __name__ == '__main__':
 
     geoprocessing.raster_calculator(
         raster_path_band_list, _add_with_0(nodata_list, args.target_nodata),
-        args.target_path, gdal.GDT_Float32, args.target_nodata)
+        args.target_path, gdal.GDT_Float32, args.target_nodata,
+        allow_different_blocksize=args.allow_different_blocksize)
