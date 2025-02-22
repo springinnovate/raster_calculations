@@ -61,10 +61,9 @@ def mask_and_sum(mask_raster_path, value_raster_path, key):
     target_pixel_size = geoprocessing.get_raster_info(
         file_list[0])['pixel_size']
 
-    # geoprocessing.align_and_resize_raster_stack(
-    #     file_list, aligned_list, ['near'] * len(aligned_list),
-    #     target_pixel_size, 'union')
-    aligned_list = file_list
+    geoprocessing.align_and_resize_raster_stack(
+        file_list, aligned_list, ['near'] * len(aligned_list),
+        target_pixel_size, 'union')
     value_nodata = geoprocessing.get_raster_info(value_raster_path)['nodata'][0]
 
     masked_running_sum = 0
