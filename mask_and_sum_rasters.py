@@ -69,14 +69,14 @@ def mask_and_sum(mask_raster_path, value_raster_path, key):
 
     masked_running_sum = 0
     for _, (mask_array, value_array) in geoprocessing.iterblocks(
-            [(path, 1) for path in aligned_list], skip_sparse=True, allow_different_blocksizes=True):
+            [(path, 1) for path in aligned_list], skip_sparse=True, allow_different_blocksize=True):
         valid_mask = (mask_array > 0) & ~numpy.isnan(value_array)
         if value_nodata is not None:
             valid_mask &= (value_array != value_nodata)
         masked_running_sum += numpy.sum(value_array[valid_mask])
     full_running_sum = 0
     for _, value_array in geoprocessing.iterblocks(
-            [(aligned_list[1], 1)], skip_sparse=True, allow_different_blocksizes=True):
+            [(aligned_list[1], 1)], skip_sparse=True, allow_different_blocksize=True):
         valid_mask = ~numpy.isnan(value_array)
         if value_nodata is not None:
             valid_mask &= (value_array != value_nodata)
