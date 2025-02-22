@@ -6,6 +6,7 @@ import shutil
 import sys
 
 from ecoshard import geoprocessing
+from ecoshard import taskgraph
 import numpy
 
 
