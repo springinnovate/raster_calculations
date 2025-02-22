@@ -1,4 +1,5 @@
 """Average arbitrary set of rasters."""
+import datetime
 import argparse
 import logging
 import os
@@ -50,37 +51,35 @@ def parse_ini(path):
     return data
 
 
-def mask_and_sum(mask_raster_path, value_raster_path, key):
-    local_workspace = key
-    os.makedirs(local_workspace, exist_ok=True)
-    file_list = [mask_raster_path, value_raster_path]
-    aligned_list = [
-        os.path.join(key, os.path.basename(path))
-        for path in file_list]
-
+def align_and_resize_raster_stack(base_raster_path_list, aligned_raster_path_list):
     target_pixel_size = geoprocessing.get_raster_info(
-        file_list[0])['pixel_size']
+        base_raster_path_list[0])['pixel_size']
 
     geoprocessing.align_and_resize_raster_stack(
-        file_list, aligned_list, ['near'] * len(aligned_list),
+        base_raster_path_list, aligned_raster_path_list, ['near'] * len(aligned_raster_path_list),
         target_pixel_size, 'union')
-    value_nodata = geoprocessing.get_raster_info(value_raster_path)['nodata'][0]
+
+
+def mask_and_sum(mask_raster_path, value_raster_path, key):
+    value_nodata = geoprocessing.get_raster_info(
+        value_raster_path)['nodata'][0]
+    path_list = [mask_raster_path, value_raster_path]
 
     masked_running_sum = 0
     for _, (mask_array, value_array) in geoprocessing.iterblocks(
-            [(path, 1) for path in aligned_list], skip_sparse=True, allow_different_blocksize=True):
+            [(path, 1) for path in path_list],
+            skip_sparse=True, allow_different_blocksize=True):
         valid_mask = (mask_array > 0) & ~numpy.isnan(value_array)
         if value_nodata is not None:
             valid_mask &= (value_array != value_nodata)
         masked_running_sum += numpy.sum(value_array[valid_mask])
     full_running_sum = 0
     for _, value_array in geoprocessing.iterblocks(
-            [(aligned_list[1], 1)], skip_sparse=True, allow_different_blocksize=True):
+            [(path_list[1], 1)], skip_sparse=True, allow_different_blocksize=True):
         valid_mask = ~numpy.isnan(value_array)
         if value_nodata is not None:
             valid_mask &= (value_array != value_nodata)
         full_running_sum += numpy.sum(value_array[valid_mask])
-    shutil.rmtree(local_workspace)
     return masked_running_sum, full_running_sum
 
 
@@ -106,14 +105,30 @@ value_raster = path/to/idn_flood_value_restoration.tif
     task_graph = taskgraph.TaskGraph('.', os.cpu_count(), 10.0)
     task_map = {}
     for key, file_lookup in configuration.items():
+        local_workspace = os.path.join('mask_and_sum_workspace', key)
+        os.makedirs(local_workspace, exist_ok=True)
+
+        base_raster_path_list = [
+            file_lookup['mask_raster'], file_lookup['value_raster']]
+        aligned_raster_path_list = [
+            os.path.join(local_workspace, os.path.basename(path))
+            for path in base_raster_path_list]
+
+        align_task = task_graph.add_task(
+            func=align_and_resize_raster_stack,
+            args=(base_raster_path_list, aligned_raster_path_list),
+            target_path_list=aligned_raster_path_list,
+            task_name=f'align for {key}')
+
         task = task_graph.add_task(
             func=mask_and_sum,
-            args=(file_lookup['mask_raster'], file_lookup['value_raster'], key),
+            args=aligned_raster_path_list + [key],
+            dependent_task_list=[align_task],
             store_result=True,
             task_name=f'sum {key}')
         task_map[key] = task
 
-    table_path = f'{os.path.splitext(os.path.basename(args.diff_conf_path))[0]}.csv'
+    table_path = f"{os.path.splitext(os.path.basename(args.diff_conf_path))[0]}_{datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.csv"
     with open(table_path, 'w') as file:
         file.write('sum_id,masked summed value,raw summed value\n')
         for key, task in task_map.items():
