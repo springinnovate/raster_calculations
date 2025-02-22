@@ -1,9 +1,8 @@
 """Average arbitrary set of rasters."""
-import datetime
+from datetime import datetime
 import argparse
 import logging
 import os
-import shutil
 import sys
 
 from ecoshard import geoprocessing
@@ -18,6 +17,7 @@ logging.basicConfig(
         ' [%(pathname)s.%(funcName)s:%(lineno)d] %(message)s'),
     stream=sys.stdout)
 LOGGER = logging.getLogger(__name__)
+logging.getLogger('ecoshard.taskgraph').setLevel(logging.WARNING)
 
 
 def parse_ini(path):
@@ -133,6 +133,7 @@ value_raster = path/to/idn_flood_value_restoration.tif
         file.write('sum_id,masked summed value,raw summed value\n')
         for key, task in task_map.items():
             masked_running_sum, full_running_sum = task.get()
+            LOGGER.debug(f'writing {key},{masked_running_sum},{full_running_sum}')
             file.write(f'{key},{masked_running_sum},{full_running_sum}\n')
 
     LOGGER.info(f'results in {table_path}')
