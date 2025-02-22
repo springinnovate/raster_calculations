@@ -118,6 +118,6 @@ value_raster = path/to/idn_flood_value_restoration.tif
         file.write('sum_id,masked summed value,raw summed value\n')
         for key, task in task_map.items():
             masked_running_sum, full_running_sum = task.get()
-            file.write(f'{key},{masked_running_sum.get()},{full_running_sum.get()}\n')
+            file.write(f'{key},{masked_running_sum},{full_running_sum}\n')
 
     print(f'results in {table_path}')
