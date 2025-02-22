@@ -58,10 +58,10 @@ def mask_and_sum(mask_raster_path, value_raster_path, key):
         os.path.join(key, os.path.basename(path))
         for path in file_list]
 
-    target_pixel_size = pygeoprocessing.get_raster_info(
+    target_pixel_size = geoprocessing.get_raster_info(
         file_list[0])['pixel_size']
 
-    pygeoprocessing.align_and_resize_raster_stack(
+    geoprocessing.align_and_resize_raster_stack(
         file_list, aligned_list, ['near'] * len(aligned_list),
         target_pixel_size, 'union')
     value_nodata = geoprocessing.get_raster_info(value_raster_path)['nodata'][0]
@@ -81,7 +81,7 @@ def mask_and_sum(mask_raster_path, value_raster_path, key):
             valid_mask &= (value_array != value_nodata)
         full_running_sum += numpy.sum(value_array[valid_mask])
     shutil.rmtree(local_workspace)
-    return masked_running_sum,  full_running_sum
+    return masked_running_sum, full_running_sum
 
 
 if __name__ == '__main__':
@@ -103,7 +103,7 @@ value_raster = path/to/idn_flood_value_restoration.tif
     args = parser.parse_args()
 
     configuration = parse_ini(args.diff_conf_path)
-    task_graph = taskgraph.TaskGraph('.', os.cpu_count())
+    task_graph = taskgraph.TaskGraph('.', os.cpu_count(), 10.0)
     task_map = {}
     for key, file_lookup in configuration.items():
         task = task_graph.add_task(
@@ -114,7 +114,7 @@ value_raster = path/to/idn_flood_value_restoration.tif
         task_map[key] = task
 
     with open(f'{os.path.splitext(os.path.basename(args.diff_conf_path))[0]}.csv', 'w') as file:
-        file.write(f'sum_id,masked summed value,raw summed value\n')
+        file.write('sum_id,masked summed value,raw summed value\n')
         for key, task in task_map.items():
-            masked_running_sum,  full_running_sum = task.get()
+            masked_running_sum, full_running_sum = task.get()
             file.write(f'{key},{masked_running_sum.get()},{full_running_sum.get()}\n')
