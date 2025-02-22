@@ -113,8 +113,11 @@ value_raster = path/to/idn_flood_value_restoration.tif
             task_name=f'sum {key}')
         task_map[key] = task
 
-    with open(f'{os.path.splitext(os.path.basename(args.diff_conf_path))[0]}.csv', 'w') as file:
+    table_path = f'{os.path.splitext(os.path.basename(args.diff_conf_path))[0]}.csv'
+    with open(table_path, 'w') as file:
         file.write('sum_id,masked summed value,raw summed value\n')
         for key, task in task_map.items():
             masked_running_sum, full_running_sum = task.get()
             file.write(f'{key},{masked_running_sum.get()},{full_running_sum.get()}\n')
+
+    print(f'results in {table_path}')
