@@ -1,0 +1,111 @@
+"""Average arbitrary set of rasters."""
+import argparse
+import logging
+import os
+import shutil
+import sys
+
+from ecoshard import geoprocessing
+import numpy
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=(
+        '%(asctime)s (%(relativeCreated)d) %(levelname)s %(name)s'
+        ' [%(pathname)s.%(funcName)s:%(lineno)d] %(message)s'),
+    stream=sys.stdout)
+LOGGER = logging.getLogger(__name__)
+
+
+def parse_ini(path):
+    valid_keys = {'mask_raster', 'value_raster'}
+    data = {}
+    current_section = None
+    with open(path, 'r') as f:
+        lines = f.read().splitlines()
+
+    for line in lines:
+        line = line.strip()
+
+        # Skip empty lines or comment lines
+        if not line or line.startswith('#') or line.startswith(';'):
+            continue
+
+        # Check if it's a section header
+        if line.startswith('[') and line.endswith(']'):
+            section = line[1:-1].strip()
+            if section in data:
+                raise ValueError(f"Duplicate section '{section}' found.")
+            data[section] = {}
+            current_section = section
+        else:
+            # Parse key=value
+            key, value = [part.strip() for part in line.split('=', 1)]
+            if key not in valid_keys:
+                raise ValueError(f"Invalid key '{key}' in section '{current_section}'.")
+            data[current_section][key] = value
+
+    return data
+
+
+def mask_and_sum(mask_raster_path, value_raster_path, key):
+    local_workspace = key
+    os.makedirs(local_workspace, exist_ok=True)
+    file_list = [mask_raster_path, value_raster_path]
+    aligned_list = [
+        os.path.join(key, os.path.basename(path))
+        for path in file_list]
+
+    target_pixel_size = pygeoprocessing.get_raster_info(
+        file_list[0])['pixel_size']
+
+    pygeoprocessing.align_and_resize_raster_stack(
+        file_list, aligned_list, ['near'] * len(aligned_list),
+        target_pixel_size, 'union')
+    value_nodata = geoprocessing.get_raster_info(value_raster_path)['nodata'][0]
+
+    running_sum = 0
+    for mask_array, value_array in geoprocessing.iterblocks(
+            [(path, 1) for path in aligned_list], skip_sparse=True):
+        valid_mask = (mask_array > 0) & ~numpy.isnan(value_array)
+        if value_nodata is not None:
+            valid_mask &= (value_array != value_nodata)
+        running_sum += numpy.sum(value_array[valid_mask])
+    shutil.rmtree(local_workspace)
+    return running_sum
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Mask raster B by raster A and report non-nodata sum.')
+    parser.add_argument(
+        'diff_conf_path', help=""".ini file that has the format:
+
+[idn_flood_inf]
+mask_raster = path/to/idn_flood_mask_inf.tif
+value_raster = path/to/idn_flood_value_inf.tif
+
+
+[idn_flood_restoration]
+mask_raster = path/to/idn_flood_mask_restoration.tif
+value_raster = path/to/idn_flood_value_restoration.tif
+
+...""")
+
+    args = parser.parse_args()
+
+    configuration = parse_ini(args.diff_conf_path)
+    task_graph = taskgraph.TaskGraph('.', os.cpu_count())
+    task_map = {}
+    for key, file_lookup in configuration.items():
+        task = task_graph.add_task(
+            func=mask_and_sum,
+            args=(file_lookup['mask_raster'], file_lookup['value_raster'], key),
+            store_result=True,
+            task_name=f'sum {key}')
+        task_map[key] = task
+
+    with open(f'{os.path.splitext(os.path.basename(args.diff_conf_path))[0]}.csv', 'w') as file:
+        file.write(f'sum_id,masked summed value\n')
+        for key, task in task_map.items():
+            file.write(f'{key},{task.get()}\n')
