@@ -1,21 +1,19 @@
 """These calculations are just for fun."""
 # don't forget: conda activate py38_gdal312
 
-import glob
-import sys
-import os
 import logging
 import multiprocessing
-import datetime
-import subprocess
-import raster_calculations_core
+import os
+import sys
+
+from ecoshard import geoprocessing
+from ecoshard import taskgraph
 from osgeo import gdal
 from osgeo import osr
-import taskgraph
-import pygeoprocessing
-import numpy
+import raster_calculations_core
 
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**26)
+
 
 WORKSPACE_DIR = 'rastercalc_workspace'
 NCPUS = multiprocessing.cpu_count()
@@ -42,13 +40,13 @@ def main():
     sinusoidal_raster1_path = 'solution_111_tar_80_res_2km_carbon_0.tif'
     raster_2_path = 'realized_e_source_abs_ann_mean.tif'
     raster_3_path = '1.5d_ha_per_pixel.tif'
-    raster2_info = pygeoprocessing.get_raster_info(raster_2_path)
+    raster2_info = geoprocessing.get_raster_info(raster_2_path)
     target_pixel_size = (1.495833333333333348, 1.5092592592592593)
     resample_method = 'average'
     projected_raster1_path = f'wgs84_projected_{sinusoidal_raster1_path}'
 
     warp_raster_task = TASK_GRAPH.add_task(
-        func=pygeoprocessing.warp_raster,
+        func=geoprocessing.warp_raster,
         args=(
             sinusoidal_raster1_path, target_pixel_size, projected_raster1_path,
             resample_method),

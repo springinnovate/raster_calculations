@@ -2,21 +2,17 @@
 #cd C:\Users\Becky\Documents\raster_calculations
 #conda activate py38_gdal312
 
-import glob
 import sys
 import os
 import logging
 import multiprocessing
-import datetime
-import subprocess
 import raster_calculations_core
 from osgeo import gdal
 from osgeo import osr
-import taskgraph
-import pygeoprocessing
+from ecoshard import taskgraph
 import numpy
 
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**26)
 
 WORKSPACE_DIR = 'rastercalc_workspace'
 NCPUS = multiprocessing.cpu_count()
@@ -39,7 +35,54 @@ def main():
 
 
 #############GEOBON###########################
-    
+
+## Subtracting coastal layers has to be done with this function because 0s are nodata
+## python add_sub_missing_as_0.py "C:\Users\Becky\Documents\geobon\ESA2015_cv_habitat_value_md5_8dae0100badf619c4e23bfc5e3da340b.tif" "C:\Users\Becky\Documents\geobon\ESA2000_cv_habitat_value_md5_e12984e8dbd126e71a042a0eabf5eade.tif" --subtract
+## this doesn't seem to be working. subtracts the pixels that are valid in both layers but nodata in one are still nodata
+## So did this instead
+## python nodata_replace.py "C:\Users\Becky\Documents\geobon\ESA2000_cv_habitat_value_md5_e12984e8dbd126e71a042a0eabf5eade.tif" "C:\Users\Becky\Documents\geobon\ESA2015_cv_habitat_value_md5_8dae0100badf619c4e23bfc5e3da340b.tif" "ESA2000_cv_with2015.tif"
+## Then:
+#    single_expression = {
+#        'expression': '(raster1>0)*0 + (raster1<0)*-9999',
+#        'symbol_to_path_map': {
+#            'raster1': r"C:\Users\Becky\Documents\raster_calculations\ESA2000_cv_with2015.tif",
+#        },
+#        'target_nodata': -9999,
+#        'default_nan': -9999,
+#        'target_raster_path': "ESA20002015cvhabitatextent.tif",
+#    }
+#
+#    raster_calculations_core.evaluate_calculation(
+#        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+#
+#    TASK_GRAPH.join()
+#    TASK_GRAPH.close()
+#
+#    return
+#Then
+# python nodata_replace.py "C:\Users\Becky\Documents\raster_calculations\ESA2000_cv_hab_value_ndv-9999.tif" "C:\Users\Becky\Documents\raster_calculations\ESA20002015cvhabitatextent.tif" ESA2000_cv_hab_value_20002015extent.tif
+# python nodata_replace.py "C:\Users\Becky\Documents\raster_calculations\ESA2015_cv_hab_value_ndv-9999.tif" "C:\Users\Becky\Documents\raster_calculations\ESA20002015cvhabitatextent.tif" ESA2015_cv_hab_value_20002015extent.tif
+# THEN
+    single_expression = {
+        'expression': 'raster2-raster1',
+        'symbol_to_path_map': {
+            'raster1': r"C:\Users\Becky\Documents\geobon\ESA2000_cv_hab_value_20002015extent.tif",
+            'raster2': r"C:\Users\Becky\Documents\geobon\ESA2015_cv_hab_value_20002015extent.tif"
+        },
+        'target_nodata': -9999,
+        'default_nan': -9999,
+        'target_raster_path': "ESA2015-ESA2000_cv_hab_value_full.tif",
+    }
+
+    raster_calculations_core.evaluate_calculation(
+        single_expression, TASK_GRAPH, WORKSPACE_DIR)
+
+    TASK_GRAPH.join()
+    TASK_GRAPH.close()
+
+    return
+
+
 #1-3.38399*2.7**(-raster1**-0.28978)
 
     single_expression = {
@@ -60,7 +103,7 @@ def main():
 
     return
 
-    
+
     calc_list = [
         {
             'expression': 'raster1 * raster2',
@@ -79,16 +122,16 @@ def main():
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cbd\Pollination\PNV\monfreda_2008_yield_poll_dep_ppl_fed_5min.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\agmask_esa2015_md5_68abfed1893cfe664a7d62d472c863ea.tif",
-            },    
+            },
             'target_nodata': -9999,
             'default_nan': -9999,
             'target_pixel_size': (0.0027777778,-0.0027777778),
             'resample_method': 'near',
             'target_raster_path': "monfreda_poll_dep_yield_ppl_fed_10s_2015.tif",
         },
-    
+
     ]
-    
+
     for calc in calc_list:
        raster_calculations_core.evaluate_calculation(
             calc, TASK_GRAPH, WORKSPACE_DIR)
@@ -120,7 +163,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
     single_expression = {
         'expression': 'raster1*raster2',
         'symbol_to_path_map': {
@@ -198,7 +241,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
     single_expression = {
         'expression': 'raster1*raster2',
         'symbol_to_path_map': {
@@ -254,7 +297,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
 
     single_expression = {
         'expression': '(raster1>0)*raster1',

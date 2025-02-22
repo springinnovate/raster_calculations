@@ -5,15 +5,15 @@ import multiprocessing
 import sys
 import time
 
+from ecoshard import geoprocessing
 from osgeo import gdal
 from osgeo import ogr
 from osgeo import osr
-import pygeoprocessing
 import numpy
 import shapely
 import shapely.geometry
 import shapely.wkb
-import taskgraph
+from ecoshard import taskgraph
 
 gdal.SetCacheMax(2**26)
 
@@ -86,7 +86,7 @@ def write_results(
 
 def poly_test_worker(work_queue, raster_path, poly_vector_path, result_queue):
 
-    raster_info = pygeoprocessing.get_raster_info(raster_path)
+    raster_info = geoprocessing.get_raster_info(raster_path)
     base_nodata = raster_info['nodata']
     geotransform = raster_info['geotransform']
     n_cols, n_rows = raster_info['raster_size']
@@ -156,14 +156,14 @@ if __name__ == "__main__":
 
     vector_path = 'data/Exposure4OLU2.shp'
     raster_path = 'data/olu_00000-0-0-000-000000-00000-00-00000-00_depth.tif'
-    raster_info = pygeoprocessing.get_raster_info(raster_path)
+    raster_info = geoprocessing.get_raster_info(raster_path)
     raster_projection = raster_info['projection']
 
     reprojected_vector_path = os.path.join(
         CHURN_DIR, 'reprojected_' + os.path.basename(vector_path))
 
     reproject_task = task_graph.add_task(
-        func=pygeoprocessing.reproject_vector,
+        func=geoprocessing.reproject_vector,
         args=(vector_path, raster_projection, reprojected_vector_path),
         target_path_list=[reprojected_vector_path],
         task_name='project vector to raster')

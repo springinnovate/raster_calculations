@@ -7,16 +7,15 @@ import sys
 import os
 import logging
 import multiprocessing
-import datetime
 import subprocess
-import raster_calculations_core
+
+from ecoshard import geoprocessing
 from osgeo import gdal
 from osgeo import osr
-import taskgraph
-#import pygeoprocessing
-import ecoshard.geoprocessing as pygeoprocessing
+import raster_calculations_core
+from ecoshard import taskgraph
 
-gdal.SetCacheMax(2**30)
+gdal.SetCacheMax(2**26)
 
 WORKSPACE_DIR = 'CNC_workspace'
 NCPUS = multiprocessing.cpu_count()
@@ -38,13 +37,13 @@ def main():
     """Write your expression here."""
 
     # CNC calculations
-    
-    #to find nodata value: 
+
+    #to find nodata value:
     #gdalinfo [raster path]
 
     calculation_list = [
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
@@ -53,7 +52,7 @@ def main():
             'target_raster_path': "coastal_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
@@ -62,7 +61,7 @@ def main():
             'target_raster_path': "timber_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
@@ -71,7 +70,7 @@ def main():
             'target_raster_path': "flood_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
@@ -80,7 +79,7 @@ def main():
             'target_raster_path': "fuelwood_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
@@ -89,7 +88,7 @@ def main():
             'target_raster_path': "fwfish_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
@@ -98,7 +97,7 @@ def main():
             'target_raster_path': "grazing_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Y_90_md5_f8393b73f3548658f610ac47acea72e7.tif",
@@ -107,7 +106,7 @@ def main():
             'target_raster_path': "marinefish_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -116,7 +115,7 @@ def main():
             'target_raster_path': "natureaccess_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -125,7 +124,7 @@ def main():
             'target_raster_path': "nitrogen_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -134,7 +133,7 @@ def main():
             'target_raster_path': "pollination_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C1_90_md5_3246d7fc06267a18f59ca9a8decf64fe.tif",
@@ -143,7 +142,7 @@ def main():
             'target_raster_path': "reeftourism_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -152,7 +151,7 @@ def main():
             'target_raster_path': "sediment_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
@@ -161,7 +160,7 @@ def main():
             'target_raster_path': "coastal_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
@@ -170,14 +169,14 @@ def main():
             'target_raster_path': "carbon_overlapping_A90.tif",
         },
         {
-            'expression': '(raster1>0)*(raster2>0)', 
+            'expression': '(raster1>0)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
              },
             'target_nodata': -1,
             'target_raster_path': "moisture_overlapping_A90.tif",
-        },       
+        },
     ]
 
     for calculation in calculation_list:
@@ -189,10 +188,10 @@ def main():
 
     return
 
-    calculation_list = [ 
+    calculation_list = [
     #    {
     #        'expression': 'raster1*(raster2<2)*(raster2)',
-    #        'symbol_to_path_map': {            
+    #        'symbol_to_path_map': {
     #            'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
     #            'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\downstream_mask_A_90_WARPED_near_md5_0ed997ee57533433c6372e070592e880_compressed.tif",
     #        },
@@ -203,7 +202,7 @@ def main():
     #    },
     #    {
     #        'expression': 'raster1*(raster2<2)*(raster2)',
-    #        'symbol_to_path_map': {            
+    #        'symbol_to_path_map': {
     #            'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
     #            'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\downstream_mask_C_90_WARPED_near_md5_6a33ab63b7ac8fb9a679e192741bcac5_compressed.tif",
     #        },
@@ -211,10 +210,10 @@ def main():
     #        'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
     #        'resample_method': 'average',
     #        'target_raster_path': "lspop_on_downstream_of_10sC90.tif",
-    #    },    
+    #    },
     #    {
     #        'expression': 'raster1*(raster2<2)*(raster2)',
-    #        'symbol_to_path_map': {            
+    #        'symbol_to_path_map': {
     #            'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
     #            'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\downstream_mask_masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
     #        },
@@ -225,7 +224,7 @@ def main():
     #    },
     #    {
     #        'expression': 'raster1*(raster2<2)*(raster2)',
-    #        'symbol_to_path_map': {            
+    #        'symbol_to_path_map': {
     #            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\floodplains\floodplains_masked_pop_30s_md5_c027686bb9a9a36bdababbe8af35d696.tif",
     #            'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\downstream_mask_A_90_WARPED_near_md5_0ed997ee57533433c6372e070592e880_compressed.tif",
     #        },
@@ -236,7 +235,7 @@ def main():
     #    },
         {
             'expression': 'raster1*(raster2<2)*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\floodplains\floodplains_masked_pop_30s_md5_c027686bb9a9a36bdababbe8af35d696.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\downstream_mask_masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
             },
@@ -247,7 +246,7 @@ def main():
         },
     #    {
     #        'expression': 'raster1*(raster2>0)',
-    #        'symbol_to_path_map': {            
+    #        'symbol_to_path_map': {
     #            'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cnc_cv\normalized_pop_on_hab\norm_total_pop_hab_mask_coverage_md5_8f31e5fc65bf07488b4945b35f493d3f.tif",
     #            'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\A_90_WARPED_near_md5_0ed997ee57533433c6372e070592e880.tif",
     #        },
@@ -267,10 +266,10 @@ def main():
 
     return
 
-    calculation_list = [ 
+    calculation_list = [
         {
             'expression': 'raster1*(raster2<2)*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\global_mask_access_A_90_60.0m_WARPED_wgs_near_md5_b8de1aaeec4a800b7626944dd6df52ba.tif",
             },
@@ -280,17 +279,17 @@ def main():
         },
         {
             'expression': 'raster1*(raster2<2)*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\global_mask_access_C_90_60.0m_WARPED_wgs_near_md5_71f1dc947f32915ab153873c64fa3827.tif",
             },
             'target_nodata': 0,
             'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'target_raster_path': "lspop_within_60min_of_10sC90.tif",
-        },    
+        },
         {
             'expression': 'raster1*(raster2<2)*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\global_mask_access_masked_all_nathab_wstreams_esa2015_nodata_60.0m_WARPED_wgs_near_md5_21e1df6d6d886b6f388948d7fc660e77.tif",
             },
@@ -313,11 +312,11 @@ def main():
     #  python nodata_replace.py "C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\lspop_downstream_within_60min_A90_average_raster.tif" "C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\coastalpop_on_A90_WARPED_near_md5_131687f40a4985e81e23331f6d479105.tif" "lspop_downstream_within60min_coastal.tif"
     # BUT THIS IS ACTUALLY NO GOOD BECAUSE IT'S THE COASTAL POP BENEFITTING FROM A90 MAPPED TO A90, NOT THE PEOPLE WITHIN PROTECTIVE DISTANCE OF A90 HABITAT!!!
 
-   
 
-    calculation_list = [ 
+
+    calculation_list = [
         {
-            'expression': '(raster1>11)', 
+            'expression': '(raster1>11)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\drop1\sum_drop1_compressed_md5_c67b069d9e812dad11f67daf6cd04435.tif",
              },
@@ -325,7 +324,7 @@ def main():
             'target_raster_path': "pixels_always_selected.tif",
         },
         {
-            'expression': '(raster1>=11)', 
+            'expression': '(raster1>=11)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\drop1\sum_drop1_compressed_md5_c67b069d9e812dad11f67daf6cd04435.tif",
              },
@@ -333,15 +332,15 @@ def main():
             'target_raster_path': "pixels_90pct_selected.tif",
         },
         {
-            'expression': '(raster1>=6)', 
+            'expression': '(raster1>=6)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\drop1\sum_drop1_compressed_md5_c67b069d9e812dad11f67daf6cd04435.tif",
              },
             'target_nodata': -1,
             'target_raster_path': "pixels_50pct_selected.tif",
-        },                
+        },
     ]
-    
+
     for calculation in calculation_list:
         raster_calculations_core.evaluate_calculation(
             calculation, TASK_GRAPH, WORKSPACE_DIR)
@@ -353,16 +352,16 @@ def main():
 
 
 
-    
 
-    
-    #Fig 1: 
+
+
+    #Fig 1:
     #First - Run cna_masks.py with the following inputs using (near) for reproject to WGS & mask to land and eez
     #MASK_ECOSHARD_URL = (
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/landmask_10s_md5_748981cbf6ebf22643a3a3e655ec50ce_compressed_reduce8x.tif')
     #'https://storage.googleapis.com/critical-natural-capital-ecoshards/habmasks/EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif')
     # RASTER_LIST = [
-    #('solution_A_all_targets_2km_compressed_md5_46647c1d514427417a588674a98fd93b.tif', True, False), 
+    #('solution_A_all_targets_2km_compressed_md5_46647c1d514427417a588674a98fd93b.tif', True, False),
     #('solution_B_all_targets_2km_compressed_md5_46640e0340231bc3f7a3d9c286985d3f.tif', True, False),
     #Then do: python nodata_replace.py "C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\solution_A_all_targets_2km_compressed_WARPED_near_MASKED_land_md5_d95883e02b205e300b232ef156bcc45b.tif" "C:\Users\Becky\Documents\cnc_project\supporting_layers\natural_assets_wstreams_.0027_to_.022_0s_md5_48c16399d89fe8f9411c4e905873b40f.tif" solution_A_all_targets_2km_land_wgs.02_fill.tif
     #python nodata_replace.py "C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\solution_A_all_targets_2km_compressed_WARPED_near_MASKED_eez_md5_227e3df7cb09bfb6c7f183f8dc721157.tif" "C:\Users\Becky\Documents\cnc_project\supporting_layers\EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif" solution_A_all_targets_2km_eez_wgs.02_fill.tif
@@ -370,12 +369,12 @@ def main():
     #python nodata_replace.py "C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\solution_B_all_targets_2km_compressed_WARPED_near_MASKED_eez_md5_ef870a38c66a26c1b718a8ffde07c4fa.tif" "C:\Users\Becky\Documents\cnc_project\supporting_layers\EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8_reduce8x.tif" solution_B_all_targets_2km_eez_wgs.02_fill.tif
     #python nodata_replace.py "C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\solution_C_all_targets_2km_compressed_WARPED_near_md5_c2733d7dc996e039f2ffdcf4a1ce412b.tif" "C:\Users\Becky\Documents\cnc_project\supporting_layers\natural_assets_wstreams_.0027_to_.022_0s_md5_48c16399d89fe8f9411c4e905873b40f.tif" solution_C_all_targets_2km_land_wgs.02_fill.tif
 
-    
+
     #Overlap for Fig 2
 
     single_expression = {
         'expression': '(raster1>0)*(raster2<1)*(raster3<1) + 2*(raster1<1)*(raster2>0)*(raster3<1) + 3*(raster3>0)',
-        'symbol_to_path_map': {            
+        'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C_90_md5_bdf604015a7b1c7c78845ad716d568ef.tif",
             'raster3': 'A90_C90_overlap.tif',
@@ -394,50 +393,50 @@ def main():
 
     calculation_list = [
         {
-            'expression': '(raster1>0)*(raster2<1)', 
+            'expression': '(raster1>0)*(raster2<1)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C_90_md5_bdf604015a7b1c7c78845ad716d568ef.tif",
              },
             'target_nodata': -1,
             'target_raster_path': "A90_nonoverlapping_C90.tif",
-        }, 
+        },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C_90_md5_bdf604015a7b1c7c78845ad716d568ef.tif",
              },
             'target_nodata': -1,
             'target_raster_path': "C90_nonoverlapping_A90.tif",
-        }, 
+        },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C_90_md5_bdf604015a7b1c7c78845ad716d568ef.tif",
             },
             'target_nodata': -1,
             'target_raster_path': "A90_C90_overlap.tif",
-        }, 
+        },
         {
-            'expression': '(raster1>0)*(raster2<1)', 
+            'expression': '(raster1>0)*(raster2<1)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B_90_md5_b08de6ccc0fc3e122450c1ccfcb8b60d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D_90_md5_893abc862f38d66e222a99fa1808dd34.tif",
              },
             'target_nodata': -1,
             'target_raster_path': "B90_nonoverlapping_D90.tif",
-        }, 
+        },
         {
-            'expression': '(raster1>0)*(raster2<1)', 
+            'expression': '(raster1>0)*(raster2<1)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C_90_md5_bdf604015a7b1c7c78845ad716d568ef.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D_90_md5_893abc862f38d66e222a99fa1808dd34.tif",
              },
             'target_nodata': -1,
             'target_raster_path': "C90_nonoverlapping_D90.tif",
-        },       
+        },
     ]
 
     for calculation in calculation_list:
@@ -450,14 +449,14 @@ def main():
     return
 
 
-    #Overlap analyses to make correlation table 
-    #coastal - S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif 
+    #Overlap analyses to make correlation table
+    #coastal - S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif
     #timber - T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif
     #flood - U_90_md5_258160b638e742e91b84979e6b2c748f.tif
     #fuelwood - V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif
     #fwfish - W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif
     #grazing - X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif
-    #marinefish - Y_90_md5_f8393b73f3548658f610ac47acea72e7.tif  
+    #marinefish - Y_90_md5_f8393b73f3548658f610ac47acea72e7.tif
     #natureacces - Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif
     #nitrogen - A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif
     #pollination - B1_90_md5_14484122eba5a970559c57a48621d3fd.tif
@@ -467,10 +466,10 @@ def main():
     #moisture - I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47
 
 #SINGLESERVICE_NONOVERLAPS
-    
+
     calculation_list = [
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
@@ -479,7 +478,7 @@ def main():
             'target_raster_path': "coastal_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
@@ -488,7 +487,7 @@ def main():
             'target_raster_path': "timber_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
@@ -497,7 +496,7 @@ def main():
             'target_raster_path': "flood_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
@@ -506,7 +505,7 @@ def main():
             'target_raster_path': "fuelwood_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
@@ -515,7 +514,7 @@ def main():
             'target_raster_path': "fwfish_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
@@ -524,7 +523,7 @@ def main():
             'target_raster_path': "grazing_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Y_90_md5_f8393b73f3548658f610ac47acea72e7.tif",
@@ -533,7 +532,7 @@ def main():
             'target_raster_path': "marinefish_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -542,7 +541,7 @@ def main():
             'target_raster_path': "natureaccess_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -551,7 +550,7 @@ def main():
             'target_raster_path': "nitrogen_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -560,7 +559,7 @@ def main():
             'target_raster_path': "pollination_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C1_90_md5_3246d7fc06267a18f59ca9a8decf64fe.tif",
@@ -569,7 +568,7 @@ def main():
             'target_raster_path': "reeftourism_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -578,7 +577,7 @@ def main():
             'target_raster_path': "sediment_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
@@ -587,7 +586,7 @@ def main():
             'target_raster_path': "coastal_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
@@ -596,14 +595,14 @@ def main():
             'target_raster_path': "carbon_nonoverlapping_A90.tif",
         },
         {
-            'expression': '(raster1<1)*(raster2>0)', 
+            'expression': '(raster1<1)*(raster2>0)',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
              },
             'target_nodata': -1,
             'target_raster_path': "moisture_nonoverlapping_A90.tif",
-        },       
+        },
     ]
 
     for calculation in calculation_list:
@@ -615,11 +614,11 @@ def main():
 
     return
 
-    
+
 #PAIRWISE OVERLAPS
     calculation_list = [
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
@@ -628,7 +627,7 @@ def main():
             'target_raster_path': "overlap_carbon_coastal_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
@@ -637,7 +636,7 @@ def main():
             'target_raster_path': "overlap_moisture_coastal_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
@@ -646,7 +645,7 @@ def main():
             'target_raster_path': "overlap_carbon_timber_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
@@ -655,7 +654,7 @@ def main():
             'target_raster_path': "overlap_carbon_flood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
@@ -664,7 +663,7 @@ def main():
             'target_raster_path': "overlap_carbon_fuelwood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
@@ -673,7 +672,7 @@ def main():
             'target_raster_path': "overlap_carbon_fwfish_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
@@ -682,7 +681,7 @@ def main():
             'target_raster_path': "overlap_carbon_grazing_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -691,7 +690,7 @@ def main():
             'target_raster_path': "overlap_carbon_natureaccess_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -700,7 +699,7 @@ def main():
             'target_raster_path': "overlap_carbon_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -709,7 +708,7 @@ def main():
             'target_raster_path': "overlap_carbon_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -718,7 +717,7 @@ def main():
             'target_raster_path': "overlap_carbon_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C1_90_md5_3246d7fc06267a18f59ca9a8decf64fe.tif",
@@ -727,7 +726,7 @@ def main():
             'target_raster_path': "overlap_carbon_reeftourism_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\H1_90_md5_7973783ac2786f9d521a4b8b4cf5d68d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
@@ -736,7 +735,7 @@ def main():
             'target_raster_path': "overlap_carbon_moisture_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
@@ -745,7 +744,7 @@ def main():
             'target_raster_path': "overlap_moisture_timber_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
@@ -754,7 +753,7 @@ def main():
             'target_raster_path': "overlap_moisture_flood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
@@ -763,7 +762,7 @@ def main():
             'target_raster_path': "overlap_moisture_fuelwood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
@@ -772,7 +771,7 @@ def main():
             'target_raster_path': "overlap_moisture_fwfish_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
@@ -781,7 +780,7 @@ def main():
             'target_raster_path': "overlap_moisture_grazing_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -790,7 +789,7 @@ def main():
             'target_raster_path': "overlap_moisture_natureaccess_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -799,7 +798,7 @@ def main():
             'target_raster_path': "overlap_moisture_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -808,7 +807,7 @@ def main():
             'target_raster_path': "overlap_moisture_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\I1_90_md5_54ad2f227abc1cf66ed23cc6d3b72d47.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -817,7 +816,7 @@ def main():
             'target_raster_path': "overlap_moisture_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
@@ -826,7 +825,7 @@ def main():
             'target_raster_path': "overlap_coastal_timber_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
@@ -835,7 +834,7 @@ def main():
             'target_raster_path': "overlap_coastal_flood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
@@ -844,7 +843,7 @@ def main():
             'target_raster_path': "overlap_coastal_fuelwood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
@@ -853,7 +852,7 @@ def main():
             'target_raster_path': "overlap_coastal_fwfish_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
@@ -862,7 +861,7 @@ def main():
             'target_raster_path': "overlap_coastal_grazing_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Y_90_md5_f8393b73f3548658f610ac47acea72e7.tif",
@@ -871,7 +870,7 @@ def main():
             'target_raster_path': "overlap_coastal_marinefish_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -880,7 +879,7 @@ def main():
             'target_raster_path': "overlap_coastal_natureaccess_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -889,7 +888,7 @@ def main():
             'target_raster_path': "overlap_coastal_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -898,7 +897,7 @@ def main():
             'target_raster_path': "overlap_coastal_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -907,7 +906,7 @@ def main():
             'target_raster_path': "overlap_coastal_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\S_90_md5_5d18924c69519ec76993f4d58a7b2687.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C1_90_md5_3246d7fc06267a18f59ca9a8decf64fe.tif",
@@ -916,7 +915,7 @@ def main():
             'target_raster_path': "overlap_coastal_reeftourism_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\C1_90_md5_3246d7fc06267a18f59ca9a8decf64fe.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Y_90_md5_f8393b73f3548658f610ac47acea72e7.tif",
@@ -925,7 +924,7 @@ def main():
             'target_raster_path': "overlap_marinefish_reeftourism_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
@@ -934,7 +933,7 @@ def main():
             'target_raster_path': "overlap_timber_flood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
@@ -943,7 +942,7 @@ def main():
             'target_raster_path': "overlap_timber_fuelwood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
@@ -952,7 +951,7 @@ def main():
             'target_raster_path': "overlap_timber_fwfish_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -961,7 +960,7 @@ def main():
             'target_raster_path': "overlap_timber_natureaccess_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -970,7 +969,7 @@ def main():
             'target_raster_path': "overlap_timber_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -979,7 +978,7 @@ def main():
             'target_raster_path': "overlap_timber_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\T_90_md5_6a0142de25bb3b5a107f7abae694c5b0.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -988,7 +987,7 @@ def main():
             'target_raster_path': "overlap_timber_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
@@ -997,7 +996,7 @@ def main():
             'target_raster_path': "overlap_flood_fuelwood_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
@@ -1006,7 +1005,7 @@ def main():
             'target_raster_path': "overlap_flood_fwfish_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
@@ -1015,7 +1014,7 @@ def main():
             'target_raster_path': "overlap_flood_grazing_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -1024,7 +1023,7 @@ def main():
             'target_raster_path': "overlap_flood_natureaccess_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -1033,7 +1032,7 @@ def main():
             'target_raster_path': "overlap_flood_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -1042,7 +1041,7 @@ def main():
             'target_raster_path': "overlap_flood_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\U_90_md5_258160b638e742e91b84979e6b2c748f.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -1051,7 +1050,7 @@ def main():
             'target_raster_path': "overlap_flood_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
@@ -1060,7 +1059,7 @@ def main():
             'target_raster_path': "overlap_fuelwood_fwfish_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -1069,7 +1068,7 @@ def main():
             'target_raster_path': "overlap_fuelwood_natureaccess_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -1078,7 +1077,7 @@ def main():
             'target_raster_path': "overlap_fuelwood_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -1087,7 +1086,7 @@ def main():
             'target_raster_path': "overlap_fuelwood_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\V_90_md5_eeb6b515ad2f25a3ad76099e07e030bc.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -1096,7 +1095,7 @@ def main():
             'target_raster_path': "overlap_fuelwood_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
@@ -1105,7 +1104,7 @@ def main():
             'target_raster_path': "overlap_fwfish_grazing_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -1114,7 +1113,7 @@ def main():
             'target_raster_path': "overlap_fwfish_natureaccess_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -1123,7 +1122,7 @@ def main():
             'target_raster_path': "overlap_fwfish_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -1132,7 +1131,7 @@ def main():
             'target_raster_path': "overlap_fwfish_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\W_90_md5_de1e7dc33c7227cdbcda5b7e6f9919bb.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -1141,7 +1140,7 @@ def main():
             'target_raster_path': "overlap_fwfish_sediment_90.tif",
         },
        {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
@@ -1150,7 +1149,7 @@ def main():
             'target_raster_path': "overlap_grazing_natureaccess_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -1159,7 +1158,7 @@ def main():
             'target_raster_path': "overlap_grazing_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -1168,7 +1167,7 @@ def main():
             'target_raster_path': "overlap_grazing_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\X_90_md5_0cc1f3aeb8e1a566a6b220bf9986b828.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -1177,7 +1176,7 @@ def main():
             'target_raster_path': "overlap_grazing_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
@@ -1186,7 +1185,7 @@ def main():
             'target_raster_path': "overlap_natureaccess_nitrogen_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -1195,7 +1194,7 @@ def main():
             'target_raster_path': "overlap_natureaccess_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\Z_90_md5_1b9d0deb1e16f6975dc3402aacf4846e.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -1204,7 +1203,7 @@ def main():
             'target_raster_path': "overlap_natureaccess_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
@@ -1213,7 +1212,7 @@ def main():
             'target_raster_path': "overlap_nitrogen_pollination_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A1_90_md5_1fb33de8a6ced1d1f54dcc7debed3c6c.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -1222,7 +1221,7 @@ def main():
             'target_raster_path': "overlap_nitrogen_sediment_90.tif",
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\B1_90_md5_14484122eba5a970559c57a48621d3fd.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\D1_90_md5_ee81ad59355f2309c2ecb882e788454a.tif",
@@ -1245,8 +1244,8 @@ def main():
 
     calculation_list = [ #Trying at a finer resolution - 10s A90 -- there are significantly fewer people so this is probably the correct way to do it
         #{
-        #    'expression': 'raster1*(raster2)', 
-        #    'symbol_to_path_map': {            
+        #    'expression': 'raster1*(raster2)',
+        #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\A_90_WARPED_near_md5_0ed997ee57533433c6372e070592e880.tif",
         #        'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
         #    },
@@ -1257,7 +1256,7 @@ def main():
         #},
         #{
         #    'expression': 'raster1*(raster2)',
-        #    'symbol_to_path_map': {            
+        #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\B_90_WARPED_near_md5_2b44cf1e234acbd8d12156068ba8ce2e.tif",
         #        'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
         #    },
@@ -1268,7 +1267,7 @@ def main():
         #},
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\C_90_WARPED_near_md5_6a33ab63b7ac8fb9a679e192741bcac5.tif",
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
@@ -1288,10 +1287,10 @@ def main():
 
     return
 
-    calculation_list = [ 
+    calculation_list = [
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\A_90_WARPED_near_MASKED_land_2km_md5_66c8b850ace04761abef3a1d7a02f04a.tif",
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
@@ -1302,7 +1301,7 @@ def main():
         },
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\B_90_WARPED_near_MASKED_land_2km_md5_8e7a1e1badc25b30b5dd20d9c8ae4c85.tif",
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
@@ -1313,7 +1312,7 @@ def main():
         },
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\C_90_WARPED_near_2km_md5_f54c83a0078f91a2c5cb98c9bd23b22f.tif",
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
@@ -1324,7 +1323,7 @@ def main():
         },
         #{
         #    'expression': 'raster1*(raster2)',
-        #    'symbol_to_path_map': {            
+        #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\raster_calculations\align-to-mask-and-normalize\workspace\A_90_WARPED_near_md5_1e9f19fadc8ba5e2b32c5c11bb4154cf.tif",
         #        'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\poverty\chi_relative_wealth_index.tif",
         #    },
@@ -1335,7 +1334,7 @@ def main():
         #},
         #{
         #    'expression': 'raster1*(raster2)',
-        #    'symbol_to_path_map': {            
+        #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\raster_calculations\align-to-mask-and-normalize\workspace\B_90_WARPED_near_md5_27f59aaa7d7e4abf71b3f80567bb66db.tif",
         #        'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\poverty\chi_relative_wealth_index.tif",
         #    },
@@ -1346,7 +1345,7 @@ def main():
         #},
         #{
         #    'expression': 'raster1*(raster2)',
-        #    'symbol_to_path_map': {            
+        #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\raster_calculations\align-to-mask-and-normalize\workspace\C_90_WARPED_near_md5_931c49db12100ab5837c1d0ff199f933.tif",
         #        'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\poverty\chi_relative_wealth_index.tif",
         #    },
@@ -1368,10 +1367,10 @@ def main():
 
 
 
-    calculation_list = [ 
+    calculation_list = [
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\nature_access\global_normalized_people_access_lspop_2017_URCA_rural_60_noneg_md5_dcc342357e635e511e9d43ad1e057c1e.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
             },
@@ -1380,7 +1379,7 @@ def main():
         },
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\nature_access\global_normalized_people_access_lspop_2017_URCA_urban_60_noneg_md5_24f9290d317e8985f47a8ae58b67c7b3.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
             },
@@ -1389,7 +1388,7 @@ def main():
         },
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\nature_access\global_normalized_people_access_lspop_2017_URCA_rural_360_noneg_md5_d7b34c31cd72b84974da08471dd6620d.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
             },
@@ -1398,7 +1397,7 @@ def main():
         },
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\nature_access\global_normalized_people_access_lspop_2017_URCA_urban_360_noneg_md5_da47d209c5ca2be346e939a4c33cf7c1.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90_md5_79f5e0d5d5029d90e8f10d5932da93ff.tif",
             },
@@ -1417,10 +1416,10 @@ def main():
     return
 
 
-    calculation_list = [ 
+    calculation_list = [
         {
             'expression': 'raster1*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\pollination_norm\norm_ppl_fed_within_2km_per_pixel_mask_to_hab_compressed_md5_e32a0dd59de79a8dfc0d34dc08c18c41.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\A_90_WARPED_near_MASKED_land_2km_md5_66c8b850ace04761abef3a1d7a02f04a.tif",
             },
@@ -1431,7 +1430,7 @@ def main():
         },
         #{
         #    'expression': 'raster1*(raster2)', # this is not the right way to do this!! I need the population mapped back to habitat but that seems like it hasn't been normalized correctly because it exceeds this total coastal pop
-        #    'symbol_to_path_map': {            
+        #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\cnc_cv\normalized_pop_on_hab\total_pop_masked_by_10m_md5_ef02b7ee48fa100f877e3a1671564be2.tif",
         #        'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\A_90_WARPED_near_MASKED_land_2km_md5_66c8b850ace04761abef3a1d7a02f04a.tif",
         #    },
@@ -1442,7 +1441,7 @@ def main():
         #},
         #{
         #    'expression': 'raster1*(raster2)', #this is not actually the right way to do this - need to delineate the downstream area of A90 and then just mask to population
-        #    'symbol_to_path_map': {            
+        #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\normalized\downstream_bene_2017_hab_normalized_compressed_overviews_md5_7e8c9ecd4092068afaebc1a4b1efe3ce.tif",
         #        'raster2': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\wgs\A_90_WARPED_near_MASKED_land_2km_md5_66c8b850ace04761abef3a1d7a02f04a.tif",
         #    },
@@ -1453,7 +1452,7 @@ def main():
         #},
         {
             'expression': 'raster1*(raster2<2)*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\downstream_mask_A_90_WARPED_near_md5_0ed997ee57533433c6372e070592e880_compressed.tif",
             },
@@ -1464,7 +1463,7 @@ def main():
         },
         {
             'expression': 'raster1*(raster2<2)*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\downstream_mask_C_90_WARPED_near_md5_6a33ab63b7ac8fb9a679e192741bcac5_compressed.tif",
             },
@@ -1472,17 +1471,17 @@ def main():
             'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'resample_method': 'average',
             'target_raster_path': "lspop_on_downstream_of_10sC90.tif",
-        },    
+        },
         {
             'expression': 'raster1*(raster2<2)*(raster2)',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\lspop2017_compressed_md5_53e326f463a2c8a8fa92d8dea6f37df1.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\overlap\beneficiaries\downstream_mask_masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
             },
             'target_nodata': 0,
             'target_pixel_size': (0.008333333333333333218,-0.008333333333333333218),
             'resample_method': 'average',
-            'target_raster_path': "lspop_on_downstream_of_nathab.tif", 
+            'target_raster_path': "lspop_on_downstream_of_nathab.tif",
         },
     ]
 
@@ -1495,11 +1494,11 @@ def main():
 
     return
 
-    
+
 
     single_expression = {
         'expression': 'raster1*(raster2<0)',
-        'symbol_to_path_map': {            
+        'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\poverty\chi_relative_wealth_index.tif",
         },
@@ -1517,10 +1516,10 @@ def main():
 
     return
 
-    calculation_list = [ 
+    calculation_list = [
         {
             'expression': '(raster1<0)*raster2',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\population\chi_relative_wealth_on_A90.tif",
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
@@ -1531,7 +1530,7 @@ def main():
         },
         {
             'expression': '(raster1<0)*raster2',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\population\chi_relative_wealth_on_B90.tif",
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
@@ -1542,7 +1541,7 @@ def main():
         },
         {
             'expression': '(raster1<0)*raster2',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\overlap\population\chi_relative_wealth_on_C90.tif",
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
             },
@@ -1562,7 +1561,7 @@ def main():
 
     return
 
-    
+
 
 
     #For Pat's analysis
@@ -1574,11 +1573,11 @@ def main():
     #it yields A_90_WARPED_near_MASKED_md5_66c8b850ace04761abef3a1d7a02f04a.tif which I renamed A_90_WARPED_near_MASKED_land0s_2km_md5_66c8b850ace04761abef3a1d7a02f04a.tif
 
 #    wgs84_srs = osr.SpatialReference()
-#    wgs84_srs.ImportFromEPSG(4326)    
+#    wgs84_srs.ImportFromEPSG(4326)
 #
-#    single_expression = { 
+#    single_expression = {
 #        'expression': 'raster1*(raster2>-1)',
-#        'symbol_to_path_map': {            
+#        'symbol_to_path_map': {
 #            #'raster1': r"C:\Users\Becky\Documents\raster_calculations\align-to-mask-and-normalize\workspace\A_90_WARPED_near_md5_1e9f19fadc8ba5e2b32c5c11bb4154cf.tif",
 #            'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\8-21\A_90.tif",
 #            'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\landmask_0s_2km_moisturextent.tif",
@@ -1603,7 +1602,7 @@ def main():
 
     single_expression = {
         'expression': '(raster1)*(raster2>-6)',
-        'symbol_to_path_map': {            
+        'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\raster_calculations\A_90_land_nodata0s.tif",
             'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_e_source_ratio_ann_mean.tif",
         },
@@ -1623,7 +1622,7 @@ def main():
 
     single_expression = {
         'expression': 'raster1-raster2',
-        'symbol_to_path_map': {            
+        'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Downloads\cntr_2km_nocarb_land_resampled15_mode.tif",
             'raster2': r"C:\Users\Becky\Documents\raster_calculations\align-to-mask-and-normalize\workspace\solution_A_all_targets_resampled1.5d_near_md5_98d52ff13ca9a38784a687339e30b2fd.tif",
         },
@@ -1645,7 +1644,7 @@ def main():
     calculation_list = [ #scrubbin out the accidental negatives from nodata overlap in the nature access
         {
             'expression': '(raster1>=0)*raster1 + (raster1<0)*0',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\ecoshards\global_normalized_people_access_lspop_2017_URCA_rural_60.0m_md5_77e111769dcab34cf992fb0d3a9eb49c.tif",
             },
             'target_nodata': -1,
@@ -1653,7 +1652,7 @@ def main():
         },
         {
             'expression': '(raster1>=0)*raster1 + (raster1<0)*0',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\ecoshards\global_normalized_people_access_lspop_2017_URCA_rural_360.0m_md5_5cd804c489ab949c4891410d65b71057.tif",
             },
             'target_nodata': -1,
@@ -1661,7 +1660,7 @@ def main():
         },
         {
             'expression': '(raster1>=0)*raster1 + (raster1<0)*0',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\ecoshards\global_normalized_people_access_lspop_2017_URCA_urban_60.0m_md5_77d3af07d88721543128205645f75b8d.tif",
             },
             'target_nodata': -1,
@@ -1669,7 +1668,7 @@ def main():
         },
         {
             'expression': '(raster1>=0)*raster1 + (raster1<0)*0',
-            'symbol_to_path_map': {            
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\ecoshards\global_normalized_people_access_lspop_2017_URCA_urban_360.0m_md5_e7720b3032df6ea8293cddcb2be26802.tif",
             },
             'target_nodata': -1,
@@ -1686,12 +1685,12 @@ def main():
 
     return
 
-    
 
-    
+
+
     calculation_list = [ #making masks so I can try average_rasters on these and masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif to see where these exist outside that mask (they shouldn't, but they do)
         {
-            'expression': 'raster1*10', 
+            'expression': 'raster1*10',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\resampled_Eckert2km\masked_all_nathab_wstreams_esa2015_nodata_WARPED_near_md5_d801fffb0e3fbfd8d7ffb508f18ebb7c.tif",
              },
@@ -1699,7 +1698,7 @@ def main():
             'target_raster_path': "nathab_10.tif",
         },
         {
-            'expression': 'raster1*2', 
+            'expression': 'raster1*2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\churn\target_stitch_dir\A_100_md5_7474de70786c3dce0b760c691368c839.tif",
              },
@@ -1707,13 +1706,13 @@ def main():
             'target_raster_path': "A100_2.tif",
         },
         {
-            'expression': 'raster1*3', 
+            'expression': 'raster1*3',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\churn\target_stitch_dir\A_90_md5_396196b740bcbb151e033ff9f9609fe5.tif",
              },
             'target_nodata': 0,
             'target_raster_path': "A90_3.tif",
-        },        
+        },
     ]
 
     for calculation in calculation_list:
@@ -1728,7 +1727,7 @@ def main():
 
     calculation_list = [ #making a realized sediment layer that's not masked to nathab, for a presentation
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_sedimentdeposition_md5_aa9ee6050c423b6da37f8c2723d9b513.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
@@ -1737,7 +1736,7 @@ def main():
             'target_pixel_size': (0.005555555555555556, -0.005555555555555556),
             'resample_method': 'near',
             'target_raster_path': "realized_sediment_attn_500k.tif",
-        },        
+        },
     ]
 
     for calculation in calculation_list:
@@ -1752,7 +1751,7 @@ def main():
     #marinefish problems
 
     single_expression = {
-        'expression': '(raster1>=0)', 
+        'expression': '(raster1>=0)',
         'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\solutions\D-I1_90s\Y_90_md5_68117f49cd41e41f3a8915a2a8c941b1.tif",
         },
@@ -1772,7 +1771,7 @@ def main():
 
     single_expression = {
         'expression': 'raster1*(raster2>0)',
-        'symbol_to_path_map': {            
+        'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\cnc_project\optimization\critical-natural-capital-optimizations\stitched_solutions\Eckert\90_targets\Y_90_md5_81cd585dcfadd703e24c0a9229c1cdc9.tif",
             'raster2': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\eez_mask_eckert_2km_md5_3208b8094dbece295374bddf4d99d192.tif",
         },
@@ -1791,7 +1790,7 @@ def main():
     #this is the way to fix it:
     single_expression = {
         'expression': '(raster1>0)*0 + (raster1<1)*-9999',
-        'symbol_to_path_map': {            
+        'symbol_to_path_map': {
             'raster1': r"C:\Users\Becky\Documents\raster_calculations\align_to_mask_workspace\ecoshards\eez_mask_eckert_2km_md5_3208b8094dbece295374bddf4d99d192.tif",
         },
         'target_nodata': -9999,
@@ -1837,7 +1836,7 @@ def main():
 
     calculation_list = [
         {
-            'expression': 'service*mask + (mask<1)*-9999', 
+            'expression': 'service*mask + (mask<1)*-9999',
             'symbol_to_path_map': {
                 'mask': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
                 'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\service\realized_floodmitigation_attn_500km_md5_1b659e3fd93e5f0b6aac396245258517.tif",
@@ -1848,7 +1847,7 @@ def main():
             'resample_method': 'near',
         },
         {
-            'expression': 'service*mask + (mask<1)*-9999', 
+            'expression': 'service*mask + (mask<1)*-9999',
             'symbol_to_path_map': {
                 'mask': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\masked_all_nathab_wstreams_esa2015_md5_c291ff6ef7db1d5ff4d95a82e0f035de.tif",
                 'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\service\realized_floodmitigation_attn_50km_md5_029cbd998fc4464cf04861cf58dddc1d.tif",
@@ -1871,7 +1870,7 @@ def main():
 
     calculation_list = [
         {
-            'expression': 'service*benes', 
+            'expression': 'service*benes',
             'symbol_to_path_map': {
                 'benes': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
                 'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_nitrogenretention_nci_unmasked_md5_09425dff042ea8dbb94a8d1977be472a.tif",
@@ -1882,7 +1881,7 @@ def main():
             'resample_method': 'near',
         },
         {
-            'expression': 'service*benes', 
+            'expression': 'service*benes',
             'symbol_to_path_map': {
                 'benes': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_50000.0_compressed_overviews_md5_ddbc9006bbfb21ef681a42bf78046b69.tif",
                 'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_nitrogenretention_nci_unmasked_md5_09425dff042ea8dbb94a8d1977be472a.tif",
@@ -1906,7 +1905,7 @@ def main():
 
     calculation_list = [
 #        {
-#            'expression': 'raster1*raster2', 
+#            'expression': 'raster1*raster2',
 #            'symbol_to_path_map': {
 #                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
 #                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_50000.0_compressed_overviews_md5_ddbc9006bbfb21ef681a42bf78046b69.tif",
@@ -1917,7 +1916,7 @@ def main():
 #            'resample_method': 'near',
 #        },
 #        {
-#            'expression': 'raster1*raster2', 
+#            'expression': 'raster1*raster2',
 #            'symbol_to_path_map': {
 #                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
 #                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_50000.0_compressed_overviews_md5_ddbc9006bbfb21ef681a42bf78046b69.tif",
@@ -1928,7 +1927,7 @@ def main():
 #            'resample_method': 'near',
 #        },
 #        {
-#            'expression': 'raster1*raster2', 
+#            'expression': 'raster1*raster2',
 #            'symbol_to_path_map': {
 #                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
 #                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
@@ -1939,7 +1938,7 @@ def main():
 #            'resample_method': 'near',
 #        },
 #        {
-#            'expression': 'raster1*raster2', 
+#            'expression': 'raster1*raster2',
 #            'symbol_to_path_map': {
 #                'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
 #                'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_500000.0_compressed_overviews_md5_a73557e0c216e390d4e288816c9838bb.tif",
@@ -1950,7 +1949,7 @@ def main():
 #            'resample_method': 'near',
 #        },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_floodmitigation_PotInflGStorage.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_floodplain_500000.0_compressed_overviews_md5_2ce1f378646fcfe8c9ddf98bd6212d03.tif",
@@ -1961,7 +1960,7 @@ def main():
             'resample_method': 'near',
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\potential_floodmitigation_PotInflGStorage.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_floodplain_50000.0_compressed_overviews_md5_6c604be0fc0d87225dd81adeeb4b67a3.tif",
@@ -1971,9 +1970,9 @@ def main():
             'target_pixel_size': (0.002777777777777778, -0.002777777777777778),
             'resample_method': 'near',
         },
-        
+
         #{
-        #    'expression': 'raster1*raster2', 
+        #    'expression': 'raster1*raster2',
         #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
         #        'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_compressed_overviews_md5_32c17fb4ab0eb2b1fe193839dbc7e85b.tif",
@@ -1984,7 +1983,7 @@ def main():
         #    'resample_method': 'near',
         #},
         #{
-        #    'expression': 'raster1*raster2', 
+        #    'expression': 'raster1*raster2',
         #    'symbol_to_path_map': {
         #        'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
         #        'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_compressed_overviews_md5_32c17fb4ab0eb2b1fe193839dbc7e85b.tif",
@@ -2007,7 +2006,7 @@ def main():
 
     calculation_list = [
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_0.9999_normalized_compressed_overviews_md5_afbbfe893a6fb155aa6fffc54c6e8b69.tif",
@@ -2018,7 +2017,7 @@ def main():
             'resample_method': 'near',
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_0.9999_normalized_compressed_overviews_md5_afbbfe893a6fb155aa6fffc54c6e8b69.tif",
@@ -2029,7 +2028,7 @@ def main():
             'resample_method': 'near',
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_fff6f944bfaf13baf24129f7fbfb1107.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_0.999_compressed_overviews_md5_d15639dbfd5914f44c59642c459b6ced.tif",
@@ -2040,7 +2039,7 @@ def main():
             'resample_method': 'near',
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\stream_attenuated\downstream_bene_2017_0.999_compressed_overviews_md5_d15639dbfd5914f44c59642c459b6ced.tif",
@@ -2060,11 +2059,11 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
 
     masked_service_list = [
         {
-            'expression': 'service*mask', 
+            'expression': 'service*mask',
             'symbol_to_path_map': {
                 'mask': r"C:\Users\Becky\Documents\cnc_project\supporting_layers\EEZ_mask_0027_compressed_md5_0f25e6a690fef616d34c5675b57e76f8.tif",
                 'service': r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_coastalprotection_norm_md5_485aef1d6c412bde472bdaa1393100d7.tif",
@@ -2107,7 +2106,7 @@ def main():
 
     expression_list = [
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_nitrogenretention_nci_nathab_clamped_md5_0403ac4f961b259a89c013d939c39463.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_normalized_compressed_overviews_md5_0da01aaa9d5d03c652a03b64afde24f8.tif",
@@ -2118,7 +2117,7 @@ def main():
             'resample_method': 'near',
         },
         {
-            'expression': 'raster1*raster2', 
+            'expression': 'raster1*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\masked_rasters\need_processing\potential_sedimentdeposition_nathab_clamped_md5_1d826c8885c6479b6307bc345b95d8bf.tif",
                 'raster2': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\downstream_bene_2017_normalized_compressed_overviews_md5_0da01aaa9d5d03c652a03b64afde24f8.tif",
@@ -2183,10 +2182,10 @@ def main():
 
     return
 
-    
+
 
     #99.9th percentiles of the new layers (NCI nitrogen retention and new normalized pollination)
-    NNth_nit = 2325 
+    NNth_nit = 2325
     NNth_poll = 48
     NNth_fl = 31755
     clamped_service_list = [ #some services just have crazy high values that throw the whole percentiles off so we're clamping them to the 99th percentile
@@ -2270,10 +2269,10 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
     masked_service_list = [
         {
-            'expression': '(raster1>=0)*raster2', 
+            'expression': '(raster1>=0)*raster2',
             'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\original_rasters\downstream_beneficiaries\floodplains\global_floodplains_mask.tif",
                 'raster2': r"C:\Users\Becky\Documents\lspop2017_md5_eafa6a4724f3d3a6675687114d4de6ba.tif",
@@ -2355,9 +2354,9 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
 
-    
+
+
 
     single_expression = {
         'expression': '(raster1>=8)*raster2',
@@ -2378,7 +2377,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
     single_expression = {
         'expression': '(raster1<8)*raster2',
         'symbol_to_path_map': {
@@ -2428,7 +2427,7 @@ def main():
     return
 
     wgs84_srs = osr.SpatialReference()
-    wgs84_srs.ImportFromEPSG(4326)    
+    wgs84_srs.ImportFromEPSG(4326)
 
     single_expression = {
         'expression': '(raster1>0)*(raster2<1)',
@@ -2630,7 +2629,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
 
     single_expression = {
         'expression': '(raster1>2.61)',
@@ -2668,7 +2667,7 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
     single_expression = {
         'expression': '(raster1>2)*raster2',
         'symbol_to_path_map': {
@@ -2766,7 +2765,7 @@ def main():
     raster_calculation_list = [
         {
             'expression': 'raster1>0.9',
-            'symbol_to_path_map': { 
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\output_CBD\food_water_average_raster.tif",
             },
             'target_nodata': -9999,
@@ -2774,7 +2773,7 @@ def main():
         },
         {
             'expression': 'raster1>0.9',
-            'symbol_to_path_map': { 
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\output_CBD\food_hazards_average_raster.tif",
             },
             'target_nodata': -9999,
@@ -2782,7 +2781,7 @@ def main():
         },
         {
             'expression': 'raster1>0.9',
-            'symbol_to_path_map': { 
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\output_CBD\hazards_water_average_raster.tif",
             },
             'target_nodata': -9999,
@@ -2790,7 +2789,7 @@ def main():
         },
         {
             'expression': 'raster1>0.9',
-            'symbol_to_path_map': { 
+            'symbol_to_path_map': {
                 'raster1': r"C:\Users\Becky\Documents\cnc_project\output_CBD\food_water_hazards_average_raster.tif",
             },
             'target_nodata': -9999,
@@ -2809,7 +2808,7 @@ def main():
 
 
     wgs84_srs = osr.SpatialReference()
-    wgs84_srs.ImportFromEPSG(4326)    
+    wgs84_srs.ImportFromEPSG(4326)
 
     single_expression = {
         'expression': '(raster2>-9999)*raster1',
@@ -2834,7 +2833,7 @@ def main():
     return
 
     wgs84_srs = osr.SpatialReference()
-    wgs84_srs.ImportFromEPSG(4326)    
+    wgs84_srs.ImportFromEPSG(4326)
 
     single_expression = {
         'expression': '(raster2>-9999)*raster1',
@@ -2877,9 +2876,9 @@ def main():
     TASK_GRAPH.close()
 
     return
-    
+
     wgs84_srs = osr.SpatialReference()
-    wgs84_srs.ImportFromEPSG(4326)    
+    wgs84_srs.ImportFromEPSG(4326)
 
     single_expression = {
         'expression': '(raster2>-9999)*raster1',
@@ -2945,7 +2944,7 @@ def main():
 
     return
 
-    
+
 
     NNth_poll = 38
     Max_lang = 43 #original map did not exceed 43 languages per degree grid cell; higher than that must be an error
@@ -2966,7 +2965,7 @@ def main():
             'target_raster_path': "realized_pollination_nathab30s_clamped.tif",
         },
         {
-            'expression': f'(service>{Max_lang})*(128) + (service<={Max_lang})*service', 
+            'expression': f'(service>{Max_lang})*(128) + (service<={Max_lang})*service',
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_cultural_language_nathab30s.tif",
             },
@@ -2974,7 +2973,7 @@ def main():
             'target_raster_path': "realized_cultural_language_nathab30s_clamped.tif",
         },
         {
-            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + 0*(service<{LOth_ffish})', 
+            'expression': f'(service>{NNth_ffish})*{NNth_ffish} + (service<={NNth_ffish})*(service>={LOth_ffish})*service + 0*(service<{LOth_ffish})',
             'symbol_to_path_map': {
                 'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_fwfish_nathab30s.tif",
             },
@@ -2982,7 +2981,7 @@ def main():
             'target_raster_path': "realized_fwfish_per_km2_30s_clamped.tif",
         },
     #    {
-    #        'expression': f'(service>{Max_mfish})*({Max_mfish})+(service<={Max_mfish})*(service>={LO})*service+ 0*(service<{LO})', 
+    #        'expression': f'(service>{Max_mfish})*({Max_mfish})+(service<={Max_mfish})*(service>={LO})*service+ 0*(service<{LO})',
     #        'symbol_to_path_map': {
     #            'service': r"C:\Users\Becky\Documents\cnc_project\resampled_30s\realized_marinefish_watson_2010_2014_30s.tif",
     #        },
@@ -3331,7 +3330,7 @@ def main():
 
     return
 
-    
+
 
     single_expression = {
         'expression': 'load - export',
@@ -3354,8 +3353,8 @@ def main():
 
     return
 
-    # resampling of just one raster doesn't work in raster calculations, so just use pygeoprocessing directly
-    pygeoprocessing.warp_raster(
+    # resampling of just one raster doesn't work in raster calculations, so just use geoprocessing directly
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_esa2015.tif",
         (30/3600, -30/3600), 'masked_all_nathab_esa2015_30s.tif',
         'mode'
@@ -3363,7 +3362,7 @@ def main():
 
     TASK_GRAPH.join()
 
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\raster_calculations\masked_all_nathab_wstreams_esa2015.tif",
         (30/3600, -30/3600), 'masked_all_nathab_wstreams_esa2015_30s.tif',
         'mode'
@@ -3371,7 +3370,7 @@ def main():
 
     TASK_GRAPH.join()
 
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\raster_calculations\masked_nathab_forest_esa2015.tif",
         (30/3600, -30/3600), 'masked_nathab_forest_esa2015_30s.tif',
         'mode'
@@ -3379,7 +3378,7 @@ def main():
 
     TASK_GRAPH.join()
 
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\raster_calculations\masked_nathab_forestshrub_esa2015.tif",
         (30/3600, -30/3600), 'masked_nathab_forestshrub_esa2015_30s.tif',
         'mode'
@@ -3387,7 +3386,7 @@ def main():
 
     TASK_GRAPH.join()
 
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\raster_calculations\masked_nathab_notforest_esa2015.tif",
         (30/3600, -30/3600), 'masked_nathab_notforest_esa2015_30s.tif',
         'mode'
@@ -3396,7 +3395,7 @@ def main():
     TASK_GRAPH.join()
 
     #now doing all the layers that don't need to get masked by habitat (because they're already on the habitat or they can't be)
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_coastalprotection_md5_b8e0ec0c13892c2bf702c4d2d3e50536.tif",
         (30/3600, -30/3600), 'realized_coastalprotection_30s.tif',
         'average'
@@ -3404,7 +3403,7 @@ def main():
 
     TASK_GRAPH.join()
 
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\cnc_project\original_rasters\watson_2010_2014_catch_per_sqkm_AVG.tif",
         (30/3600, -30/3600), 'realized_marinefish_watson_2010_2014_30s.tif',
         'average'
@@ -3412,7 +3411,7 @@ def main():
 
     TASK_GRAPH.join()
 
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\cnc_project\original_rasters\realized_coastalprotection_barrierreef_md5_126320d42827adc0f7504d4693c67e18.tif",
         (30/3600, -30/3600), 'realized_coastalprotection_barrierreef_30s.tif',
         'average'
@@ -3424,7 +3423,7 @@ def main():
     wgs84_srs = osr.SpatialReference()
     wgs84_srs.ImportFromEPSG(4326)
 
-    pygeoprocessing.warp_raster(
+    geoprocessing.warp_raster(
         r"C:\Users\Becky\Documents\cnc_project\original_rasters\Modelled_Total_Dollar_Value_of_Reef_Tourism_USD_per_km2.tif",
         (30/3600, -30/3600), 'realized_reeftourism_30s.tif',
         'average', target_sr_wkt=wgs84_srs.ExportToWkt()

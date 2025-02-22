@@ -17,6 +17,7 @@ if __name__ == '__main__':
     point_vector = gdal.OpenEx(args.point_vector_path, gdal.OF_VECTOR)
     point_layer = point_vector.GetLayer()
     point_srs = point_layer.GetSpatialRef()
+    point_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
     dirname = os.path.basename(os.path.dirname(args.raster_path))
 
@@ -49,6 +50,8 @@ if __name__ == '__main__':
         raster_srs = osr.SpatialReference()
         raster_srs.ImportFromWkt(raster_srs_wkt)
 
+        raster_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
         gt = raster.GetGeoTransform()
         inv_gt = gdal.InvGeoTransform(gt)
 
@@ -62,6 +65,7 @@ if __name__ == '__main__':
             val = point_geom.Transform(point_to_raster_transform)
             result = gdal.ApplyGeoTransform(
                 inv_gt, point_geom.GetX(), point_geom.GetY())
+            print(f'{base_point_geom} converted to {point_geom} found at {result}')
             if (result[0] >= 0 and result[0] < raster.RasterXSize and
                     result[1] >= 0 and result[1] < raster.RasterYSize):
                 print('its in range')

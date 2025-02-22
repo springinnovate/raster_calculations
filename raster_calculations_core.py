@@ -8,13 +8,12 @@ import tempfile
 import time
 import urllib.request
 
+from ecoshard import geoprocessing
+from ecoshard.geoprocessing import symbolic
 from osgeo import gdal
 from retrying import retry
 import numpy
-import pygeoprocessing
-import pygeoprocessing.symbolic
-from ecoshard import geoprocessing
-from ecoshard import taskgraph
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -103,7 +102,6 @@ RASTER_CALCULATIONS_WORKSPACE = 'raster_calculations_workspace_not_for_humans'
 #         largest_block=largest_block))
 
 
-
 def evaluate_calculation(args, task_graph, workspace_dir):
     """Evaluate raster calculator expression object.
 
@@ -128,6 +126,8 @@ def evaluate_calculation(args, task_graph, workspace_dir):
             are different will resize the input rasters using the
             `'resample_method'` above. If not define and input rasters are
             different sizes will raise a ValueError.
+        args['target_datatype'] (gdal int): either None or gdal datatype
+            for desired target raster calculation
         workspace_dir (str): path to a directory that can be used to store
             intermediate values.
 
@@ -259,10 +259,13 @@ def _evaluate_expression(
 
     default_nan = None
     default_inf = None
+    target_datatype = None
     if 'default_nan' in args:
         default_nan = args['default_nan']
     if 'default_inf' in args:
         default_inf = args['default_inf']
+    if 'target_datatype' in args:
+        target_datatype = args['target_datatype']
 
     expression = args['expression']
     # search for percentile functions
@@ -276,7 +279,7 @@ def _evaluate_expression(
         LOGGER.debug(
             'doing percentile of %s to %s', base_raster_path_band,
             percentile_threshold)
-        percentile_val = pygeoprocessing.raster_band_percentile(
+        percentile_val = geoprocessing.raster_band_percentile(
             base_raster_path_band, working_sort_directory,
             [percentile_threshold])[0]
         expression = '%s%f%s' % (
@@ -284,9 +287,10 @@ def _evaluate_expression(
         LOGGER.debug('new expression: %s', expression)
 
     if not expression.startswith('mask(raster'):
-        pygeoprocessing.symbolic.evaluate_raster_calculator_expression(
+        symbolic.evaluate_raster_calculator_expression(
             expression, args['symbol_to_path_band_map'],
             args['target_nodata'], args['target_raster_path'],
+            target_datatype=target_datatype,
             default_nan=default_nan, default_inf=default_inf)
     else:
         # parse out array
@@ -328,8 +332,8 @@ def mask_raster_by_array(
         None.
 
     """
-    raster_info = pygeoprocessing.get_raster_info(raster_path_band[0])
-    pygeoprocessing.multiprocessing.raster_calculator(
+    raster_info = geoprocessing.get_raster_info(raster_path_band[0])
+    geoprocessing.multiprocessing.raster_calculator(
         [raster_path_band,
          (raster_info['nodata'][raster_path_band[1]-1], 'raw'),
          (numpy.array(mask_array), 'raw'), (2, 'raw'), (invert, 'raw')],
@@ -445,7 +449,7 @@ def _preprocess_rasters(
     resample_inputs = False
 
     base_info_list = [
-        pygeoprocessing.get_raster_info(path)
+        geoprocessing.get_raster_info(path)
         for path in base_raster_path_list]
     base_projection_list = [info['projection_wkt'] for info in base_info_list]
     base_pixel_list = [info['pixel_size'] for info in base_info_list]
@@ -509,7 +513,7 @@ def _preprocess_rasters(
             os.path.join(churn_dir, os.path.basename(path)) for path in
             base_raster_path_list]
         if not same_pixel_sizes or not same_raster_sizes:
-            pygeoprocessing.align_and_resize_raster_stack(
+            geoprocessing.align_and_resize_raster_stack(
                 base_raster_path_list, operand_raster_path_list,
                 [resample_method]*len(base_raster_path_list),
                 target_pixel_size, bounding_box_mode,

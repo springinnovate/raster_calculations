@@ -5,11 +5,11 @@ import multiprocessing
 import os
 import sys
 
+from ecoshard import geoprocessing
 from osgeo import gdal
 import pandas
-import pygeoprocessing
 import numpy
-import taskgraph
+from ecoshard import taskgraph
 
 gdal.SetCacheMax(2**30)
 
@@ -30,7 +30,7 @@ logging.basicConfig(
     stream=sys.stdout)
 
 LOGGER = logging.getLogger(__name__)
-logging.getLogger('taskgraph').setLevel(logging.INFO)
+logging.getLogger('ecoshard.taskgraph').setLevel(logging.INFO)
 
 
 def raster_rpn_calculator_op(*args_list):
@@ -196,7 +196,7 @@ if __name__ == '__main__':
             missing_id_list.append(raster_path)
             continue
         else:
-            raster_info = pygeoprocessing.get_raster_info(raster_path)
+            raster_info = geoprocessing.get_raster_info(raster_path)
             raster_id_to_info_map[raster_id] = {
                 'path': raster_path,
                 'nodata': raster_info['nodata'][0],
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     if args.bounding_box:
         target_bounding_box = args.bounding_box
     else:
-        target_bounding_box = pygeoprocessing.merge_bounding_box_list(
+        target_bounding_box = geoprocessing.merge_bounding_box_list(
             bounding_box_list, 'intersection')
 
     if args.pixel_size:
@@ -250,7 +250,7 @@ if __name__ == '__main__':
         raster_id_to_info_map[raster_id]['aligned_path'] = \
             aligned_raster_path
         task_graph.add_task(
-            func=pygeoprocessing.warp_raster,
+            func=geoprocessing.warp_raster,
             args=(
                 raster_path, target_pixel_size, aligned_raster_path,
                 'near'),
@@ -283,7 +283,7 @@ if __name__ == '__main__':
 
     result_path = os.path.join(args.workspace_dir, 'result.tif')
     LOGGER.debug(raster_path_band_list)
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         raster_path_band_list, raster_rpn_calculator_op, result_path,
         gdal.GDT_Float32, float(args.target_nodata))
     LOGGER.debug('all done')

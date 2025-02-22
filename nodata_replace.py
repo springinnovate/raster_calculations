@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-import pygeoprocessing
+from ecoshard import geoprocessing
 import numpy
 
 logging.basicConfig(
@@ -49,16 +49,16 @@ if __name__ == '__main__':
             'the --overwrite flag and run again')
         sys.exit(-1)
 
-    raster_a_info = pygeoprocessing.get_raster_info(args.raster_a_path)
+    raster_a_info = geoprocessing.get_raster_info(args.raster_a_path)
     a_nodata = raster_a_info['nodata'][0]
-    raster_b_info = pygeoprocessing.get_raster_info(args.raster_b_path)
+    raster_b_info = geoprocessing.get_raster_info(args.raster_b_path)
     b_nodata = raster_b_info['nodata'][0]
 
     LOGGER.info(
         f'replacing {a_nodata} in {args.raster_a_path} with values in '
         f'{args.raster_b_path} and writing to {args.target_path}')
 
-    pygeoprocessing.raster_calculator(
+    geoprocessing.raster_calculator(
         [(args.raster_a_path, 1), (args.raster_b_path, 1),
          (a_nodata, 'raw'),
          (b_nodata, 'raw')], replace_a_with_b,
