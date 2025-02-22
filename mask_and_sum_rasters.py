@@ -60,7 +60,7 @@ def align_and_resize_raster_stack(base_raster_path_list, aligned_raster_path_lis
         target_pixel_size, 'union')
 
 
-def mask_and_sum(mask_raster_path, value_raster_path, key):
+def mask_and_sum(mask_raster_path, value_raster_path):
     value_nodata = geoprocessing.get_raster_info(
         value_raster_path)['nodata'][0]
     path_list = [mask_raster_path, value_raster_path]
@@ -122,7 +122,7 @@ value_raster = path/to/idn_flood_value_restoration.tif
 
         task = task_graph.add_task(
             func=mask_and_sum,
-            args=aligned_raster_path_list + [key],
+            args=aligned_raster_path_list,
             dependent_task_list=[align_task],
             store_result=True,
             task_name=f'sum {key}')
@@ -135,4 +135,4 @@ value_raster = path/to/idn_flood_value_restoration.tif
             masked_running_sum, full_running_sum = task.get()
             file.write(f'{key},{masked_running_sum},{full_running_sum}\n')
 
-    print(f'results in {table_path}')
+    LOGGER.info(f'results in {table_path}')
